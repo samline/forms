@@ -1,8 +1,8 @@
 # React
 
-## Cuándo usar esta variante
+## When to use this variant
 
-Usa React cuando necesites consumir el estado del formulario desde componentes y efectos, manteniendo el DOM real como fuente de interacción.
+Use React when you need to consume form state from components and effects while keeping the real DOM form as the interaction source.
 
 ## Import
 
@@ -10,7 +10,7 @@ Usa React cuando necesites consumir el estado del formulario desde componentes y
 import { useForm } from '@samline/forms/react'
 ```
 
-## Ejemplo mínimo
+## Minimal Example
 
 ```tsx
 import { useRef } from 'react'
@@ -36,8 +36,8 @@ export function ContactForm() {
 }
 ```
 
-## Notas
+## Notes
 
-- la inicialización ocurre en cliente
-- el hook expone `controller`, `state` y `ready`
-- el core de validación y serialización es el mismo que usa vanilla
+- initialization happens on the client
+- the hook exposes `controller`, `state`, and `ready`
+- it shares the same validation and serialization core as vanilla

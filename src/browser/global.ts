@@ -10,12 +10,12 @@ const browserApi = {
 
 declare global {
   interface Window {
-    SamlineForms: typeof browserApi
+    forms: typeof browserApi
   }
 }
 
 if (typeof globalThis !== 'undefined') {
-  ;(globalThis as typeof globalThis & { SamlineForms: typeof browserApi }).SamlineForms =
+  ;(globalThis as typeof globalThis & { forms: typeof browserApi }).forms =
     browserApi
 }
 

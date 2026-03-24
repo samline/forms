@@ -1,8 +1,8 @@
 # Vanilla
 
-## Cuándo usar esta variante
+## When to use this variant
 
-Usa la variante vanilla cuando trabajas con formularios HTML nativos, scripts embebidos, sitios estáticos o aplicaciones donde no necesitas un wrapper de framework.
+Use the vanilla variant when you work with native HTML forms, embedded scripts, static sites, or applications where you do not need a framework wrapper.
 
 ## Import
 
@@ -10,7 +10,7 @@ Usa la variante vanilla cuando trabajas con formularios HTML nativos, scripts em
 import { form } from '@samline/forms'
 ```
 
-## Ejemplo mínimo
+## Minimal Example
 
 ```ts
 const contactForm = form('contact-form', {
@@ -27,20 +27,50 @@ contactForm.watch('email', value => {
 })
 ```
 
-## Contrato observable
+## What You Can Build With It
 
-- añade `css-filled` a los campos con valor
-- añade `css-error` a los campos con error
-- serializa el formulario a objeto plano y `FormData`
-- permite `autoSubmit` con debounce opcional
+- contact, newsletter, login, checkout, and profile forms
+- forms that submit with `fetch` using native `FormData`
+- flows that need field watchers without a framework
+- forms styled through attributes such as `css-filled` and `css-error`
+- progressive enhancement on top of existing HTML forms
 
-## Métodos principales
+## Observable Contract
 
+- adds `css-filled` to filled fields
+- adds `css-error` to fields with errors
+- serializes the form into a plain object and `FormData`
+- supports `autoSubmit` with optional debounce
+
+## Full Controller API
+
+- `element`
+- `f`
 - `onSubmit`
 - `watch`
 - `observe`
+- `unwatch`
+- `subscribe`
 - `prefill`
+- `append`
+- `setErrors`
+- `clearErrors`
 - `setValue`
+- `getValue`
+- `getField`
 - `validate`
+- `revalidate`
+- `reset`
+- `autoSubmit`
+- `disableAutoSubmit`
+- `getData`
 - `getState`
 - `destroy`
+
+## Recommended Usage Patterns
+
+- use `watch` or `observe` when you need field-level reactions
+- use `getData()` when you want both a plain object and `FormData`
+- use `setErrors()` and `clearErrors()` to drive visual feedback from server or client validation
+- use `subscribe()` when a higher-level controller needs to react to the whole form state
+- use `destroy()` when forms are mounted and unmounted dynamically

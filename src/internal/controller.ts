@@ -305,6 +305,7 @@ export const createFormController = (
 
   const api: FormController = {
     element,
+    f: element,
     options: normalizedOptions,
     onSubmit(callback, preventDefault = true) {
       submitHandlers.add({ callback, preventDefault })

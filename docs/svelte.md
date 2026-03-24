@@ -1,8 +1,8 @@
 # Svelte
 
-## Cuándo usar esta variante
+## When to use this variant
 
-Usa Svelte cuando quieras consumir el estado del formulario como store o aplicar el controlador mediante una action.
+Use Svelte when you want to consume form state as a store or apply the controller through an action.
 
 ## Import
 
@@ -10,7 +10,7 @@ Usa Svelte cuando quieras consumir el estado del formulario como store o aplicar
 import { createFormStore, formAction } from '@samline/forms/svelte'
 ```
 
-## Ejemplo mínimo
+## Minimal Example
 
 ```svelte
 <script lang="ts">
@@ -24,7 +24,7 @@ import { createFormStore, formAction } from '@samline/forms/svelte'
 </form>
 ```
 
-## Notas
+## Notes
 
-- `createFormStore` expone `state`, `ready`, `mount` y `destroy`
-- `formAction` permite vincular el controlador a un formulario concreto
+- `createFormStore` exposes `state`, `ready`, `mount`, and `destroy`
+- `formAction` binds the controller to a specific form element

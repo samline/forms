@@ -1,8 +1,8 @@
 # Vue
 
-## Cuándo usar esta variante
+## When to use this variant
 
-Usa Vue cuando necesites un composable con lifecycle y estado reactivo derivado del mismo controlador compartido.
+Use Vue when you need a composable with lifecycle hooks and reactive state driven by the same shared controller.
 
 ## Import
 
@@ -10,7 +10,7 @@ Usa Vue cuando necesites un composable con lifecycle y estado reactivo derivado 
 import { useForm } from '@samline/forms/vue'
 ```
 
-## Ejemplo mínimo
+## Minimal Example
 
 ```ts
 import { useForm } from '@samline/forms/vue'
@@ -28,7 +28,7 @@ export default {
 }
 ```
 
-## Notas
+## Notes
 
-- devuelve `controller`, `state`, `ready`, `mount` y `destroy`
-- la suscripción al estado se gestiona desde lifecycle hooks de Vue
+- it returns `controller`, `state`, `ready`, `mount`, and `destroy`
+- state subscription is managed through Vue lifecycle hooks

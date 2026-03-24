@@ -1,14 +1,16 @@
 # @samline/forms
 
-Controlador de formularios para HTML nativo, React, Vue, Svelte y uso directo en browser.
+Form controller for native HTML forms, React, Vue, Svelte, and direct browser usage.
 
-## Contents
+## Table of Contents
 
 - [Installation](#installation)
-- [CDN / Browser](#browser)
+- [CDN / Browser](#cdn--browser)
 - [Entrypoints](#entrypoints)
 - [Quick Start](#quick-start)
-- [API](#api)
+- [What You Can Do](#what-you-can-do)
+- [API Reference](#api-reference)
+- [Examples](#examples)
 - [Documentation](#documentation)
 - [License](#license)
 
@@ -30,17 +32,41 @@ yarn add @samline/forms
 bun add @samline/forms
 ```
 
+## CDN / Browser
+
+Use the browser build when you do not have a bundler and need to run the package directly in HTML.
+
+```html
+<script src="https://unpkg.com/@samline/forms@1.0.0/dist/browser/global.global.js"></script>
+```
+
+Pin the version in production.
+
+The browser build exposes `window.forms`.
+
+```html
+<form id="contact-form">
+  <input name="email" type="email" />
+</form>
+
+<script src="https://unpkg.com/@samline/forms@1.0.0/dist/browser/global.global.js"></script>
+<script>
+  const contactForm = window.forms.form('contact-form')
+  contactForm.validate()
+</script>
+```
+
 ## Entrypoints
 
-| Entrypoint | Uso |
+| Entrypoint | Use |
 | --- | --- |
-| `@samline/forms` | API vanilla principal |
-| `@samline/forms/core` | Tipos, serialización y validación |
-| `@samline/forms/vanilla` | Alias explícito de la API DOM |
-| `@samline/forms/react` | Hook para React |
-| `@samline/forms/vue` | Composable para Vue |
-| `@samline/forms/svelte` | Store y action para Svelte |
-| `@samline/forms/browser` | Bundle global para script tag |
+| `@samline/forms` | Main vanilla API |
+| `@samline/forms/core` | Types, serialization, and validation |
+| `@samline/forms/vanilla` | Explicit DOM API entrypoint |
+| `@samline/forms/react` | React hook |
+| `@samline/forms/vue` | Vue composable |
+| `@samline/forms/svelte` | Svelte store and action |
+| `@samline/forms/browser` | Browser global bundle |
 
 ## Quick Start
 
@@ -61,13 +87,157 @@ contactForm.onSubmit((element, data, formData, state) => {
 })
 ```
 
-## API
+## What You Can Do
 
-- `form(target, options)` crea un controlador para un `form` real o un id.
-- `watch` y `observe` reaccionan a cambios por campo.
-- `validate` y `revalidate` ejecutan reglas básicas compartidas.
-- `setErrors` y `clearErrors` mantienen el estado visual y lógico.
-- `getData` devuelve objeto serializado y `FormData` listo para `fetch`.
+- bind to a form by id, element, or ref-like target
+- read and write field values
+- serialize form values to both a plain object and `FormData`
+- watch individual fields and subscribe to global form state
+- prefill values from the current URL query string
+- mark filled and error states through DOM attributes for styling
+- run built-in validation rules and custom validators
+- trigger submit handlers with optional auto-submit behavior
+- reset, inspect, and destroy the controller cleanly
+
+## API Reference
+
+### form(target, options)
+
+Creates a controller from:
+
+- a form id string
+- a real `HTMLFormElement`
+- a ref-like object with `current`
+
+### Properties
+
+- `element`: the bound `HTMLFormElement | null`
+- `f`: alias of `element`
+- `options`: normalized controller options
+
+### Submission
+
+- `onSubmit(callback, preventDefault?)`
+- `autoSubmit(options?)`
+- `disableAutoSubmit()`
+
+### Field observation
+
+- `watch(field, callback)`
+- `observe(field, callback)`
+- `subscribe(listener)`
+- `unwatch(field?, callback?)`
+
+### Field values
+
+- `setValue(name, value)`
+- `getValue(name)`
+- `getField(name)`
+- `prefill(fieldName?)`
+
+### Validation and errors
+
+- `validate(fields?)`
+- `revalidate(fields?)`
+- `setErrors(fields)`
+- `clearErrors(fields?)`
+
+### Form lifecycle and state
+
+- `getData()`
+- `getState()`
+- `append(options)`
+- `reset()`
+- `destroy()`
+
+### Validation options
+
+Built-in rules supported through `validators`:
+
+- `required`
+- `minLength`
+- `maxLength`
+- `pattern`
+- `validate` for custom callbacks
+
+## Examples
+
+### Bind by id
+
+```ts
+import { form } from '@samline/forms'
+
+const profileForm = form('profile-form')
+```
+
+### Bind by element
+
+```ts
+const element = document.querySelector('#profile-form') as HTMLFormElement
+const profileForm = form(element)
+```
+
+### Watch a field
+
+```ts
+const profileForm = form('profile-form')
+
+profileForm.watch('email', value => {
+  console.log('email changed:', value)
+})
+```
+
+### Validate with built-in rules
+
+```ts
+const profileForm = form('profile-form', {
+  validators: {
+    email: {
+      required: true,
+      pattern: /^[^\s@]+@[^\s@]+\.[^\s@]+$/
+    },
+    password: {
+      minLength: 8
+    }
+  }
+})
+
+const result = profileForm.validate()
+console.log(result.isValid, result.errors)
+```
+
+### Submit with fetch
+
+```ts
+const profileForm = form('profile-form')
+
+profileForm.onSubmit(async (_element, _data, formData) => {
+  await fetch('/api/profile', {
+    method: 'POST',
+    body: formData
+  })
+})
+```
+
+### Prefill from the URL
+
+```ts
+const profileForm = form('profile-form')
+profileForm.prefill()
+```
+
+### Work with form state
+
+```ts
+const profileForm = form('profile-form')
+
+const unsubscribe = profileForm.subscribe(state => {
+  console.log(state.values)
+  console.log(state.errors)
+})
+
+unsubscribe()
+```
 
 ## Documentation
 
@@ -80,14 +250,3 @@ contactForm.onSubmit((element, data, formData, state) => {
 ## License
 
 MIT
-
-## Browser
-
-El build browser expone `window.SamlineForms` para proyectos sin bundler.
-
-```html
-<script src="/dist/browser/global.global.js"></script>
-<script>
-  const contactForm = window.SamlineForms.form('contact-form')
-</script>
-```

@@ -103,6 +103,7 @@ export type FormSubmitHandler = (
 
 export interface FormController {
   readonly element: HTMLFormElement | null
+  readonly f: HTMLFormElement | null
   readonly options: FormControllerOptions
   onSubmit(callback: FormSubmitHandler, preventDefault?: boolean): FormController
   watch(field: string, callback: FormFieldWatcher): FormController

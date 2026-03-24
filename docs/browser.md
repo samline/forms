@@ -1,31 +1,31 @@
 # Browser
 
-## Cuándo usar esta variante
+## When to use this variant
 
-Usa esta variante cuando no tengas bundler y necesites integrar el paquete directamente en HTML, Shopify, WordPress o plantillas tradicionales.
+Use this variant when you do not have a bundler and need to integrate the package directly into HTML, Shopify, WordPress, or traditional templates.
 
 ## Script global
 
 ```html
-<script src="https://unpkg.com/@samline/forms@0.1.0/dist/browser/global.global.js"></script>
+<script src="https://unpkg.com/@samline/forms@1.0.0/dist/browser/global.global.js"></script>
 ```
 
-Fija la versión en producción.
+Pin the version in production.
 
-## Objeto global
+## Global Object
 
-El bundle expone `window.SamlineForms`.
+The bundle exposes `window.forms`.
 
-## Ejemplo mínimo
+## Minimal Example
 
 ```html
 <form id="contact-form">
   <input name="email" type="email" />
 </form>
 
-<script src="https://unpkg.com/@samline/forms@0.1.0/dist/browser/global.global.js"></script>
+<script src="https://unpkg.com/@samline/forms@1.0.0/dist/browser/global.global.js"></script>
 <script>
-  const contactForm = window.SamlineForms.form('contact-form')
+  const contactForm = window.forms.form('contact-form')
   contactForm.validate()
 </script>
 ```
