@@ -54,6 +54,18 @@ jobs:
             echo "exists=false" >> $GITHUB_OUTPUT
           fi
 
+      - name: Verify npm credentials
+        if: steps.version_check.outputs.exists == 'false'
+        run: |
+          if [ -z "$NODE_AUTH_TOKEN" ]; then
+            echo "NPM_TOKEN is missing. Add it to the repository secrets before publishing."
+            exit 1
+          fi
+
+          npm whoami
+        env:
+          NODE_AUTH_TOKEN: ${{ secrets.NPM_TOKEN }}
+
       - name: Publish to npm
         if: steps.version_check.outputs.exists == 'false'
         run: npm publish --provenance
