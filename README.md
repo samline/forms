@@ -121,6 +121,13 @@ Creates a controller from:
 - `autoSubmit(options?)`
 - `disableAutoSubmit()`
 
+`onSubmit` accepts an optional second argument named `preventDefault`.
+
+- `onSubmit(callback)` is equivalent to `onSubmit(callback, true)`
+- with `true`, valid submissions are intercepted, which is the right choice for `fetch` or AJAX flows
+- with `false`, valid submissions continue with the browser's native form submit behavior
+- invalid submissions are still prevented, even when you pass `false`
+
 ### Field observation
 
 - `watch(field, callback)`
@@ -218,6 +225,22 @@ profileForm.onSubmit(async (_element, _data, formData) => {
   })
 })
 ```
+
+This uses the default `preventDefault = true`, so the package intercepts the valid submit and lets you handle the request yourself.
+
+### Submit with native form behavior
+
+```ts
+const profileForm = form('profile-form')
+
+profileForm.onSubmit(() => {
+  console.log('validation passed')
+}, false)
+```
+
+Use `false` when the form should continue with its normal HTML submission after validation succeeds, for example in server-rendered applications such as Laravel with Blade.
+
+If validation fails, the package still prevents the submit.
 
 ### Prefill from the URL
 

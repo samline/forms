@@ -67,6 +67,17 @@ contactForm.watch('email', value => {
 - `getState`
 - `destroy`
 
+## Submission Behavior
+
+`onSubmit` accepts an optional second argument named `preventDefault`.
+
+- `onSubmit(callback)` is equivalent to `onSubmit(callback, true)`
+- `true` intercepts valid form submissions, which is useful when you want to send the request with `fetch`
+- `false` allows valid submissions to continue with the browser's native form submit behavior
+- invalid submissions are still prevented, even when you pass `false`
+
+Use `false` for traditional server-rendered forms, such as Laravel with Blade, where the form should still submit to its `action` after passing validation.
+
 ## Recommended Usage Patterns
 
 - use `watch` or `observe` when you need field-level reactions
@@ -74,3 +85,28 @@ contactForm.watch('email', value => {
 - use `setErrors()` and `clearErrors()` to drive visual feedback from server or client validation
 - use `subscribe()` when a higher-level controller needs to react to the whole form state
 - use `destroy()` when forms are mounted and unmounted dynamically
+
+## Submission Examples
+
+### Intercept and send with fetch
+
+```ts
+const profileForm = form('profile-form')
+
+profileForm.onSubmit(async (_element, _data, formData) => {
+  await fetch('/profile', {
+    method: 'POST',
+    body: formData
+  })
+})
+```
+
+### Validate and keep native submit
+
+```ts
+const profileForm = form('profile-form')
+
+profileForm.onSubmit(() => {
+  console.log('validation passed')
+}, false)
+```
