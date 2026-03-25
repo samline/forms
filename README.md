@@ -37,7 +37,7 @@ bun add @samline/forms
 Use the browser build when you do not have a bundler and need to run the package directly in HTML.
 
 ```html
-<script src="https://unpkg.com/@samline/forms@1.0.0/dist/browser/global.global.js"></script>
+<script src="https://unpkg.com/@samline/forms@1.0.2/dist/browser/global.global.js"></script>
 ```
 
 Pin the version in production.
@@ -49,7 +49,7 @@ The browser build exposes `window.forms`.
   <input name="email" type="email" />
 </form>
 
-<script src="https://unpkg.com/@samline/forms@1.0.0/dist/browser/global.global.js"></script>
+<script src="https://unpkg.com/@samline/forms@1.0.2/dist/browser/global.global.js"></script>
 <script>
   const contactForm = window.forms.form('contact-form')
   contactForm.validate()
