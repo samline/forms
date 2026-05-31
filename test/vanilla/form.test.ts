@@ -90,4 +90,58 @@ describe('form controller', () => {
 
     expect(onSubmit).toHaveBeenCalledTimes(1)
   })
+
+  it('clears manual errors for the changed field by default', () => {
+    const api = form('contact-form', {
+      autoValidate: false,
+      validators: {
+        email: {
+          required: true,
+          pattern: /^[^\s@]+@[^\s@]+\.[^\s@]+$/
+        }
+      }
+    })
+
+    api.setErrors(['email', 'name'])
+    api.setValue('email', 'sam@example.com')
+
+    expect(api.getState().errors.email).toBeUndefined()
+    expect(api.getState().errors.name).toEqual(['Invalid value.'])
+  })
+
+  it('replaces a cleared manual error with a validation error when the field is still invalid', () => {
+    const api = form('contact-form', {
+      validators: {
+        email: {
+          required: true,
+          pattern: /^[^\s@]+@[^\s@]+\.[^\s@]+$/
+        }
+      }
+    })
+
+    api.setErrors(['email'])
+    api.setValue('email', 'invalid')
+
+    expect(api.getState().errors.email).toEqual([
+      'Value does not match the required pattern.'
+    ])
+  })
+
+  it('keeps manual errors on change when clearManualErrorsOnChange is false', () => {
+    const api = form('contact-form', {
+      autoValidate: false,
+      clearManualErrorsOnChange: false,
+      validators: {
+        email: {
+          required: true,
+          pattern: /^[^\s@]+@[^\s@]+\.[^\s@]+$/
+        }
+      }
+    })
+
+    api.setErrors(['email'])
+    api.setValue('email', 'sam@example.com')
+
+    expect(api.getState().errors.email).toEqual(['Invalid value.'])
+  })
 })

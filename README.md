@@ -1,4 +1,4 @@
-# @samline/forms
+# Forms
 
 Form controller for native HTML forms, React, Vue, Svelte, and direct browser usage.
 
@@ -37,7 +37,7 @@ bun add @samline/forms
 Use the browser build when you do not have a bundler and need to run the package directly in HTML.
 
 ```html
-<script src="https://unpkg.com/@samline/forms@1.0.2/dist/browser/global.global.js"></script>
+<script src="https://unpkg.com/@samline/forms@1.0.3/dist/browser/global.global.js"></script>
 ```
 
 Pin the version in production.
@@ -49,7 +49,7 @@ The browser build exposes `window.forms`.
   <input name="email" type="email" />
 </form>
 
-<script src="https://unpkg.com/@samline/forms@1.0.2/dist/browser/global.global.js"></script>
+<script src="https://unpkg.com/@samline/forms@1.0.3/dist/browser/global.global.js"></script>
 <script>
   const contactForm = window.forms.form('contact-form')
   contactForm.validate()
@@ -149,6 +149,8 @@ Creates a controller from:
 - `setErrors(fields)`
 - `clearErrors(fields?)`
 
+Manual errors created with `setErrors()` are cleared per field by default as soon as that field changes, including updates triggered through `setValue()`. Pass `clearManualErrorsOnChange: false` to keep manual errors until you clear them explicitly.
+
 ### Form lifecycle and state
 
 - `getData()`
@@ -166,6 +168,18 @@ Built-in rules supported through `validators`:
 - `maxLength`
 - `pattern`
 - `validate` for custom callbacks
+
+Controller options also include:
+
+- `autoValidate` to validate on initialization and subsequent field changes
+- `clearErrorsOnSubmit` to reset manual errors before submit validation runs
+- `clearManualErrorsOnChange` to clear only the changed field's manual error before the normal validation flow continues
+
+```ts
+const profileForm = form('profile-form', {
+  clearManualErrorsOnChange: false
+})
+```
 
 ## Examples
 

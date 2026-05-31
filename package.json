@@ -1,6 +1,6 @@
 {
   "name": "@samline/forms",
-  "version": "1.0.2",
+  "version": "1.0.3",
   "description": "Form controller for vanilla JS, React, Vue, Svelte and browser globals.",
   "type": "module",
   "license": "MIT",

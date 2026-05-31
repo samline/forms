@@ -41,6 +41,7 @@ contactForm.watch('email', value => {
 - adds `css-error` to fields with errors
 - serializes the form into a plain object and `FormData`
 - supports `autoSubmit` with optional debounce
+- clears manual `setErrors()` feedback for the changed field by default, then lets normal validation decide the final state
 
 ## Full Controller API
 
@@ -83,6 +84,7 @@ Use `false` for traditional server-rendered forms, such as Laravel with Blade, w
 - use `watch` or `observe` when you need field-level reactions
 - use `getData()` when you want both a plain object and `FormData`
 - use `setErrors()` and `clearErrors()` to drive visual feedback from server or client validation
+- pass `clearManualErrorsOnChange: false` only when manual errors should persist after the user edits a field
 - use `subscribe()` when a higher-level controller needs to react to the whole form state
 - use `destroy()` when forms are mounted and unmounted dynamically
 

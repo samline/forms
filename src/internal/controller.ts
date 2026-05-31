@@ -32,9 +32,13 @@ const DEFAULT_ATTRIBUTES: VisualAttributes = {
 }
 
 const DEFAULT_OPTIONS: Required<
-  Pick<FormControllerOptions, 'autoValidate' | 'clearErrorsOnSubmit'>
+  Pick<
+    FormControllerOptions,
+    'autoValidate' | 'clearErrorsOnSubmit' | 'clearManualErrorsOnChange'
+  >
 > = {
   autoValidate: true,
+  clearManualErrorsOnChange: true,
   clearErrorsOnSubmit: true
 }
 
@@ -234,6 +238,11 @@ export const createFormController = (
     }
 
     clearFieldCache()
+
+    if (normalizedOptions.clearManualErrorsOnChange) {
+      delete manualErrors[name]
+    }
+
     syncVisualState([name])
 
     if (isValidated && validators[name]) {

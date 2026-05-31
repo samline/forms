@@ -43,6 +43,7 @@ export interface FormControllerOptions {
   attributes?: Partial<VisualAttributes>
   autoValidate?: boolean
   autoSubmit?: boolean | AutoSubmitOptions
+  clearManualErrorsOnChange?: boolean
   clearErrorsOnSubmit?: boolean
   validators?: ValidationSchema
 }
