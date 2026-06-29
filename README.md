@@ -51,7 +51,7 @@ Use the browser build when you do not have a bundler and need to run the package
 
 > Pin the version in production. Replace `2.0.0` with the version you ship.
 
-The browser bundle exposes a single global: `window.forms`.
+The browser bundle exposes a single global: `window.Forms`.
 
 ```html
 <form id="contact-form">
@@ -61,7 +61,7 @@ The browser bundle exposes a single global: `window.forms`.
 
 <script src="https://unpkg.com/@samline/forms@2.0.0/dist/browser/global.global.js"></script>
 <script>
-  const contactForm = window.forms.form('contact-form')
+  const contactForm = window.Forms.newForm({ id: 'contact-form' })
 
   contactForm.onSubmit(async (form, data, formData) => {
     await fetch('/api/contact', { method: 'POST', body: formData })
@@ -70,6 +70,8 @@ The browser bundle exposes a single global: `window.forms`.
   contactForm.validate()
 </script>
 ```
+
+The browser surface keeps a small registry under `Forms.available`, keyed by the `id` you pass to `Forms.newForm`. Each successful `newForm` call stores the returned controller there, and `Forms.destroyForm(id)` calls `destroy()` and removes the entry. Use `Forms.form` directly when you need the factory without the registry side-effect.
 
 See [docs/browser.md](docs/browser.md) for the full browser surface.
 
@@ -80,7 +82,7 @@ See [docs/browser.md](docs/browser.md) for the full browser surface.
 | Entrypoint | When to use |
 | --- | --- |
 | `@samline/forms` | Main vanilla API for bundlers, ESM, or CJS consumers. |
-| `@samline/forms/browser` | Pre-bundled IIFE that registers `window.forms` for direct `<script>` usage. |
+| `@samline/forms/browser` | Pre-bundled IIFE that registers `window.Forms` for direct `<script>` usage. |
 
 ---
 
@@ -156,7 +158,7 @@ See the full per-method reference in [`docs/api/`](docs/api/index.md).
 | [docs/typescript.md](docs/typescript.md) | Every exported TypeScript type, with examples. |
 | [docs/api/index.md](docs/api/index.md) | One page per public method. |
 | [docs/recipes.md](docs/recipes.md) | End-to-end patterns: fetch submit, server errors, autosave, multi-step, etc. |
-| [docs/browser.md](docs/browser.md) | Browser global (`window.forms`) usage. |
+| [docs/browser.md](docs/browser.md) | Browser global (`window.Forms`) usage. |
 
 ---
 
