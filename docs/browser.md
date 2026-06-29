@@ -22,19 +22,21 @@ The bundle is a single IIFE that registers a global object.
 
 ## Global object
 
-The browser build exposes `window.forms` (also reachable via `globalThis.forms`).
+The browser build exposes `window.Forms` (also reachable via `globalThis.Forms`).
 
 ```ts
-window.forms = {
+window.Forms = {
   form,
-  createFormController,
-  parseFormData,
-  validateFieldValue,
-  validateValues
+  newForm,
+  destroyForm,
+  available
 }
 ```
 
-The same signatures, semantics, and behaviours as the main vanilla entrypoint — every per-method page under [docs/api/](api/index.md) applies.
+- `form` is the same factory exported by `@samline/forms` — see [`docs/api/form.md`](api/form.md) for the signature.
+- `newForm` and `destroyForm` are ergonomic wrappers that keep a registry under `Forms.available`, keyed by the form id.
+
+The factory returns a `FormController` with the same signatures, semantics, and behaviours as the main vanilla entrypoint — every per-method page under [docs/api/](api/index.md) applies.
 
 ---
 
@@ -49,13 +51,16 @@ The same signatures, semantics, and behaviours as the main vanilla entrypoint �
 
 <script src="https://unpkg.com/@samline/forms@2.0.0/dist/browser/global.global.js"></script>
 <script>
-  const contactForm = window.forms.form('contact-form', {
-    validators: {
-      email: {
-        required: true,
-        pattern: /^[^\s@]+@[^\s@]+\.[^\s@]+$/
-      },
-      message: { required: true, minLength: 10 }
+  const contactForm = window.Forms.newForm({
+    id: 'contact-form',
+    options: {
+      validators: {
+        email: {
+          required: true,
+          pattern: /^[^\s@]+@[^\s@]+\.[^\s@]+$/
+        },
+        message: { required: true, minLength: 10 }
+      }
     }
   })
 
@@ -66,22 +71,36 @@ The same signatures, semantics, and behaviours as the main vanilla entrypoint �
 </script>
 ```
 
+The controller returned by `newForm` is the same instance stored under `Forms.available.contact-form`. Use `window.Forms.destroyForm('contact-form')` later to call `destroy()` and remove it from the registry.
+
+---
+
+## Registry helpers
+
+| Helper | Purpose |
+| --- | --- |
+| `Forms.newForm({ id, options })` | Build a controller via `Forms.form(id, options)` and store it in `Forms.available[id]`. Logs `Form ID is required` and returns early if `id` is missing. |
+| `Forms.destroyForm(id)` | Look up `Forms.available[id]`, call `destroy()`, and delete the entry. Logs `Form ID is required` if `id` is missing, or `Form with ID <id> not found` if the entry is absent. |
+| `Forms.available` | Read-only view of the active registry: `{ [id: string]: FormController }`. Iterate it to inspect or invoke methods on every live controller. |
+
+Use `Forms.form` directly when you do not want the registry side-effect (for example, transient controllers in tests).
+
 ---
 
 ## Surface reference
 
-The browser bundle mirrors the main vanilla entrypoint. Use the deep links below for the full reference of each function.
-
-### Controller factories
+The browser bundle ships only the registry helpers plus the `form` factory. Every controller method is documented under [docs/api/](api/index.md).
 
 | Global | Purpose |
 | --- | --- |
-| [`window.forms.form`](api/form.md) | Bind a controller to a form (recommended). |
-| [`window.forms.createFormController`](api/form.md) | Lower-level factory; identical behaviour. |
+| `Forms.form(target, options?)` | Bind a controller to a form (recommended). See [`docs/api/form.md`](api/form.md). |
+| `Forms.newForm({ id, options? })` | Build + register a controller in `Forms.available[id]`. |
+| `Forms.destroyForm(id)` | Destroy + unregister a controller by id. |
+| `Forms.available` | Registry of active controllers keyed by id. |
 
 ### Controller methods
 
-The `form()` factory returns a controller whose methods are documented under [docs/api/](api/index.md):
+The controller returned by `form` / `newForm` exposes the methods documented under [docs/api/](api/index.md):
 
 - Lifecycle: [`element`](api/element.md), [`reset`](api/reset.md), [`destroy`](api/destroy.md).
 - Submission: [`onSubmit`](api/on-submit.md), [`autoSubmit`](api/auto-submit.md), [`disableAutoSubmit`](api/disable-auto-submit.md).
@@ -90,44 +109,29 @@ The `form()` factory returns a controller whose methods are documented under [do
 - Validation: [`validate`](api/validate.md), [`revalidate`](api/revalidate.md), [`setErrors`](api/set-errors.md), [`clearErrors`](api/clear-errors.md).
 - State and data: [`getData`](api/get-data.md), [`getState`](api/get-state.md), [`append`](api/append.md).
 
-### Pure helpers
-
-| Global | Purpose |
-| --- | --- |
-| [`window.forms.parseFormData`](api/parse-form-data.md) | Serialize a form into `{ data, formData }`. |
-| [`window.forms.validateFieldValue`](api/validate-field-value.md) | Run a rule set against a single value. |
-| [`window.forms.validateValues`](api/validate-values.md) | Run a schema against a values map. |
-
 ---
 
 ## TypeScript users
 
-The browser build does not ship its own types. If you need types for `window.forms`, declare them once in your project:
+The browser build does not ship its own types. If you need types for `window.Forms`, declare them once in your project:
 
 ```ts
 import type {
   FormController,
   FormControllerOptions,
-  SerializedFormResult,
-  ValidationResult
+  FormTarget
 } from '@samline/forms'
 
 declare global {
   interface Window {
-    forms: {
+    Forms: {
       form: (target: FormTarget, options?: FormControllerOptions) => FormController
-      createFormController: (target: FormTarget, options?: FormControllerOptions) => FormController
-      parseFormData: (formElement: HTMLFormElement) => SerializedFormResult
-      validateFieldValue: (
-        field: string,
-        value: unknown,
-        rules: Record<string, unknown>,
-        values: Record<string, unknown>
-      ) => string[]
-      validateValues: (
-        values: Record<string, unknown>,
-        schema: Record<string, unknown>
-      ) => ValidationResult
+      newForm: (input: {
+        id: string
+        options?: FormControllerOptions
+      }) => FormController | undefined
+      destroyForm: (id: string) => void
+      available: { [id: string]: FormController }
     }
   }
 }
@@ -138,7 +142,7 @@ declare global {
 ## Common pitfalls
 
 - **Pin the version.** The CDN URL above is `2.0.0`. Replace it whenever you upgrade.
-- **The script must be loaded before any code that uses `window.forms`.** Place the `<script>` tag in `<head>` with `defer`, or before the user script in `<body>`.
+- **The script must be loaded before any code that uses `window.Forms`.** Place the `<script>` tag in `<head>` with `defer`, or before the user script in `<body>`.
 - **No bundler means no tree-shaking.** The browser bundle includes the full controller (~5 KB gzipped). That is by design — the alternative would defeat the purpose of a no-bundler setup.
 - **CSP:** if your site uses a strict Content Security Policy, allow `unpkg.com` in `script-src` (or self-host the file).
 

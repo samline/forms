@@ -22,6 +22,6 @@ export default defineConfig([
     clean: false,
     target: 'es2020',
     outDir: 'dist',
-    globalName: 'SamlineForms'
+    globalName: 'Forms'
   }
 ])

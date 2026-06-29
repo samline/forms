@@ -1,28 +1,80 @@
-// Browser entrypoint. Exposes the same surface as `@samline/forms` but as
-// a single global accessible via `window.forms` (or `globalThis.forms`).
+// Browser entrypoint. Exposes a minimal surface as a single global
+// accessible via `window.Forms` (or `globalThis.Forms`).
+//
+// Public shape:
+//   - Forms.form(target, options)
+//   - Forms.newForm({ id, options })
+//   - Forms.destroyForm(id)
+//   - Forms.available (registry keyed by form id)
 
-import { createFormController } from '../core/controller'
-import { parseFormData } from '../core/serialize'
-import { validateFieldValue, validateValues } from '../core/validation'
 import { form } from '../api/form'
+import type {
+  FormController,
+  FormControllerOptions,
+  FormTarget
+} from '../core/types'
 
-const browserApi = {
-  createFormController,
+export interface NewFormInput {
+  id: string
+  options?: FormControllerOptions
+}
+
+export interface FormsAvailable {
+  [id: string]: FormController
+}
+
+export interface FormsApi {
+  form: (
+    target: FormTarget,
+    options?: FormControllerOptions
+  ) => FormController
+  newForm: (input: NewFormInput) => FormController | undefined
+  destroyForm: (id: string) => void
+  available: FormsAvailable
+}
+
+const available: FormsAvailable = {}
+
+const newForm = (input: NewFormInput): FormController | undefined => {
+  const { id, options } = input
+  if (!id) {
+    console.error('Form ID is required')
+    return
+  }
+  const controller = form(id, { ...options })
+  available[id] = controller
+  return controller
+}
+
+const destroyForm = (id: string): void => {
+  if (!id) {
+    console.error('Form ID is required')
+    return
+  }
+  const controller = available[id]
+  if (controller) {
+    controller.destroy()
+    delete available[id]
+  } else {
+    console.warn(`Form with ID ${id} not found`)
+  }
+}
+
+const Forms: FormsApi = {
   form,
-  parseFormData,
-  validateFieldValue,
-  validateValues
+  newForm,
+  destroyForm,
+  available
 }
 
 declare global {
   interface Window {
-    forms: typeof browserApi
+    Forms: FormsApi
   }
 }
 
 if (typeof globalThis !== 'undefined') {
-  ;(globalThis as typeof globalThis & { forms: typeof browserApi }).forms =
-    browserApi
+  ;(globalThis as typeof globalThis & { Forms: FormsApi }).Forms = Forms
 }
 
-export default browserApi
+export default Forms
