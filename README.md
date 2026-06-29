@@ -30,10 +30,6 @@ pnpm add @samline/forms
 ```
 
 ```bash
-yarn add @samline/forms
-```
-
-```bash
 bun add @samline/forms
 ```
 
