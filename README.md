@@ -1,6 +1,10 @@
 # Forms
 
-Form controller for vanilla JS and direct browser usage.
+A small, framework-free form controller for vanilla JS and direct browser usage.
+
+It binds to an `HTMLFormElement`, keeps field state in sync with the DOM, runs validation, lets you react to changes via watchers or subscribers, and ships a serialized payload for `fetch` flows.
+
+---
 
 ## Table of Contents
 
@@ -8,11 +12,12 @@ Form controller for vanilla JS and direct browser usage.
 - [CDN / Browser](#cdn--browser)
 - [Entrypoints](#entrypoints)
 - [Quick Start](#quick-start)
-- [What You Can Do](#what-you-can-do)
-- [API Reference](#api-reference)
-- [Examples](#examples)
+- [What You Can Build](#what-you-can-build)
+- [API at a Glance](#api-at-a-glance)
 - [Documentation](#documentation)
 - [License](#license)
+
+---
 
 ## Installation
 
@@ -32,36 +37,52 @@ yarn add @samline/forms
 bun add @samline/forms
 ```
 
+Requires Node 20+ when bundling. Runtime target is ES2020.
+
+---
+
 ## CDN / Browser
 
-Use the browser build when you do not have a bundler and need to run the package directly in HTML.
+Use the browser build when you do not have a bundler and need to run the package directly in HTML, Shopify, WordPress, or any traditional template.
 
 ```html
 <script src="https://unpkg.com/@samline/forms@2.0.0/dist/browser/global.global.js"></script>
 ```
 
-Pin the version in production.
+> Pin the version in production. Replace `2.0.0` with the version you ship.
 
-The browser build exposes `window.forms`.
+The browser bundle exposes a single global: `window.forms`.
 
 ```html
 <form id="contact-form">
   <input name="email" type="email" />
+  <button type="submit">Send</button>
 </form>
 
 <script src="https://unpkg.com/@samline/forms@2.0.0/dist/browser/global.global.js"></script>
 <script>
   const contactForm = window.forms.form('contact-form')
+
+  contactForm.onSubmit(async (form, data, formData) => {
+    await fetch('/api/contact', { method: 'POST', body: formData })
+  })
+
   contactForm.validate()
 </script>
 ```
 
+See [docs/browser.md](docs/browser.md) for the full browser surface.
+
+---
+
 ## Entrypoints
 
-| Entrypoint | Use |
+| Entrypoint | When to use |
 | --- | --- |
-| `@samline/forms` | Main vanilla API (form controller + types + helpers) |
-| `@samline/forms/browser` | Browser global bundle |
+| `@samline/forms` | Main vanilla API for bundlers, ESM, or CJS consumers. |
+| `@samline/forms/browser` | Pre-bundled IIFE that registers `window.forms` for direct `<script>` usage. |
+
+---
 
 ## Quick Start
 
@@ -77,189 +98,67 @@ const contactForm = form('contact-form', {
   }
 })
 
-contactForm.onSubmit((element, data, formData, state) => {
-  console.log(element, data, formData, state)
+contactForm.watch('email', value => {
+  console.log('email is now:', value)
+})
+
+contactForm.onSubmit(async (_element, _data, formData) => {
+  await fetch('/api/contact', { method: 'POST', body: formData })
 })
 ```
 
-## What You Can Do
+What this does:
 
-- bind to a form by id, element, or ref-like target
-- read and write field values
-- serialize form values to both a plain object and `FormData`
-- watch individual fields and subscribe to global form state
-- prefill values from the current URL query string
-- mark filled and error states through DOM attributes for styling
-- run built-in validation rules and custom validators
-- trigger submit handlers with optional auto-submit behavior
-- reset, inspect, and destroy the controller cleanly
+- Binds to the form with id `contact-form`.
+- Adds `css-filled` / `css-error` attributes on fields so you can style them with CSS.
+- Validates `email` on every change and on submit.
+- Intercepts valid submits (the default for `onSubmit`) and hands a real `FormData` instance to your handler.
 
-## API Reference
+---
 
-### form(target, options)
+## What You Can Build
 
-Creates a controller from:
+- Contact, newsletter, login, signup, checkout, and profile forms.
+- Forms that submit with `fetch` while keeping native `FormData` payloads.
+- Autosave / autosubmit flows with optional debounce.
+- Visual feedback driven by `css-filled` and `css-error` attributes.
+- Progressive enhancement on top of any existing HTML form.
+- Forms rendered server-side (Blade, Twig, ERB) that still want client-side validation.
 
-- a form id string
-- a real `HTMLFormElement`
-- a ref-like object with `current`
+---
 
-### Properties
+## API at a Glance
 
-- `element`: the bound `HTMLFormElement | null`
-- `f`: alias of `element`
-- `options`: normalized controller options
+The controller is built around one factory and a small set of focused methods. Most methods are chainable.
 
-### Submission
+| Group | Methods |
+| --- | --- |
+| Lifecycle | [`form`](docs/api/form.md) · [`destroy`](docs/api/destroy.md) · [`reset`](docs/api/reset.md) |
+| Properties | [`element`](docs/api/element.md) · [`options`](docs/options.md) |
+| Submission | [`onSubmit`](docs/api/on-submit.md) · [`autoSubmit`](docs/api/auto-submit.md) · [`disableAutoSubmit`](docs/api/disable-auto-submit.md) |
+| Field observation | [`watch`](docs/api/watch.md) · [`observe`](docs/api/observe.md) · [`unwatch`](docs/api/unwatch.md) · [`subscribe`](docs/api/subscribe.md) |
+| Field values | [`setValue`](docs/api/set-value.md) · [`getValue`](docs/api/get-value.md) · [`getField`](docs/api/get-field.md) · [`prefill`](docs/api/prefill.md) |
+| Validation | [`validate`](docs/api/validate.md) · [`revalidate`](docs/api/revalidate.md) · [`setErrors`](docs/api/set-errors.md) · [`clearErrors`](docs/api/clear-errors.md) |
+| State and data | [`getData`](docs/api/get-data.md) · [`getState`](docs/api/get-state.md) · [`append`](docs/api/append.md) |
+| Pure helpers | [`parseFormData`](docs/api/parse-form-data.md) · [`validateValues`](docs/api/validate-values.md) · [`validateFieldValue`](docs/api/validate-field-value.md) |
 
-- `onSubmit(callback, preventDefault?)`
-- `autoSubmit(options?)`
-- `disableAutoSubmit()`
+See the full per-method reference in [`docs/api/`](docs/api/index.md).
 
-`onSubmit` accepts an optional second argument named `preventDefault`.
-
-- `onSubmit(callback)` is equivalent to `onSubmit(callback, true)`
-- with `true`, valid submissions are intercepted, which is the right choice for `fetch` or AJAX flows
-- with `false`, valid submissions continue with the browser's native form submit behavior
-- invalid submissions are still prevented, even when you pass `false`
-
-### Field observation
-
-- `watch(field, callback)`
-- `observe(field, callback)`
-- `subscribe(listener)`
-- `unwatch(field?, callback?)`
-
-### Field values
-
-- `setValue(name, value)`
-- `getValue(name)`
-- `getField(name)`
-- `prefill(fieldName?)`
-
-### Validation and errors
-
-- `validate(fields?)`
-- `revalidate(fields?)`
-- `setErrors(fields)`
-- `clearErrors(fields?)`
-
-Manual errors created with `setErrors()` are cleared per field by default as soon as that field changes, including updates triggered through `setValue()`. Pass `clearManualErrorsOnChange: false` to keep manual errors until you clear them explicitly.
-
-### Form lifecycle and state
-
-- `getData()`
-- `getState()`
-- `append(options)`
-- `reset()`
-- `destroy()`
-
-### Validation options
-
-Built-in rules supported through `validators`:
-
-- `required`
-- `minLength`
-- `maxLength`
-- `pattern`
-- `validate` for custom callbacks
-
-Controller options also include:
-
-- `autoValidate` to validate on initialization and subsequent field changes
-- `clearErrorsOnSubmit` to reset manual errors before submit validation runs
-- `clearManualErrorsOnChange` to clear only the changed field's manual error before the normal validation flow continues
-
-```ts
-const profileForm = form('profile-form', {
-  clearManualErrorsOnChange: false
-})
-```
-
-## Examples
-
-### Bind by id
-
-```ts
-import { form } from '@samline/forms'
-
-const profileForm = form('profile-form')
-```
-
-### Bind by element
-
-```ts
-const element = document.querySelector('#profile-form') as HTMLFormElement
-const profileForm = form(element)
-```
-
-### Bind by ref-like target
-
-```ts
-const ref = { current: document.querySelector<HTMLFormElement>('#profile-form') }
-const profileForm = form(ref)
-```
-
-### Submit with fetch
-
-```ts
-const profileForm = form('profile-form')
-
-profileForm.onSubmit(async (_element, _data, formData) => {
-  await fetch('/profile', { method: 'POST', body: formData })
-})
-```
-
-### Watch a field
-
-```ts
-const profileForm = form('profile-form')
-
-profileForm.watch('email', value => {
-  console.log('email changed to:', value)
-})
-```
-
-### Subscribe to global state
-
-```ts
-const unsubscribe = profileForm.subscribe(state => {
-  console.log(state.values, state.errors)
-})
-
-unsubscribe()
-```
-
-### Prefill from query string
-
-```ts
-profileForm.prefill()
-// or
-profileForm.prefill('email')
-```
-
-### Manual errors
-
-```ts
-profileForm.setErrors({
-  email: ['This email is already in use.'],
-  password: ['Too weak.']
-})
-
-profileForm.clearErrors(['email'])
-profileForm.clearErrors()
-```
-
-### Auto submit with debounce
-
-```ts
-profileForm.autoSubmit({ debounce: 500 })
-profileForm.disableAutoSubmit()
-```
+---
 
 ## Documentation
 
-See [`docs/vanilla.md`](docs/vanilla.md) and [`docs/browser.md`](docs/browser.md) for deeper examples and the full controller reference.
+| Doc | Purpose |
+| --- | --- |
+| [docs/getting-started.md](docs/getting-started.md) | Concepts, observable contract, lifecycle, and side-effect overview. |
+| [docs/options.md](docs/options.md) | Full `FormControllerOptions` reference. |
+| [docs/css-styling.md](docs/css-styling.md) | `css-filled` and `css-error` styling recipes. |
+| [docs/typescript.md](docs/typescript.md) | Every exported TypeScript type, with examples. |
+| [docs/api/index.md](docs/api/index.md) | One page per public method. |
+| [docs/recipes.md](docs/recipes.md) | End-to-end patterns: fetch submit, server errors, autosave, multi-step, etc. |
+| [docs/browser.md](docs/browser.md) | Browser global (`window.forms`) usage. |
+
+---
 
 ## License
 
