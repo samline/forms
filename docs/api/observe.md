@@ -16,7 +16,7 @@ observe(
 | Name | Type | Required | Description |
 | --- | --- | --- | --- |
 | `field` | `string` | yes | The `name` attribute of the field to observe. |
-| `callback` | [`FormFieldWatcher`](../typescript.md#formfieldwatcher) | yes | Invoked with `(value, form, state)`. Fires immediately with the current value, then on every change. |
+| `callback` | [`FormFieldWatcher`](../typescript.md#formfieldwatcher) | yes | Invoked with `(value, field, form, state)`. Fires immediately with the current value, then on every change. `field` is the observed DOM element(s) (same shape as [`getField`](../typescript.md#formfieldelement--formfieldelement--null) returns). |
 
 ## Returns
 
@@ -53,12 +53,49 @@ import { form } from '@samline/forms'
 
 const checkout = form('checkout-form')
 
-const unsubscribe = checkout.observe('shippingMethod', (value, _form, state) => {
+const unsubscribe = checkout.observe('shippingMethod', (value, field, _form, state) => {
   const total = computeTotal(state.values)
   document.querySelector('#total')!.textContent = String(total)
+  if (field && 'name' in field) {
+    console.log(`updated ${field.name} ->`, value)
+  }
 })
 
 window.addEventListener('beforeunload', unsubscribe)
+```
+
+### Share a handler across fields
+
+```ts
+import { form } from '@samline/forms'
+
+const signup = form('signup-form')
+
+const track = (value: unknown, field: HTMLInputElement | HTMLInputElement[] | null) => {
+  const name = field && 'name' in field ? field.name : null
+  analytics.track('signup_field_changed', { field: name, value })
+}
+
+const offEmail = signup.observe('email', track)
+const offPassword = signup.observe('password', track)
+
+// Later, on teardown:
+offEmail()
+offPassword()
+```
+
+### Manipulate the watched element directly
+
+```ts
+import { form } from '@samline/forms'
+
+const profile = form('profile-form')
+
+const stop = profile.observe('avatar', (_value, field) => {
+  if (field instanceof HTMLInputElement) {
+    field.setAttribute('data-touched', 'true')
+  }
+})
 ```
 
 ### Multiple observers on the same field

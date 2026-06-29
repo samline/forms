@@ -94,6 +94,7 @@ export interface AppendContentOptions {
 
 export type FormFieldWatcher = (
   value: FormFieldValue,
+  field: FormFieldElement | FormFieldElement[] | null,
   form: HTMLFormElement,
   state: FormStateSnapshot
 ) => void

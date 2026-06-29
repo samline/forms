@@ -231,10 +231,16 @@ The callback passed to [`watch`](api/watch.md) and [`observe`](api/observe.md).
 ```ts
 type FormFieldWatcher = (
   value: FormFieldValue,
+  field: FormFieldElement | FormFieldElement[] | null,
   form: HTMLFormElement,
   state: FormStateSnapshot
 ) => void
 ```
+
+- `value` — the current value of the field that just changed.
+- `field` — the DOM element(s) backing the field (same shape as [`getField`](api/get-field.md) returns). For a single matching field it is `HTMLInputElement` / `HTMLSelectElement` / `HTMLTextAreaElement`; for repeated fields (e.g. checkbox / radio groups) it is an array of them; it is `null` when no element matches the name.
+- `form` — the bound `HTMLFormElement`.
+- `state` — a snapshot of the whole controller state (see [`FormStateSnapshot`](#formstatesnapshot)).
 
 `observe` fires this once immediately with the current value, then on every change. `watch` is a chainable alias and only fires on changes after it is registered.
 

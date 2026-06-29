@@ -16,7 +16,7 @@ watch(
 | Name | Type | Required | Description |
 | --- | --- | --- | --- |
 | `field` | `string` | yes | The `name` attribute of the field to watch. |
-| `callback` | [`FormFieldWatcher`](../typescript.md#formfieldwatcher) | yes | Invoked with `(value, form, state)` on every change. |
+| `callback` | [`FormFieldWatcher`](../typescript.md#formfieldwatcher) | yes | Invoked with `(value, field, form, state)` on every change. `field` is the observed DOM element(s) (same shape as [`getField`](../typescript.md#formfieldelement--formfieldelement--null) returns), handy for manipulating the actual `<input>` / `<select>` / `<textarea>` without re-querying it. |
 
 ## Returns
 
@@ -55,6 +55,40 @@ signup.watch('password', value => {
   const meter = document.querySelector('#password-strength')
   if (meter && typeof value === 'string') {
     meter.textContent = scorePassword(value)
+  }
+})
+```
+
+### Share a single handler across fields
+
+```ts
+import { form } from '@samline/forms'
+
+const search = form('search-form')
+
+const logField = (
+  value: unknown,
+  field: HTMLInputElement | HTMLInputElement[] | null
+) => {
+  if (field && 'name' in field) {
+    console.log(`${field.name} =`, value)
+  }
+}
+
+search.watch('q', logField).watch('category', logField)
+```
+
+### Interact with the field element directly
+
+```ts
+import { form } from '@samline/forms'
+
+const checkout = form('checkout-form')
+
+checkout.watch('country', (_value, field, _form, _state) => {
+  if (field instanceof HTMLSelectElement) {
+    // Toggle a CSS class on the actual <select> without re-querying it.
+    field.classList.toggle('has-zip', field.value !== 'US')
   }
 })
 ```

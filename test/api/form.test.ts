@@ -193,6 +193,7 @@ describe('form controller (integration)', () => {
     expect(callback).toHaveBeenCalledTimes(1)
     expect(callback).toHaveBeenLastCalledWith(
       '',
+      expect.any(HTMLInputElement),
       expect.anything(),
       expect.anything()
     )
@@ -201,6 +202,7 @@ describe('form controller (integration)', () => {
     expect(callback).toHaveBeenCalledTimes(2)
     expect(callback).toHaveBeenLastCalledWith(
       'Sam',
+      expect.any(HTMLInputElement),
       expect.anything(),
       expect.anything()
     )

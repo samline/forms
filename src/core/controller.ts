@@ -192,8 +192,9 @@ export const createFormController = (
     const callbacks = state.watchedFields.get(name)
     if (!callbacks || callbacks.size === 0) return
     const value = state.api.getValue(name)
+    const fieldElement = state.api.getField(name)
     const snapshot = state.api.getState()
-    callbacks.forEach(callback => callback(value, state.element!, snapshot))
+    callbacks.forEach(callback => callback(value, fieldElement, state.element!, snapshot))
   }
 
   const scheduleAutoSubmit = () => {
