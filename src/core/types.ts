@@ -1,3 +1,6 @@
+// Public types for the form controller.
+// Keep this file focused on shape only — no runtime logic.
+
 export type FormDataPrimitive = FormDataEntryValue
 
 export type SerializedFormValue = FormDataPrimitive | FormDataPrimitive[]
@@ -106,24 +109,24 @@ export interface FormController {
   readonly element: HTMLFormElement | null
   readonly f: HTMLFormElement | null
   readonly options: FormControllerOptions
-  onSubmit(callback: FormSubmitHandler, preventDefault?: boolean): FormController
-  watch(field: string, callback: FormFieldWatcher): FormController
-  observe(field: string, callback: FormFieldWatcher): () => void
-  unwatch(field?: string, callback?: FormFieldWatcher): FormController
-  subscribe(listener: FormStateListener): () => void
-  prefill(fieldName?: string): FormController
-  append(options: AppendContentOptions): HTMLElement | null
-  setErrors(fields: string[] | FormErrors): FormController
-  clearErrors(fields?: string[]): FormController
-  setValue(name: string, value: unknown): FormController
-  validate(fields?: string[]): ValidationResult
-  revalidate(fields?: string[]): ValidationResult
-  reset(): FormController
-  autoSubmit(options?: boolean | AutoSubmitOptions): FormController
-  disableAutoSubmit(): FormController
-  getValue(name: string): FormFieldValue
-  getField(name: string): FormFieldElement | FormFieldElement[] | null
-  getData(): SerializedFormResult
-  getState(): FormStateSnapshot
-  destroy(): void
+  onSubmit: (callback: FormSubmitHandler, preventDefault?: boolean) => FormController
+  watch: (field: string, callback: FormFieldWatcher) => FormController
+  observe: (field: string, callback: FormFieldWatcher) => () => void
+  unwatch: (field?: string, callback?: FormFieldWatcher) => FormController
+  subscribe: (listener: FormStateListener) => () => void
+  prefill: (fieldName?: string) => FormController
+  append: (options: AppendContentOptions) => HTMLElement | null
+  setErrors: (fields: string[] | FormErrors) => FormController
+  clearErrors: (fields?: string[]) => FormController
+  setValue: (name: string, value: unknown) => FormController
+  validate: (fields?: string[]) => ValidationResult
+  revalidate: (fields?: string[]) => ValidationResult
+  reset: () => FormController
+  autoSubmit: (options?: boolean | AutoSubmitOptions) => FormController
+  disableAutoSubmit: () => FormController
+  getValue: (name: string) => FormFieldValue
+  getField: (name: string) => FormFieldElement | FormFieldElement[] | null
+  getData: () => SerializedFormResult
+  getState: () => FormStateSnapshot
+  destroy: () => void
 }

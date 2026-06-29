@@ -8,6 +8,6 @@ export default defineConfig({
         url: 'http://localhost/'
       }
     },
-    include: ['test/**/*.test.ts', 'test/**/*.test.tsx']
+    include: ['test/**/*.test.ts']
   }
 })

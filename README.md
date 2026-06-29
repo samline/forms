@@ -1,6 +1,6 @@
 # Forms
 
-Form controller for native HTML forms, React, Vue, Svelte, and direct browser usage.
+Form controller for vanilla JS and direct browser usage.
 
 ## Table of Contents
 
@@ -37,7 +37,7 @@ bun add @samline/forms
 Use the browser build when you do not have a bundler and need to run the package directly in HTML.
 
 ```html
-<script src="https://unpkg.com/@samline/forms@1.0.3/dist/browser/global.global.js"></script>
+<script src="https://unpkg.com/@samline/forms@2.0.0/dist/browser/global.global.js"></script>
 ```
 
 Pin the version in production.
@@ -49,7 +49,7 @@ The browser build exposes `window.forms`.
   <input name="email" type="email" />
 </form>
 
-<script src="https://unpkg.com/@samline/forms@1.0.3/dist/browser/global.global.js"></script>
+<script src="https://unpkg.com/@samline/forms@2.0.0/dist/browser/global.global.js"></script>
 <script>
   const contactForm = window.forms.form('contact-form')
   contactForm.validate()
@@ -60,12 +60,7 @@ The browser build exposes `window.forms`.
 
 | Entrypoint | Use |
 | --- | --- |
-| `@samline/forms` | Main vanilla API |
-| `@samline/forms/core` | Types, serialization, and validation |
-| `@samline/forms/vanilla` | Explicit DOM API entrypoint |
-| `@samline/forms/react` | React hook |
-| `@samline/forms/vue` | Vue composable |
-| `@samline/forms/svelte` | Svelte store and action |
+| `@samline/forms` | Main vanilla API (form controller + types + helpers) |
 | `@samline/forms/browser` | Browser global bundle |
 
 ## Quick Start
@@ -198,33 +193,11 @@ const element = document.querySelector('#profile-form') as HTMLFormElement
 const profileForm = form(element)
 ```
 
-### Watch a field
+### Bind by ref-like target
 
 ```ts
-const profileForm = form('profile-form')
-
-profileForm.watch('email', value => {
-  console.log('email changed:', value)
-})
-```
-
-### Validate with built-in rules
-
-```ts
-const profileForm = form('profile-form', {
-  validators: {
-    email: {
-      required: true,
-      pattern: /^[^\s@]+@[^\s@]+\.[^\s@]+$/
-    },
-    password: {
-      minLength: 8
-    }
-  }
-})
-
-const result = profileForm.validate()
-console.log(result.isValid, result.errors)
+const ref = { current: document.querySelector<HTMLFormElement>('#profile-form') }
+const profileForm = form(ref)
 ```
 
 ### Submit with fetch
@@ -233,56 +206,60 @@ console.log(result.isValid, result.errors)
 const profileForm = form('profile-form')
 
 profileForm.onSubmit(async (_element, _data, formData) => {
-  await fetch('/api/profile', {
-    method: 'POST',
-    body: formData
-  })
+  await fetch('/profile', { method: 'POST', body: formData })
 })
 ```
 
-This uses the default `preventDefault = true`, so the package intercepts the valid submit and lets you handle the request yourself.
-
-### Submit with native form behavior
+### Watch a field
 
 ```ts
 const profileForm = form('profile-form')
 
-profileForm.onSubmit(() => {
-  console.log('validation passed')
-}, false)
+profileForm.watch('email', value => {
+  console.log('email changed to:', value)
+})
 ```
 
-Use `false` when the form should continue with its normal HTML submission after validation succeeds, for example in server-rendered applications such as Laravel with Blade.
-
-If validation fails, the package still prevents the submit.
-
-### Prefill from the URL
+### Subscribe to global state
 
 ```ts
-const profileForm = form('profile-form')
-profileForm.prefill()
-```
-
-### Work with form state
-
-```ts
-const profileForm = form('profile-form')
-
 const unsubscribe = profileForm.subscribe(state => {
-  console.log(state.values)
-  console.log(state.errors)
+  console.log(state.values, state.errors)
 })
 
 unsubscribe()
 ```
 
+### Prefill from query string
+
+```ts
+profileForm.prefill()
+// or
+profileForm.prefill('email')
+```
+
+### Manual errors
+
+```ts
+profileForm.setErrors({
+  email: ['This email is already in use.'],
+  password: ['Too weak.']
+})
+
+profileForm.clearErrors(['email'])
+profileForm.clearErrors()
+```
+
+### Auto submit with debounce
+
+```ts
+profileForm.autoSubmit({ debounce: 500 })
+profileForm.disableAutoSubmit()
+```
+
 ## Documentation
 
-- [docs/vanilla.md](docs/vanilla.md)
-- [docs/react.md](docs/react.md)
-- [docs/vue.md](docs/vue.md)
-- [docs/svelte.md](docs/svelte.md)
-- [docs/browser.md](docs/browser.md)
+See [`docs/vanilla.md`](docs/vanilla.md) and [`docs/browser.md`](docs/browser.md) for deeper examples and the full controller reference.
 
 ## License
 

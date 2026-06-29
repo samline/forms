@@ -4,6 +4,8 @@
 
 Use the vanilla variant when you work with native HTML forms, embedded scripts, static sites, or applications where you do not need a framework wrapper.
 
+This is the primary — and only — runtime entrypoint of `@samline/forms` since version 2.0.0.
+
 ## Import
 
 ```ts
@@ -103,12 +105,25 @@ profileForm.onSubmit(async (_element, _data, formData) => {
 })
 ```
 
-### Validate and keep native submit
+### Let the browser submit natively
 
 ```ts
-const profileForm = form('profile-form')
-
-profileForm.onSubmit(() => {
-  console.log('validation passed')
+const bladeForm = form('blade-form')
+bladeForm.onSubmit(() => {
+  console.log('client-side hooks ran')
 }, false)
 ```
+
+## Direct Utilities
+
+The package also exposes a couple of pure helpers for consumers who want to run validation or serialization without instantiating a controller:
+
+```ts
+import {
+  parseFormData,
+  validateFieldValue,
+  validateValues
+} from '@samline/forms'
+```
+
+These are the same routines the controller uses internally.

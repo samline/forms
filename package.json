@@ -1,7 +1,7 @@
 {
   "name": "@samline/forms",
-  "version": "1.0.3",
-  "description": "Form controller for vanilla JS, React, Vue, Svelte and browser globals.",
+  "version": "2.0.0",
+  "description": "Form controller for vanilla JS and direct browser usage.",
   "type": "module",
   "license": "MIT",
   "publishConfig": {
@@ -23,31 +23,6 @@
       "import": "./dist/index.js",
       "require": "./dist/index.cjs"
     },
-    "./core": {
-      "types": "./dist/core/index.d.ts",
-      "import": "./dist/core/index.js",
-      "require": "./dist/core/index.cjs"
-    },
-    "./vanilla": {
-      "types": "./dist/vanilla/index.d.ts",
-      "import": "./dist/vanilla/index.js",
-      "require": "./dist/vanilla/index.cjs"
-    },
-    "./react": {
-      "types": "./dist/react/index.d.ts",
-      "import": "./dist/react/index.js",
-      "require": "./dist/react/index.cjs"
-    },
-    "./vue": {
-      "types": "./dist/vue/index.d.ts",
-      "import": "./dist/vue/index.js",
-      "require": "./dist/vue/index.cjs"
-    },
-    "./svelte": {
-      "types": "./dist/svelte/index.d.ts",
-      "import": "./dist/svelte/index.js",
-      "require": "./dist/svelte/index.cjs"
-    },
     "./browser": {
       "types": "./dist/browser/global.d.ts",
       "default": "./dist/browser/global.global.js"
@@ -63,31 +38,11 @@
     "test:watch": "vitest",
     "prepublishOnly": "npm run clean && npm run build && npm run typecheck && npm test"
   },
-  "peerDependencies": {
-    "react": ">=18",
-    "vue": ">=3.4",
-    "svelte": ">=5"
-  },
-  "peerDependenciesMeta": {
-    "react": {
-      "optional": true
-    },
-    "vue": {
-      "optional": true
-    },
-    "svelte": {
-      "optional": true
-    }
-  },
   "devDependencies": {
     "@types/node": "^24.0.0",
-    "@types/react": "^19.1.2",
     "jsdom": "^26.1.0",
-    "react": "^19.1.0",
-    "svelte": "^5.28.2",
     "tsup": "^8.5.0",
     "typescript": "^5.8.3",
-    "vitest": "^3.1.1",
-    "vue": "^3.5.13"
+    "vitest": "^3.1.1"
   }
 }
