@@ -158,6 +158,8 @@ If the peer is not installed, the methods log a single `console.error` explainin
 
 ## Documentation
 
+Full API reference, guides, and examples are available at **[samline.github.io/forms](https://samline.github.io/forms)**.
+
 | Doc | Purpose |
 | --- | --- |
 | [docs/getting-started.md](docs/getting-started.md) | Concepts, observable contract, lifecycle, and side-effect overview. |

@@ -4,8 +4,10 @@
   "description": "Form controller for vanilla JS and direct browser usage.",
   "type": "module",
   "license": "MIT",
+  "homepage": "https://samline.github.io/forms",
   "publishConfig": {
-    "access": "public"
+    "access": "public",
+    "tag": "beta"
   },
   "engines": {
     "node": ">=20"
@@ -39,7 +41,7 @@
     "prepublishOnly": "npm run clean && npm run build && npm run typecheck && npm test"
   },
   "peerDependencies": {
-    "@samline/formatter": "^1.0.0"
+    "@samline/formatter": "^1.0.1"
   },
   "peerDependenciesMeta": {
     "@samline/formatter": {
