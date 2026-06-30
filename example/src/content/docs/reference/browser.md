@@ -107,29 +107,45 @@ The controller returned by `form` / `newForm` exposes the methods documented in 
 
 ## TypeScript users
 
-The browser build does not ship its own types. If you need types for `window.Forms`, declare them once in your project:
+The browser build does not ship its own types. Reuse the types exported by `@samline/forms` instead of redeclaring the surface — declare `window.Forms` against the package's `FormsApi`:
 
 ```ts
-import type {
-  FormController,
-  FormControllerOptions,
-  FormTarget
-} from '@samline/forms'
+import type { FormsApi } from '@samline/forms'
 
 declare global {
   interface Window {
-    Forms: {
-      form: (target: FormTarget, options?: FormControllerOptions) => FormController
-      newForm: (input: {
-        id: string
-        options?: FormControllerOptions
-      }) => FormController | undefined
-      destroyForm: (id: string) => void
-      available: { [id: string]: FormController }
-    }
+    Forms: FormsApi
   }
 }
 ```
+
+See [`FormsApi`](/forms/reference/typescript/#formsapi) for the full shape.
+
+## Using the same shape from a bundler
+
+If you have a bundler but still want the `newForm` / `destroyForm` / `available` ergonomics — without the IIFE and without `window.Forms` auto-installed — import the `browser` singleton from the vanilla entrypoint:
+
+```ts
+import { browser } from '@samline/forms'
+
+browser.newForm({ id: 'contact-form' })
+browser.destroyForm('contact-form')
+browser.available // { 'contact-form': FormController }
+```
+
+`browser` is a module-level singleton with a shared `available` registry. Spread it into your own global to compose with extra helpers like `regex` from `@samline/formatter`:
+
+```ts
+import { browser } from '@samline/forms'
+import { regex } from '@samline/formatter'
+
+window.Form = { ...browser, regex }
+
+window.Form.newForm({ id: 'contact-form' })
+window.Form.destroyForm('contact-form')
+```
+
+Because the registry is shared across spreads, `window.Form.available` and `browser.available` point to the same object. For independent registries, call [`form()`](/forms/reference/api/#formtarget-options) directly and manage your own map — `browser` is designed for the one-registry-per-page case. See the [Browser registry helpers section](/forms/getting-started/#browser-registry-helpers-bundler) in the getting-started guide for the full pattern.
 
 ## Common pitfalls
 

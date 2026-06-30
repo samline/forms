@@ -102,7 +102,7 @@ If you do not have a bundler, drop a single `<script>` and use the `window.Forms
   <button type="submit">Send</button>
 </form>
 
-<script src="https://unpkg.com/@samline/forms@2.0.0/dist/browser/global.global.js"></script>
+<script src="https://unpkg.com/@samline/forms@2.1.0/dist/browser/global.global.js"></script>
 <script>
   const contact = window.Forms.newForm({
     id: 'contact-form',
@@ -120,10 +120,39 @@ If you do not have a bundler, drop a single `<script>` and use the `window.Forms
 ```
 
 :::caution[Pin the version in production]
-The CDN URL above uses `@2.0.0`. Replace the version with the one you ship.
+The CDN URL above uses `@2.1.0`. Replace the version with the one you ship.
 :::
 
 See the [Browser global reference](/forms/reference/browser/) for the full surface, including `Forms.newForm`, `Forms.destroyForm`, and the `Forms.available` registry.
+
+## Browser registry helpers (bundler)
+
+If you have a bundler and want the same `{ newForm, destroyForm, available }` ergonomics as the IIFE — but without `window.Forms` auto-installed — import the `browser` singleton from the vanilla entrypoint:
+
+```ts title="bundler.ts"
+import { browser } from '@samline/forms'
+import { regex } from '@samline/formatter' // optional, from your project
+
+window.Form = { ...browser, regex }
+
+window.Form.newForm({
+  id: 'contact-form',
+  options: {
+    validators: {
+      email: { required: true, pattern: /^[^\s@]+@[^\s@]+\.[^\s@]+$/ }
+    }
+  }
+})
+
+window.Form.destroyForm('contact-form')
+console.log(window.Form.available) // { 'contact-form': FormController }
+```
+
+`browser` is an object you can spread into your own globals or use directly. Because `newForm` and `destroyForm` close over the singleton's `available` map, every spread shares the same registry — `window.Form.available`, `browser.available`, and any other spread all point to the same object, and `destroyForm` on one updates the others.
+
+If you need multiple independent registries, call the `form()` factory directly and keep your own map of controllers — `browser` is designed for the common case of one registry per page.
+
+See the [Browser global reference → Using the same shape from a bundler](/forms/reference/browser/#using-the-same-shape-from-a-bundler) for more, and the [TypeScript reference → `FormsApi`](/forms/reference/typescript/#formsapi) for the exact shape.
 
 ## What's next?
 

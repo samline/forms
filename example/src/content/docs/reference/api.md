@@ -14,10 +14,17 @@ Methods that return data (rather than the controller) end in a different return 
 
 ## Lifecycle
 
-- [`form(target, options?)`](#formtarget-options) — bind a controller to an `HTMLFormElement`. The only entry point.
+- [`form(target, options?)`](#formtarget-options) — bind a controller to an `HTMLFormElement`. The main entry point.
 - [`element`](#element) — the bound form (`f` is an alias).
 - [`reset()`](#reset) — restore native form values and clear errors.
 - [`destroy()`](#destroy) — tear down listeners, observer, and caches.
+
+## Registry helpers (vanilla)
+
+- [`browser`](#browser) — module-level singleton that wraps `form()` with `newForm` / `destroyForm` / `available`. Mirrors the IIFE surface without auto-installing a global.
+- [`browser.newForm`](#browsernewform) — build + register a controller under `browser.available[id]`.
+- [`browser.destroyForm`](#browserdestroyform) — destroy + unregister a controller by id.
+- [`browser.available`](#browseravailable) — registry of active controllers keyed by id.
 
 ## Submission
 
@@ -243,3 +250,48 @@ function validateFieldValue(
 ```
 
 Runs the rule set against a single value. Returns an array of error messages (empty when the field is valid).
+
+### Registry helpers (vanilla)
+
+The vanilla entrypoint exports a `browser` singleton with the same shape as the IIFE bundle's `window.Forms` — but as a plain ESM value with no `globalThis` side-effect. Use it from a bundler when you want the registry ergonomics without the IIFE.
+
+#### `browser`
+
+```ts
+const browser: FormsApi
+```
+
+Module-level singleton. Exposes `form`, `newForm`, `destroyForm`, and `available`. Spread it into your own globals (`{ ...browser, regex }`) or call its methods directly. The registry is shared across spreads, so `window.Form.available` and `browser.available` always point to the same object. See the [Browser registry helpers](/forms/getting-started/#browser-registry-helpers-bundler) section in the getting-started guide and [`FormsApi`](/forms/reference/typescript/#formsapi) for the exact shape.
+
+#### `browser.newForm`
+
+Build a controller via `browser.form(id, options)` and store it in `browser.available[id]`. Accepts `{ id, options }`. Logs `Form ID is required` to `console.error` and returns `undefined` if `id` is missing. Returns the same `FormController` stored under `available[id]`.
+
+```ts
+const contact = browser.newForm({
+  id: 'contact-form',
+  options: {
+    validators: { email: { required: true } }
+  }
+})
+```
+
+#### `browser.destroyForm`
+
+Look up `browser.available[id]`, call `destroy()`, and delete the entry. Logs `Form ID is required` if `id` is missing, or `Form with ID <id> not found` if the entry is absent.
+
+```ts
+browser.destroyForm('contact-form')
+```
+
+#### `browser.available`
+
+Read-only view of the active registry: `{ [id: string]: FormController }`. Iterate it to inspect or invoke methods on every live controller.
+
+```ts
+for (const controller of Object.values(browser.available)) {
+  controller.validate()
+}
+```
+
+For an equivalent surface in a no-bundler setup, see the [Browser global reference](/forms/reference/browser/).

@@ -16,11 +16,14 @@ import type {
   FormErrors,
   FormFieldElement,
   FormFieldValue,
+  FormsApi,
+  FormsAvailable,
   FormStateListener,
   FormStateSnapshot,
   FormSubmitHandler,
   FormTarget,
   FormValues,
+  NewFormInput,
   RuleConfig,
   SerializedFormResult,
   SerializedFormValue,
@@ -462,5 +465,51 @@ interface VisualAttributes {
   error: string
 }
 ```
+
+---
+
+## `FormsApi`
+
+The shape of the [`browser`](../getting-started.md#browser-registry-helpers) singleton exported from the vanilla entrypoint. The IIFE bundle exposes the same shape as `window.Forms`.
+
+```ts
+interface FormsApi {
+  form: (target: FormTarget, options?: FormControllerOptions) => FormController
+  newForm: (input: NewFormInput) => FormController | undefined
+  destroyForm: (id: string) => void
+  available: FormsAvailable
+}
+```
+
+`form` is the same reference exported from `@samline/forms`. `newForm` and `destroyForm` manage the module-level `available` registry keyed by the form id. Spread `browser` into a new object to derive an independent registry (with its own `available` map); see the getting-started guide for the pattern.
+
+---
+
+## `NewFormInput`
+
+The argument to `FormsApi.newForm`.
+
+```ts
+interface NewFormInput {
+  id: string
+  options?: FormControllerOptions
+}
+```
+
+A missing `id` logs `Form ID is required` to `console.error` and `newForm` returns `undefined` without touching the registry.
+
+---
+
+## `FormsAvailable`
+
+The shape of `FormsApi.available`.
+
+```ts
+interface FormsAvailable {
+  [id: string]: FormController
+}
+```
+
+Use it to inspect or iterate over every live controller in a registry. Each entry is the `FormController` returned by `newForm` for that id.
 
 `Partial<VisualAttributes>` is accepted, so you can override only one of them. See [docs/css-styling.md](css-styling.md).

@@ -148,6 +148,22 @@ declare global {
 
 ---
 
+## Using the same shape from a bundler
+
+If you have a bundler but still want the `newForm` / `destroyForm` / `available` ergonomics (without the IIFE and without `window.Forms` auto-installed), use the vanilla `browser` singleton instead:
+
+```ts
+import { browser } from '@samline/forms'
+
+browser.newForm({ id: 'contact-form' })
+browser.destroyForm('contact-form')
+browser.available // { 'contact-form': FormController }
+```
+
+`browser` is a module-level singleton with a shared `available` registry. To run multiple registries in parallel, spread it into separate objects with fresh `available` maps — see [Browser registry helpers](getting-started.md#browser-registry-helpers) in the getting-started guide for the full pattern (including how to attach `regex` from `@samline/formatter`).
+
+---
+
 ## Next steps
 
 - Concepts and lifecycle: [docs/getting-started.md](getting-started.md).

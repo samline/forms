@@ -80,6 +80,8 @@ See [docs/browser.md](docs/browser.md) for the full browser surface.
 | `@samline/forms` | Main vanilla API for bundlers, ESM, or CJS consumers. |
 | `@samline/forms/browser` | Pre-bundled IIFE that registers `window.Forms` for direct `<script>` usage. |
 
+The vanilla entrypoint also exports `browser`, the same `{ form, newForm, destroyForm, available }` surface as the IIFE but as a module-level singleton (no `globalThis` side-effect). Use it from a bundler when you want the registry helpers without the IIFE — see [docs/browser.md → Using the same shape from a bundler](docs/browser.md#using-the-same-shape-from-a-bundler).
+
 ---
 
 ## Quick Start
@@ -132,6 +134,7 @@ The controller is built around one factory and a small set of focused methods. M
 | Group | Methods |
 | --- | --- |
 | Lifecycle | [`form`](docs/api/form.md) · [`destroy`](docs/api/destroy.md) · [`reset`](docs/api/reset.md) |
+| Registry (vanilla) | [`browser`](docs/getting-started.md#browser-registry-helpers) — bundler-friendly `{ form, newForm, destroyForm, available }` singleton. |
 | Properties | [`element`](docs/api/element.md) · [`options`](docs/options.md) |
 | Submission | [`onSubmit`](docs/api/on-submit.md) · [`autoSubmit`](docs/api/auto-submit.md) · [`disableAutoSubmit`](docs/api/disable-auto-submit.md) |
 | Field observation | [`watch`](docs/api/watch.md) · [`observe`](docs/api/observe.md) · [`unwatch`](docs/api/unwatch.md) · [`subscribe`](docs/api/subscribe.md) |

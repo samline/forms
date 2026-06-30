@@ -24,11 +24,14 @@ import type {
   FormErrors,
   FormFieldElement,
   FormFieldValue,
+  FormsApi,
+  FormsAvailable,
   FormStateListener,
   FormStateSnapshot,
   FormSubmitHandler,
   FormTarget,
   FormValues,
+  NewFormInput,
   RuleConfig,
   SerializedFormResult,
   SerializedFormValue,
@@ -445,3 +448,43 @@ interface FieldFormatConfigMap {
 ```
 
 The `field` name is the `name` attribute of the visible input(s). `rawField` defaults to `${fieldName}Raw`. `options` is forwarded to `@samline/formatter` — see its [options reference](https://github.com/samline/formatter/blob/main/docs/options.md).
+
+## `FormsApi`
+
+The shape of the [`browser`](/forms/getting-started/#browser-registry-helpers-bundler) singleton exported from the vanilla entrypoint. The IIFE bundle exposes the same shape as `window.Forms`.
+
+```ts
+interface FormsApi {
+  form: (target: FormTarget, options?: FormControllerOptions) => FormController
+  newForm: (input: NewFormInput) => FormController | undefined
+  destroyForm: (id: string) => void
+  available: FormsAvailable
+}
+```
+
+`form` is the same reference exported from `@samline/forms`. `newForm` and `destroyForm` manage the module-level `available` registry keyed by the form id. Spread `browser` into a new object to derive a fresh registry (with its own `available` map); see the getting-started guide for the pattern.
+
+## `NewFormInput`
+
+The argument to `FormsApi.newForm`.
+
+```ts
+interface NewFormInput {
+  id: string
+  options?: FormControllerOptions
+}
+```
+
+A missing `id` logs `Form ID is required` to `console.error` and `newForm` returns `undefined` without touching the registry.
+
+## `FormsAvailable`
+
+The shape of `FormsApi.available`.
+
+```ts
+interface FormsAvailable {
+  [id: string]: FormController
+}
+```
+
+Use it to inspect or iterate over every live controller in the registry. Each entry is the `FormController` returned by `newForm` for that id.

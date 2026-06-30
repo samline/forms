@@ -124,6 +124,50 @@ These are safe to tree-shake into any bundle and do not require a live form.
 
 ---
 
+## Browser registry helpers
+
+The browser IIFE bundle ships a small registry (`window.Forms`) that wraps `form()` with a `newForm` / `destroyForm` pair keyed by the form id. The same shape is available from the vanilla entrypoint as a module-level singleton called `browser`:
+
+```ts
+import { browser } from '@samline/forms'
+import { regex } from '@samline/formatter' // optional, from your project
+
+window.Form = { ...browser, regex }
+
+window.Form.newForm({
+  id: 'contact-form',
+  options: {
+    validators: {
+      email: { required: true, pattern: /^[^\s@]+@[^\s@]+\.[^\s@]+$/ }
+    }
+  }
+})
+
+window.Form.destroyForm('contact-form')
+console.log(window.Form.available) // { 'contact-form': FormController }
+```
+
+`browser` is an object you can spread into your own globals or use directly. Because `newForm` and `destroyForm` close over the singleton's `available` map, every spread shares the same registry — `window.Form.available`, `browser.available`, and any other spread all point to the same object, and `destroyForm` on one updates the others.
+
+If you need multiple independent registries, call the `form()` factory directly and keep your own map of controllers — `browser` is designed for the common case of one registry per page.
+
+```ts
+import { form } from '@samline/forms'
+
+const checkout = form('cart-form')
+const auth = form('login-form')
+
+// Track them yourself when you have multiple registries.
+const registries = {
+  checkout,
+  auth
+}
+```
+
+Use `form()` directly when you do not need the registry (for example, transient controllers in tests). The vanilla entrypoint never touches `globalThis` — you decide whether to assign it to `window`. If you are loading the package via `<script>` without a bundler, prefer [`@samline/forms/browser`](browser.md) and consume `window.Forms` directly.
+
+---
+
 ## Submission examples
 
 ### Intercept and send with `fetch` (default)
