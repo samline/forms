@@ -6,7 +6,7 @@ This page explains what `@samline/forms` is, how the controller is wired, and wh
 
 ## When to use this variant
 
-Use the vanilla variant when you work with native HTML forms, embedded scripts, static sites, or applications where you do not need a framework wrapper. This is the primary — and only — runtime entrypoint of `@samline/forms` since v2.0.0.
+Use the vanilla variant when you work with native HTML forms, embedded scripts, static sites, or applications where you do not need a framework wrapper. This is the primary — and only — runtime entrypoint of `@samline/forms` since v2.1.0.
 
 If you want a `<script>`-only setup without a bundler, see [docs/browser.md](browser.md).
 
