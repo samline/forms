@@ -7,7 +7,7 @@
   "homepage": "https://samline.github.io/forms",
   "publishConfig": {
     "access": "public",
-    "tag": "beta"
+    "tag": "latest"
   },
   "engines": {
     "node": ">=20"
