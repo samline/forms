@@ -1,0 +1,2 @@
+# Place package-specific images, screenshots and SVGs here and import them from your MDX content.
+# Files placed under `src/assets/` get hashed filenames by Astro, so pre-optimised imports work in <Image /> tags.

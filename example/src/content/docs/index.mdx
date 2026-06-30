@@ -1,0 +1,57 @@
+---
+title: '@samline/forms'
+description: 'A small, framework-free form controller for vanilla JS and direct browser usage.'
+template: doc
+hero:
+  tagline: 'Bind forms, validate, watch fields, and submit with fetch — no framework required.'
+  actions:
+    - text: Get started
+      link: /forms/getting-started
+      icon: right-arrow
+      variant: primary
+    - text: View on GitHub
+      link: 'https://github.com/samline/forms'
+      icon: external
+      variant: minimal
+---
+
+import { Card, CardGrid } from '@astrojs/starlight/components';
+
+`@samline/forms` binds to an `HTMLFormElement`, keeps field state in sync with the DOM, runs validation, lets you react to changes via watchers or subscribers, and ships a serialized payload for `fetch` flows. It is the only runtime entrypoint since v2.0.0 — no framework wrapper, no virtual DOM, just one factory and a focused method surface.
+
+## Why @samline/forms?
+
+- **Vanilla-first** — Works with native HTML forms, embedded scripts, static sites, and server-rendered templates (Blade, ERB, Twig).
+- **Two entrypoints** — Import the ESM factory for bundlers, or drop a single `<script>` for the browser global (`window.Forms`).
+- **Optional peer** — Pairs with [`@samline/formatter`](https://github.com/samline/formatter) for phone, card, numeral and date masks — installs only when you need it.
+- **Chainable API** — Most methods return the same `FormController` so setup reads fluently.
+- **Reactive** — `watch`, `observe`, and `subscribe` give you per-field and whole-form reactions without manual plumbing.
+- **Zero runtime dependencies** — Tiny footprint, ESM + CJS bundles, ships its own types.
+
+## Next steps
+
+<CardGrid>
+	<Card title="Getting started" icon="pencil-line">
+		Install the package, wire your first form, and submit with `fetch` in under five minutes.
+
+		[Install @samline/forms →](/forms/getting-started)
+	</Card>
+
+	<Card title="API reference" icon="open-book">
+		Every public method, option, type and helper documented with signatures and runnable examples.
+
+		[Browse the API →](/forms/reference/api/)
+	</Card>
+
+	<Card title="Browser global" icon="seti:html">
+		Use the pre-bundled `window.Forms` global when you don't have a bundler — perfect for Shopify, WordPress, or classic templates.
+
+		[window.Forms reference →](/forms/reference/browser/)
+	</Card>
+
+	<Card title="Recipes" icon="puzzle">
+		End-to-end patterns: login, server errors, multi-step wizards, autosave, formatting, and SPA cleanup.
+
+		[Browse examples →](/forms/reference/examples/)
+	</Card>
+</CardGrid>

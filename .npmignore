@@ -1,0 +1,30 @@
+# Source & tests
+src/
+test/
+
+# Build config
+tsconfig.json
+tsup.config.ts
+vitest.config.ts
+
+# Docs & examples
+docs/
+example/
+
+# Tooling & lockfiles
+.agents/
+.github/
+bun.lock
+pnpm-lock.yaml
+skills-lock.json
+
+# Coverage & build artifacts (outside dist)
+coverage/
+
+# Editor / OS junk
+.vscode/
+.idea/
+*.swp
+*.swo
+.DS_Store
+Thumbs.db

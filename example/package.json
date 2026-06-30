@@ -1,0 +1,26 @@
+{
+  "name": "@packages/docs-template",
+  "version": "0.1.0",
+  "private": true,
+  "type": "module",
+  "description": "Starlight documentation template for monorepo packages. Clone this into any package directory and let an agent populate it.",
+  "scripts": {
+    "dev": "astro dev",
+    "start": "astro dev",
+    "build": "astro build",
+    "preview": "astro preview",
+    "astro": "astro",
+    "check": "astro check"
+  },
+  "dependencies": {
+    "@astrojs/check": "^0.9.9",
+    "@astrojs/starlight": "^0.41.1",
+    "astro": "^7.0.3",
+    "sharp": "^0.35.2",
+    "typescript": "^6.0.3"
+  },
+  "packageManager": "npm@11.6.2",
+  "engines": {
+    "node": ">=20.0.0"
+  }
+}

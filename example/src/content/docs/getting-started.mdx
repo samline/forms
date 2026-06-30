@@ -1,0 +1,154 @@
+---
+title: Getting started
+description: Install @samline/forms and wire your first validated form in under five minutes.
+template: doc
+sidebar:
+  order: 1
+---
+
+import { Card, CardGrid, Tabs, TabItem } from '@astrojs/starlight/components';
+
+This page walks you through installing `@samline/forms` and running a working example. By the end you'll have a bound controller, validated inputs, and a `fetch`-based submit.
+
+## Prerequisites
+
+- **Node.js 20+** when bundling (the package is published as ESM + CJS and ships TypeScript types).
+- A package manager — `npm`, `pnpm`, `yarn` or `bun`.
+- A runtime target of **ES2020** in the browser.
+
+## Install
+
+<Tabs syncKey="package-manager">
+	<TabItem label="npm">
+
+		```bash
+		npm install @samline/forms
+		```
+
+	</TabItem>
+	<TabItem label="pnpm">
+
+		```bash
+		pnpm add @samline/forms
+		```
+
+	</TabItem>
+	<TabItem label="yarn">
+
+		```bash
+		yarn add @samline/forms
+		```
+
+	</TabItem>
+	<TabItem label="bun">
+
+		```bash
+		bun add @samline/forms
+		```
+
+	</TabItem>
+</Tabs>
+
+## First example
+
+Drop this in any modern bundler or TypeScript project:
+
+```html title="contact.html"
+<form id="contact-form">
+  <input name="email" type="email" />
+  <input name="message" />
+  <button type="submit">Send</button>
+</form>
+```
+
+```ts title="contact.ts"
+import { form } from '@samline/forms'
+
+const contact = form('contact-form', {
+  validators: {
+    email: {
+      required: { value: true, message: 'Email is required.' },
+      pattern: {
+        value: /^[^\s@]+@[^\s@]+\.[^\s@]+$/,
+        message: 'Enter a valid email address.'
+      }
+    },
+    message: { required: true, minLength: 10 }
+  }
+})
+
+contact.onSubmit(async (_element, _data, formData) => {
+  await fetch('/api/contact', { method: 'POST', body: formData })
+})
+
+contact.validate()
+```
+
+What this does:
+
+- Binds a controller to the form with id `contact-form`.
+- Adds `css-filled` and `css-error` attributes on fields so you can style them with CSS — see [CSS styling](/forms/reference/css-styling/).
+- Validates `email` and `message` on every change and on submit.
+- Intercepts valid submits (the default for `onSubmit`) and hands a real `FormData` instance to your handler.
+- Invalid submissions are always intercepted — the browser never navigates with bad data.
+
+## Browser global (no bundler)
+
+If you do not have a bundler, drop a single `<script>` and use the `window.Forms` global:
+
+```html title="index.html"
+<form id="contact-form">
+  <input name="email" type="email" />
+  <button type="submit">Send</button>
+</form>
+
+<script src="https://unpkg.com/@samline/forms@2.0.0/dist/browser/global.global.js"></script>
+<script>
+  const contact = window.Forms.newForm({
+    id: 'contact-form',
+    options: {
+      validators: {
+        email: { required: true, pattern: /^[^\s@]+@[^\s@]+\.[^\s@]+$/ }
+      }
+    }
+  })
+
+  contact.onSubmit(async (_form, _data, formData) => {
+    await fetch('/api/contact', { method: 'POST', body: formData })
+  })
+</script>
+```
+
+:::caution[Pin the version in production]
+The CDN URL above uses `@2.0.0`. Replace the version with the one you ship.
+:::
+
+See the [Browser global reference](/forms/reference/browser/) for the full surface, including `Forms.newForm`, `Forms.destroyForm`, and the `Forms.available` registry.
+
+## What's next?
+
+<CardGrid>
+	<Card title="Configuration" icon="setting">
+		Every option, default, and rule type — `attributes`, `autoValidate`, `autoSubmit`, `validators`, and more.
+
+		[Configuration →](/forms/reference/configuration/)
+	</Card>
+
+	<Card title="API reference" icon="open-book">
+		Function-by-function documentation with TypeScript signatures, return shapes, and behaviour tables.
+
+		[API reference →](/forms/reference/api/)
+	</Card>
+
+	<Card title="TypeScript" icon="seti:typescript">
+		Every exported type — `FormController`, `FormControllerOptions`, `ValidationSchema`, callbacks, helpers.
+
+		[TypeScript reference →](/forms/reference/typescript/)
+	</Card>
+
+	<Card title="Examples" icon="puzzle">
+		End-to-end patterns: login, server errors, multi-step, autosave, formatting, and SPA cleanup.
+
+		[Browse examples →](/forms/reference/examples/)
+	</Card>
+</CardGrid>

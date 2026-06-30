@@ -1,0 +1,401 @@
+---
+title: Examples
+description: End-to-end recipes for common real-world scenarios with @samline/forms.
+template: doc
+sidebar:
+  order: 7
+---
+
+import { Tabs, TabItem, Steps } from '@astrojs/starlight/components';
+
+These examples are deliberately copy-pasteable. Each one lives in a self-contained snippet so it's easy to drop into a project and adapt.
+
+<Tabs syncKey="runtime">
+	<TabItem label="Bundler / TS">
+
+		The standard entrypoint — `import { form } from '@samline/forms'`. Works with Vite, Webpack, Rollup, esbuild, Bun, and any modern bundler.
+
+		```ts
+		import { form } from '@samline/forms'
+
+		const contact = form('contact-form', {
+		  validators: {
+		    email: { required: true, pattern: /^[^\s@]+@[^\s@]+\.[^\s@]+$/ }
+		  }
+		})
+
+		contact.onSubmit(async (_form, _data, formData) => {
+		  await fetch('/api/contact', { method: 'POST', body: formData })
+		})
+		```
+
+	</TabItem>
+	<TabItem label="Browser global">
+
+		No bundler required. Drop the CDN script and use `window.Forms.newForm({ id, options })`.
+
+		```html
+		<form id="contact-form">
+		  <input name="email" type="email" />
+		  <button type="submit">Send</button>
+		</form>
+
+		<script src="https://unpkg.com/@samline/forms@2.0.0/dist/browser/global.global.js"></script>
+		<script>
+		  const contact = window.Forms.newForm({
+		    id: 'contact-form',
+		    options: {
+		      validators: {
+		        email: { required: true, pattern: /^[^\s@]+@[^\s@]+\.[^\s@]+$/ }
+		      }
+		    }
+		  })
+
+		  contact.onSubmit(async (_form, _data, formData) => {
+		    await fetch('/api/contact', { method: 'POST', body: formData })
+		  })
+		</script>
+		```
+
+	</TabItem>
+</Tabs>
+
+## Recipe: Login form with `fetch`
+
+```html
+<form id="login-form">
+  <input name="email" type="email" autocomplete="email" required />
+  <input name="password" type="password" autocomplete="current-password" required />
+  <button type="submit">Sign in</button>
+</form>
+```
+
+```ts
+import { form } from '@samline/forms'
+
+const login = form('login-form', {
+  validators: {
+    email: {
+      required: { value: true, message: 'Email is required.' },
+      pattern: {
+        value: /^[^\s@]+@[^\s@]+\.[^\s@]+$/,
+        message: 'Enter a valid email.'
+      }
+    },
+    password: { required: true, minLength: 8 }
+  }
+})
+
+login.onSubmit(async (_element, _data, formData) => {
+  const response = await fetch('/api/login', {
+    method: 'POST',
+    body: formData
+  })
+
+  if (!response.ok) {
+    login.setErrors({ password: ['Wrong email or password.'] })
+    return
+  }
+
+  window.location.assign('/dashboard')
+})
+```
+
+What this does:
+
+- Validates with custom messages.
+- Intercepts the submit (default `preventDefault: true`) so the browser does not navigate.
+- Surfaces a single error on the password field when the API rejects the credentials.
+
+## Recipe: Surface server-side validation errors
+
+```ts
+import { form } from '@samline/forms'
+
+const profile = form('profile-form', {
+  autoValidate: false,
+  clearManualErrorsOnChange: false,
+  validators: {
+    email: { required: true, pattern: /^[^\s@]+@[^\s@]+\.[^\s@]+$/ }
+  }
+})
+
+profile.onSubmit(async (_element, _data, formData) => {
+  const response = await fetch('/api/profile', {
+    method: 'POST',
+    body: formData
+  })
+
+  if (response.status === 422) {
+    const { fieldErrors } = (await response.json()) as {
+      fieldErrors: Record<string, string[]>
+    }
+    profile.setErrors(fieldErrors)
+    return
+  }
+
+  if (response.ok) {
+    profile.clearErrors()
+    profile.reset()
+  }
+})
+```
+
+:::tip[Why `clearManualErrorsOnChange: false`]
+The server's errors should stay visible while the user fixes them. With the default behaviour, editing the email would clear the manual error before the user had a chance to correct it.
+:::
+
+## Recipe: Multi-step / wizard
+
+```html
+<form id="wizard">
+  <fieldset data-step="1">
+    <input name="name" />
+    <input name="email" type="email" />
+  </fieldset>
+  <fieldset data-step="2" hidden>
+    <input name="address" />
+    <input name="city" />
+  </fieldset>
+  <button type="button" id="next">Next</button>
+  <button type="submit" id="submit" hidden>Submit</button>
+</form>
+```
+
+```ts
+import { form } from '@samline/forms'
+
+const wizard = form('wizard', {
+  validators: {
+    name: { required: true },
+    email: { required: true, pattern: /^[^\s@]+@[^\s@]+\.[^\s@]+$/ },
+    address: { required: true },
+    city: { required: true }
+  }
+})
+
+const stepFields: Record<1 | 2, string[]> = {
+  1: ['name', 'email'],
+  2: ['address', 'city']
+}
+
+let currentStep: 1 | 2 = 1
+
+document.querySelector('#next')?.addEventListener('click', () => {
+  const ok = wizard.validate(stepFields[currentStep]).isValid
+  if (!ok) return
+
+  currentStep = 2
+  wizard.element?.querySelector('[data-step="1"]')?.setAttribute('hidden', '')
+  wizard.element?.querySelector('[data-step="2"]')?.removeAttribute('hidden')
+  document.querySelector('#next')!.setAttribute('hidden', '')
+  document.querySelector('#submit')!.removeAttribute('hidden')
+})
+
+wizard.onSubmit(async (_element, _data, formData) => {
+  await fetch('/api/wizard', { method: 'POST', body: formData })
+})
+```
+
+Each step validates only its own fields, so the user can progress without being blocked by later fields.
+
+## Recipe: Autosave drafts
+
+```html
+<form id="draft">
+  <input name="title" />
+  <textarea name="body"></textarea>
+</form>
+```
+
+```ts
+import { form } from '@samline/forms'
+
+const draft = form('draft', {
+  autoSubmit: { debounce: 800 }
+})
+
+draft.onSubmit(async (_element, _data, formData) => {
+  await fetch('/api/draft', { method: 'POST', body: formData })
+})
+```
+
+For a JSON endpoint, switch the body to `JSON.stringify(data)` and set the right `Content-Type` header.
+
+To pause autosave while the user is typing into a "bulk edit" textarea, toggle it explicitly:
+
+```ts
+const bodyField = draft.getField('body') as HTMLTextAreaElement | null
+
+bodyField?.addEventListener('focus', () => draft.disableAutoSubmit())
+bodyField?.addEventListener('blur', () => draft.autoSubmit({ debounce: 800 }))
+```
+
+## Recipe: Dynamic fields added at runtime
+
+```html
+<form id="builder">
+  <div id="rows"></div>
+  <button type="button" id="add">Add row</button>
+  <button type="submit">Save</button>
+</form>
+```
+
+```ts
+import { form } from '@samline/forms'
+
+const builder = form('builder', {
+  validators: {
+    'rows[*].name': { required: true }
+  }
+})
+
+document.querySelector('#add')?.addEventListener('click', () => {
+  const rows = document.querySelector('#rows')!
+  const index = rows.childElementCount
+  const row = document.createElement('div')
+  row.innerHTML = `
+    <input name="rows[${index}].name" />
+    <input name="rows[${index}].value" />
+  `
+  rows.appendChild(row)
+})
+```
+
+The controller's `MutationObserver` watches the form subtree for new fields and `name` / `type` attribute changes. It clears the field cache, re-syncs visual state, and re-runs validation — so dynamic rows are validated automatically without any extra wiring.
+
+## Recipe: Manual-only validation
+
+When you want validation to run only when you ask (not on every change), disable `autoValidate` and call `validate()` yourself.
+
+```ts
+import { form } from '@samline/forms'
+
+const checkout = form('checkout-form', {
+  autoValidate: false,
+  validators: {
+    card: { required: true, minLength: 12 },
+    expiry: { required: true }
+  }
+})
+
+document.querySelector('#pay')?.addEventListener('click', () => {
+  const result = checkout.validate()
+  if (!result.isValid) {
+    checkout.setErrors({ card: ['Please review your details.'] })
+    return
+  }
+
+  checkout.element?.requestSubmit()
+})
+```
+
+Useful when you want to defer validation until a specific event (e.g. a "Review order" button).
+
+## Recipe: Native server-rendered submit (Blade, ERB, classic Rails)
+
+```html
+<form id="profile" action="/profile" method="post">
+  @csrf
+  <input name="email" type="email" />
+  <input name="name" />
+  <button type="submit">Save</button>
+</form>
+```
+
+```ts
+import { form } from '@samline/forms'
+
+const profile = form('profile', {
+  validators: {
+    email: { required: true, pattern: /^[^\s@]+@[^\s@]+\.[^\s@]+$/ }
+  }
+})
+
+profile.onSubmit(() => {
+  console.log('client-side hooks ran')
+}, false)
+```
+
+When validation passes, the browser performs the native form submit to the `action` URL. When validation fails, the submit is prevented and the user sees the inline errors.
+
+## Recipe: SPA cleanup on route change
+
+```ts
+import { form } from '@samline/forms'
+
+const controllers = new Map<string, ReturnType<typeof form>>()
+
+router.on('/profile', element => {
+  controllers.set('profile', form(element, { validators: { email: { required: true } } }))
+})
+
+router.off('/profile', () => {
+  controllers.get('profile')?.destroy()
+  controllers.delete('profile')
+})
+```
+
+`destroy()` is idempotent — calling it more than once is safe.
+
+## Recipe: Sync state into a view layer
+
+```ts
+import { form } from '@samline/forms'
+
+const signup = form('signup-form', {
+  validators: {
+    email: { required: true },
+    password: { required: true, minLength: 8 }
+  }
+})
+
+signup.subscribe(state => {
+  const submit = signup.element?.querySelector<HTMLButtonElement>('button[type="submit"]')
+  if (submit) submit.disabled = !state.isValid
+})
+```
+
+Use `subscribe` when a single source of truth should drive your UI (button enabled state, live previews, dependent field visibility, etc.).
+
+## Recipe: Format inputs with `@samline/formatter`
+
+When you need phone masks, credit-card grouping, numeral delimiters, or any other input formatting, pair `@samline/forms` with [`@samline/formatter`](https://github.com/samline/formatter). The `format()` and `formatAll()` methods bind a formatter pipeline to one or many fields, manage the hidden raw mirror, and preserve the caret like cleave.js.
+
+```html
+<form id="checkout">
+  <input name="phone" autocomplete="tel" />
+  <input name="card" autocomplete="cc-number" />
+  <input name="amount" inputmode="decimal" />
+</form>
+```
+
+```ts
+import { form } from '@samline/forms'
+
+const checkout = form('checkout', {
+  formats: {
+    phone:  { type: 'phone',      field: 'phone',  options: { country: 'MX' } },
+    card:   { type: 'creditCard', field: 'card' },
+    amount: { type: 'numeral',    field: 'amount', options: { prefix: '$' } }
+  }
+})
+
+checkout.onSubmit((_form, _data, formData) => {
+  // formData already contains both:
+  //   phone='55 1234 5678',  phoneRaw='5512345678'
+  //   card='4111 1111 1111 1111', cardRaw='4111111111111111'
+  //   amount='$1,234',       amountRaw='1234'
+  fetch('/api/checkout', { method: 'POST', body: formData })
+})
+```
+
+:::note[Optional peer dependency]
+`@samline/formatter` is optional. When it is not installed, `format()` and `formatAll()` log a single `console.error` describing the missing dependency and return the controller unchanged. The rest of the form keeps working — no exceptions are thrown.
+:::
+
+Things to know:
+
+- Each formatted field gets a hidden sibling `<input type="hidden" name="<field>Raw">` that the controller creates and owns. The mirror carries `data-formatter-raw-for="<field>"` so the controller can find and remove it on `destroy()`.
+- If you authored your own `<input name="<field>_raw">` (or `<input data-formatter-raw-for="<field>">`) before wiring the controller, `format()` reuses it instead of duplicating it. Pre-existing mirrors survive `destroy()`; mirrors created by `format()` are removed.
+- Use `formatAll({ type, field: ['a', 'b', 'c'], options })` to bind the same configuration to several fields in one call. Each field gets its own hidden mirror (`aRaw`, `bRaw`, `cRaw`).

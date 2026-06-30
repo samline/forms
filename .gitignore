@@ -1,6 +1,38 @@
+# Dependencies
 node_modules/
+
+# Build output
 dist/
 coverage/
+
+# OS files
 .DS_Store
+Thumbs.db
+
+# Editor / IDE
+.idea/
+.vscode/
+*.swp
+*.swo
+
+# Logs
+*.log
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+bun-debug.log*
+
+# Environment
+.env
+.env.local
+.env.*.local
+
+# Bun legacy binary lockfile (the modern text lockfile is `bun.lock` and IS tracked)
+bun.lockb
+
+# Auto-generated
+skills-lock.json
+
+# Local files
 .local/
 AGENTS.md
