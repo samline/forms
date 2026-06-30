@@ -9,6 +9,7 @@ import { createAutoSubmit } from '../api/auto-submit'
 import { createClearErrors } from '../api/clear-errors'
 import { createDestroy } from '../api/destroy'
 import { createDisableAutoSubmit } from '../api/disable-auto-submit'
+import { createFormat, createFormatAll } from '../api/format'
 import { createGetData } from '../api/get-data'
 import { createGetField } from '../api/get-field'
 import { createGetState } from '../api/get-state'
@@ -93,6 +94,7 @@ export const createFormController = (
     isDestroyed: false,
     listeners: [],
     mutationObserver: null,
+    formattedFields: new Map(),
     api: null
   }
 
@@ -324,6 +326,8 @@ export const createFormController = (
     disableAutoSubmit: createDisableAutoSubmit(state, helpers),
     getData: createGetData(state, helpers),
     getState: createGetState(state, helpers),
+    format: createFormat(state, helpers),
+    formatAll: createFormatAll(state, helpers),
     destroy: createDestroy(state, helpers)
   }
 
@@ -340,6 +344,12 @@ export const createFormController = (
 
   if (normalizedOptions.autoSubmit) {
     api.autoSubmit(normalizedOptions.autoSubmit)
+  }
+
+  if (normalizedOptions.formats) {
+    for (const config of Object.values(normalizedOptions.formats)) {
+      api.format(config)
+    }
   }
 
   if (state.isValidated) {

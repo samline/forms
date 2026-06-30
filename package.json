@@ -38,6 +38,14 @@
     "test:watch": "vitest",
     "prepublishOnly": "npm run clean && npm run build && npm run typecheck && npm test"
   },
+  "peerDependencies": {
+    "@samline/formatter": "^1.0.0"
+  },
+  "peerDependenciesMeta": {
+    "@samline/formatter": {
+      "optional": true
+    }
+  },
   "devDependencies": {
     "@types/node": "^24.0.0",
     "jsdom": "^26.1.0",

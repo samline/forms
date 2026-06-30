@@ -2,6 +2,7 @@
 // by both core utilities and the api method factories.
 
 import type {
+  FieldFormatConfig,
   FormController,
   FormControllerOptions,
   FormErrors,
@@ -41,6 +42,17 @@ export interface FormControllerState {
     handler: EventListenerOrEventListenerObject
   }>
   mutationObserver: MutationObserver | null
+  // Tracks every field that `format()` is currently formatting, so
+  // re-bindings are idempotent and `destroy()` can clean up the
+  // associated listeners + hidden raw mirrors.
+  formattedFields: Map<
+    string,
+    {
+      config: FieldFormatConfig
+      mirrorName: string
+      mirrorIsOwned: boolean
+    }
+  >
   // Back-reference to the assembled public controller. Populated by the
   // controller orchestrator after the api method factories are wired.
   api: FormController | null

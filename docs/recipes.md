@@ -393,6 +393,47 @@ Custom validators receive the full values map, so cross-field rules read like pl
 
 ---
 
+## 13. Format inputs with `@samline/formatter`
+
+When you need phone masks, credit-card grouping, numeral delimiters, or any other input formatting, pair `@samline/forms` with `@samline/formatter`. The `format()` and `formatAll()` methods bind a formatter pipeline to one or many fields, manage the hidden raw mirror, and preserve the caret like cleave.js.
+
+```html
+<form id="checkout">
+  <input name="phone" autocomplete="tel" />
+  <input name="card" autocomplete="cc-number" />
+  <input name="amount" inputmode="decimal" />
+</form>
+```
+
+```ts
+import { form } from '@samline/forms'
+
+const checkout = form('checkout', {
+  formats: {
+    phone:  { type: 'phone',      field: 'phone',  options: { country: 'MX' } },
+    card:   { type: 'creditCard', field: 'card' },
+    amount: { type: 'numeral',    field: 'amount', options: { prefix: '$' } }
+  }
+})
+
+checkout.onSubmit((_form, _data, formData) => {
+  // formData already contains both:
+  //   phone='55 1234 5678',  phoneRaw='5512345678'
+  //   card='4111 1111 1111 1111', cardRaw='4111111111111111'
+  //   amount='$1,234',       amountRaw='1234'
+  fetch('/api/checkout', { method: 'POST', body: formData })
+})
+```
+
+Things to know:
+
+- Each formatted field gets a hidden sibling `<input type="hidden" name="<field>Raw">` that the controller creates and owns. The mirror carries `data-formatter-raw-for="<field>"` so the controller can find and remove it on `destroy()`.
+- If you authored your own `<input name="<field>_raw">` (or `<input data-formatter-raw-for="<field>">`) before wiring the controller, `format()` reuses it instead of duplicating it. Pre-existing mirrors survive `destroy()`; mirrors created by `format()` are removed.
+- Use `formatAll({ type, field: ['a', 'b', 'c'], options })` to bind the same configuration to several fields in one call. Each field gets its own hidden mirror (`aRaw`, `bRaw`, `cRaw`).
+- `@samline/formatter` is an **optional peer dependency**. When it is not installed, `format()` and `formatAll()` log a single `console.error` and return the controller unchanged so the rest of the form keeps working. No exceptions are thrown.
+
+---
+
 ## Next steps
 
 - Need a full options reference? See [docs/options.md](options.md).

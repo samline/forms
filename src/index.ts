@@ -7,9 +7,12 @@ export { createFormController } from './core/controller'
 export type {
   AppendContentOptions,
   AutoSubmitOptions,
+  FieldFormatConfig,
+  FieldFormatConfigMap,
   FieldValidationContext,
   FieldValidationRules,
   FieldValidator,
+  FormatType,
   FormController,
   FormControllerOptions,
   FormErrors,

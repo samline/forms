@@ -3,6 +3,7 @@
 // mutation observer, clears caches, and resets internal state.
 // Safe to call multiple times.
 
+import { cleanupFormatRegistry } from './format'
 import type { FormControllerHelpers, FormControllerState } from '../core/state'
 
 export const createDestroy =
@@ -29,4 +30,9 @@ export const createDestroy =
     state.fieldCache.clear()
     state.manualErrors = {}
     state.validationErrors = {}
+
+    // Detach format listeners and drop the hidden raw mirrors that
+    // `format()` created for this controller. Mirrors that pre-existed
+    // in the DOM (i.e. not owned by us) are preserved.
+    cleanupFormatRegistry(state)
   }

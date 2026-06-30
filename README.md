@@ -135,12 +135,24 @@ The controller is built around one factory and a small set of focused methods. M
 | Properties | [`element`](docs/api/element.md) · [`options`](docs/options.md) |
 | Submission | [`onSubmit`](docs/api/on-submit.md) · [`autoSubmit`](docs/api/auto-submit.md) · [`disableAutoSubmit`](docs/api/disable-auto-submit.md) |
 | Field observation | [`watch`](docs/api/watch.md) · [`observe`](docs/api/observe.md) · [`unwatch`](docs/api/unwatch.md) · [`subscribe`](docs/api/subscribe.md) |
-| Field values | [`setValue`](docs/api/set-value.md) · [`getValue`](docs/api/get-value.md) · [`getField`](docs/api/get-field.md) · [`prefill`](docs/api/prefill.md) |
+| Field values | [`setValue`](docs/api/set-value.md) · [`getValue`](docs/api/get-value.md) · [`getField`](docs/api/get-field.md) · [`prefill`](docs/api/prefill.md) · [`format`](docs/api/format.md) · [`formatAll`](docs/api/format.md) |
 | Validation | [`validate`](docs/api/validate.md) · [`revalidate`](docs/api/revalidate.md) · [`setErrors`](docs/api/set-errors.md) · [`clearErrors`](docs/api/clear-errors.md) |
 | State and data | [`getData`](docs/api/get-data.md) · [`getState`](docs/api/get-state.md) · [`append`](docs/api/append.md) |
 | Pure helpers | [`parseFormData`](docs/api/parse-form-data.md) · [`validateValues`](docs/api/validate-values.md) · [`validateFieldValue`](docs/api/validate-field-value.md) |
 
 See the full per-method reference in [`docs/api/`](docs/api/index.md).
+
+---
+
+## Optional peer: `@samline/formatter`
+
+[`format`](docs/api/format.md) and [`formatAll`](docs/api/format.md) rely on the optional peer dependency [`@samline/formatter`](https://github.com/samline/formatter). Install it when you need input masks (phone, credit-card, date, time, numeral, general):
+
+```bash
+npm install @samline/formatter
+```
+
+If the peer is not installed, the methods log a single `console.error` explaining how to install it and return the controller unchanged — the rest of the form keeps working. See [docs/recipes.md → 13. Format inputs with `@samline/formatter`](docs/recipes.md#13-format-inputs-with-samlineformatter) for end-to-end examples.
 
 ---
 

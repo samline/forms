@@ -28,6 +28,8 @@ Every public method and helper gets its own page. Use this index to navigate to 
 - [`getValue(name)`](get-value.md) — read the current value of a field.
 - [`getField(name)`](get-field.md) — read the underlying DOM element(s).
 - [`prefill(fieldName?)`](prefill.md) — populate the form from `window.location.search`.
+- [`format(config)`](format.md) — apply `@samline/formatter` to a field, with auto-managed raw mirror and cursor tracking.
+- [`formatAll(config)`](format.md) — alias of `format()` for `field: string[]` use cases.
 
 ## Validation
 
