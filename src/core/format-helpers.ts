@@ -54,11 +54,15 @@ export const findRawMirror = (
   if (byAttr) return byAttr
 
   // Backwards-compatible lookup: existing deployments may have used
-  // `<input name="<field>_raw">` to carry the raw value. Reuse it.
+  // `<input name="<field>_raw">` or `<input name="<field>Raw">` to carry the raw value. Reuse it.
   const byName = form.querySelector<HTMLInputElement>(
     `[name="${cssEscape(`${fieldName}_raw`)}"]`
   )
   if (byName) return byName
+  const byNameOld = form.querySelector<HTMLInputElement>(
+    `[name="${cssEscape(`${fieldName}Raw`)}"]`
+  )
+  if (byNameOld) return byNameOld
 
   return null
 }
@@ -74,7 +78,7 @@ export const ensureRawMirror = (
 
   const input = document.createElement('input')
   input.type = 'hidden'
-  input.name = `${fieldName}Raw`
+  input.name = `${fieldName}_raw`
   input.setAttribute('aria-hidden', 'true')
   input.tabIndex = -1
   input.setAttribute(FORMATTER_RAW_ATTRIBUTE, fieldName)

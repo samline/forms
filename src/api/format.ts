@@ -65,6 +65,9 @@ const buildHandler = (
 ): ((event: Event) => void) => {
   const handler = (event: Event) => {
     if (!field.isConnected) return
+    // Bug #1 fix: ensure the event actually came from this field,
+    // since the listener is delegated to the form.
+    if (event.target !== field) return
     const rawInput = (event.target as HTMLInputElement | HTMLTextAreaElement).value
     const { formatted, raw } = formatFn(rawInput, formatType, formatOptions)
 
@@ -123,8 +126,11 @@ const applyFormat = async (
       // refreshes the configuration in `state.formattedFields` but
       // does not double-bind listeners or duplicate the hidden mirror.
       const existing = bucket.get(fieldName)
-      const mirrorName = config.rawField ?? `${fieldName}Raw`
-      let mirror = findRawMirror(state.element, mirrorName) ?? null
+      const mirrorName = config.rawField ?? `${fieldName}_raw`
+      // Bug #2a fix: search by fieldName (the data-formatter-raw-for value),
+      // not mirrorName (the input name). findRawMirror looks for
+      // data-formatter-raw-for="<fieldName>", not data-formatter-raw-for="<fieldName>Raw".
+      let mirror = findRawMirror(state.element, fieldName) ?? null
       const mirrorIsOwned = !mirror
       if (!mirror) mirror = ensureRawMirror(state.element, fieldName)
       // Sync the mirror's `name` attribute when the user overrides it
@@ -142,6 +148,16 @@ const applyFormat = async (
           mirrorName: trackerMirrorName,
           mirrorIsOwned
         })
+        // Bug #2b fix: re-format the current value with the new options
+        // (e.g. country_code change needs to re-format the phone).
+        // Only re-format when the field has a value; when the field is
+        // empty we leave the mirror untouched so pre-existing raw values
+        // (set before format() was called) are preserved.
+        const current = field.value
+        if (current !== '') {
+          const { formatted, raw } = formatter.format(current, formatType, formatOptions)
+          applyFormattedValue(field, mirror, formatted, raw)
+        }
         continue
       }
 
@@ -175,7 +191,9 @@ const applyFormat = async (
       if (initial !== '') {
         const { formatted, raw } = formatter.format(initial, formatType, formatOptions)
         applyFormattedValue(field, mirror, formatted, raw)
-      } else if (mirror && mirror.value !== '') {
+      } else if (mirrorIsOwned && mirror && mirror.value !== '') {
+        // Only clear an owned mirror when the field is empty. Pre-existing
+        // mirrors are left untouched so their values are preserved.
         mirror.value = ''
       }
     }

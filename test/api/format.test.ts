@@ -77,7 +77,7 @@ describe('format() integration', () => {
 
     expect(phoneField.value).toBe('55 1234 5678')
 
-    const mirror = api.getField('phoneRaw') as HTMLInputElement | null
+    const mirror = api.getField('phone_raw') as HTMLInputElement | null
     expect(mirror).not.toBeNull()
     expect(mirror?.type).toBe('hidden')
     expect(mirror?.value).toBe('5512345678')
@@ -90,13 +90,13 @@ describe('format() integration', () => {
     const formElement = document.getElementById('checkout-form') as HTMLFormElement
     const preset = document.createElement('input')
     preset.type = 'hidden'
-    preset.name = 'phoneRaw'
+    preset.name = 'phone_raw'
     formElement.appendChild(preset)
 
     const api = form('checkout-form')
     api.format({ type: 'phone', field: 'phone' })
 
-    const mirrors = formElement.querySelectorAll('input[name="phoneRaw"]')
+    const mirrors = formElement.querySelectorAll('input[name="phone_raw"]')
     expect(mirrors.length).toBe(1)
     expect(mirrors[0]).toBe(preset)
   })
@@ -116,8 +116,8 @@ describe('format() integration', () => {
 
     expect(card.value).toBe('1,234')
     expect(amount.value).toBe('56,789')
-    expect((api.getField('cardRaw') as HTMLInputElement | null)?.value).toBe('1234')
-    expect((api.getField('amountRaw') as HTMLInputElement | null)?.value).toBe('56789')
+    expect((api.getField('card_raw') as HTMLInputElement | null)?.value).toBe('1234')
+    expect((api.getField('amount_raw') as HTMLInputElement | null)?.value).toBe('56789')
   })
 
   it('preserves the caret position when typing at the end', async () => {
@@ -185,7 +185,7 @@ describe('format() integration', () => {
     const formElement = document.getElementById('checkout-form') as HTMLFormElement
     const preset = document.createElement('input')
     preset.type = 'hidden'
-    preset.name = 'phoneRaw'
+    preset.name = 'phone_raw'
     preset.value = 'preloaded'
     formElement.appendChild(preset)
 
@@ -194,7 +194,7 @@ describe('format() integration', () => {
     await flush()
     api.destroy()
 
-    expect(formElement.querySelector('input[name="phoneRaw"]')).toBe(preset)
+    expect(formElement.querySelector('input[name="phone_raw"]')).toBe(preset)
     expect(preset.value).toBe('preloaded')
   })
 
@@ -240,7 +240,7 @@ describe('format() integration', () => {
     await flush()
 
     expect(phoneField.value).toBe('55 1234 5678')
-    expect((api.getField('phoneRaw') as HTMLInputElement | null)?.value).toBe('5512345678')
+    expect((api.getField('phone_raw') as HTMLInputElement | null)?.value).toBe('5512345678')
   })
 
   it('honours a custom rawField name', async () => {
