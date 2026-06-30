@@ -1,8 +1,8 @@
 # Forms
 
-A small, framework-free form controller for vanilla JS and direct browser usage.
+> A small, framework-free form controller for vanilla JS and direct browser usage.
 
-It binds to an `HTMLFormElement`, keeps field state in sync with the DOM, runs validation, lets you react to changes via watchers or subscribers, and ships a serialized payload for `fetch` flows.
+> It binds to an `HTMLFormElement`, keeps field state in sync with the DOM, runs validation, lets you react to changes via watchers or subscribers, and ships a serialized payload for `fetch` flows.
 
 ---
 
