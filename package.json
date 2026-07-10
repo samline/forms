@@ -1,6 +1,6 @@
 {
   "name": "@samline/forms",
-  "version": "2.2.1",
+  "version": "2.2.2",
   "description": "Form controller for vanilla JS and direct browser usage.",
   "type": "module",
   "license": "MIT",
@@ -49,6 +49,7 @@
     }
   },
   "devDependencies": {
+    "@samline/formatter": "^1.0.1",
     "@types/node": "^24.0.0",
     "jsdom": "^26.1.0",
     "tsup": "^8.5.0",

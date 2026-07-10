@@ -48,12 +48,14 @@ export const loadFormatter = (): Promise<FormatterModule | null> => {
 
   const promise = (async () => {
     try {
-      // Dynamic import keeps the optional peer out of the build graph.
-      // The `/* @vite-ignore */` comment prevents bundlers (vite/rollup)
-      // from trying to pre-bundle the optional peer.
-      const mod = (await import(
-        /* @vite-ignore */ '@samline/formatter'
-      )) as FormatterModule
+      // Dynamic import keeps the optional peer out of the eager build graph.
+      // The consumer's bundler is responsible for resolving the peer at
+      // build time — `tsup` treats `@samline/formatter` as `external` so it
+      // does not try to pre-bundle it. Do NOT re-add `/* @vite-ignore */`
+      // here: in production it leaves the bare specifier as a literal in
+      // the bundle, browsers cannot resolve it, and the formatter silently
+      // never loads (the catch below masks the failure).
+      const mod = (await import('@samline/formatter')) as FormatterModule
       state = { status: 'resolved', module: mod }
       return mod
     } catch {

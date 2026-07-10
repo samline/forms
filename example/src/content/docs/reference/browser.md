@@ -13,7 +13,7 @@ For every other case (modern apps, bundlers, TypeScript projects), use the main 
 ## Script tag
 
 ```html
-<script src="https://unpkg.com/@samline/forms@2.2.1/dist/browser/global.global.js"></script>
+<script src="https://unpkg.com/@samline/forms@2.2.2/dist/browser/global.global.js"></script>
 ```
 
 :::caution[Pin the version in production]
@@ -49,7 +49,7 @@ The factory returns a `FormController` with the same signatures, semantics, and 
   <button type="submit">Send</button>
 </form>
 
-<script src="https://unpkg.com/@samline/forms@2.2.1/dist/browser/global.global.js"></script>
+<script src="https://unpkg.com/@samline/forms@2.2.2/dist/browser/global.global.js"></script>
 <script>
   const contactForm = window.Forms.newForm({
     id: 'contact-form',
