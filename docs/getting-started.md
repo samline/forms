@@ -8,7 +8,7 @@ This page explains what `@samline/forms` is, how the controller is wired, and wh
 
 Use the vanilla variant when you work with native HTML forms, embedded scripts, static sites, or applications where you do not need a framework wrapper. This is the primary — and only — runtime entrypoint of `@samline/forms` since v2.1.0.
 
-> Note: the latest published version is `2.2.1` — see [Releases](https://github.com/samline/forms/releases) for the changelog.
+> Note: the latest published version is `2.2.2` — see [Releases](https://github.com/samline/forms/releases) for the changelog.
 
 If you want a `<script>`-only setup without a bundler, see [docs/browser.md](browser.md).
 
