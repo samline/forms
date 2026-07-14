@@ -34,5 +34,5 @@ bun.lockb
 skills-lock.json
 
 # Local files
-.local/
-AGENTS.md
+# .local/ deprecado desde 2026-07-13 — usar .agents/ en su lugar
+# AGENTS.md y .agents/ SÍ se versionan (decisión 2026-07-13)
