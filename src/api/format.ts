@@ -69,6 +69,11 @@ const buildHandler = (
     // since the listener is delegated to the form.
     if (event.target !== field) return
     const rawInput = (event.target as HTMLInputElement | HTMLTextAreaElement).value
+    // `InputEvent.inputType` lets the cursor helper distinguish deletions
+    // (`deleteContentBackward`, `deleteWordBackward`, …) from insertions
+    // and apply cleave's `postDelimiterBackspace` contract: after a
+    // deletion the caret must never sit with a delimiter on its left.
+    const inputType = readInputType(event)
     const { formatted, raw } = formatFn(rawInput, formatType, formatOptions)
 
     if (!formatted && !raw) {
@@ -77,11 +82,20 @@ const buildHandler = (
       return
     }
 
-    applyFormattedValue(field, mirror, formatted, raw)
+    applyFormattedValue(field, mirror, formatted, raw, inputType)
     // Keep the registry mirror pointer alive for in-place cleanup.
     void mirrorFieldName
   }
   return handler
+}
+
+// `InputEvent.inputType` is the canonical signal for "what just
+// happened". The listener is registered as a plain `Event` handler so
+// older / synthetic events without `inputType` simply fall through and
+// behave as insertions — which preserves the pre-existing cursor math.
+const readInputType = (event: Event): string | undefined => {
+  const candidate = event as Partial<InputEvent>
+  return typeof candidate.inputType === 'string' ? candidate.inputType : undefined
 }
 
 // Internal: core apply routine shared by `format()` and `formatAll()`.

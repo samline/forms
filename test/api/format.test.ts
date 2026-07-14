@@ -49,6 +49,23 @@ const numeralFormatter: FormatterModule = {
   }
 }
 
+// Hardcoded DD/MM/YYYY formatter for the deletion-adjacent-to-delimiter
+// tests. Mirrors the shape of `@samline/formatter`'s `date` mode but
+// keeps the expected output string predictable so the caret math in the
+// test is obvious to read.
+const dateFormatter: FormatterModule = {
+  format: (value, _type, _options) => {
+    const digits = String(value ?? '').replace(/\D/g, '').slice(0, 8)
+    let formatted = digits
+    if (digits.length > 4) {
+      formatted = `${digits.slice(0, 2)}/${digits.slice(2, 4)}/${digits.slice(4)}`
+    } else if (digits.length > 2) {
+      formatted = `${digits.slice(0, 2)}/${digits.slice(2)}`
+    }
+    return { formatted, raw: digits, type: 'date' }
+  }
+}
+
 const flush = () => new Promise<void>(resolve => setTimeout(resolve, 0))
 
 describe('format() integration', () => {
@@ -257,5 +274,133 @@ describe('format() integration', () => {
       (api.getField('phoneBackend') as HTMLInputElement | null)?.value
     ).toBe('5512345678')
     expect(api.getField('phoneRaw')).toBeNull()
+  })
+
+  // === postDelimiterBackspace contract ===
+  // jsdom does not run a real keyboard stack, so each deletion test sets
+  // the visible value + caret to the post-deletion state and then
+  // dispatches an `InputEvent` with the appropriate `inputType`. The
+  // controller reads `event.inputType` (the same field the browser
+  // exposes on real InputEvent instances) and walks the caret backwards
+  // past any leading delimiter so it never ends up "jumping" past one.
+
+  const dispatchDeletion = (
+    field: HTMLInputElement,
+    inputType:
+      | 'deleteContentBackward'
+      | 'deleteContentForward'
+      | 'deleteWordBackward'
+  ) => {
+    field.dispatchEvent(
+      new InputEvent('input', { bubbles: true, inputType })
+    )
+  }
+
+  it('pulls the caret back past a delimiter after deleteContentBackward removes the digit immediately after it', async () => {
+    __setFormatterModuleForTests(phoneFormatter)
+    const api = form('checkout-form')
+    api.format({ type: 'phone', field: 'phone' })
+
+    const phoneField = api.getField('phone') as HTMLInputElement
+    phoneField.value = '5512345678'
+    phoneField.dispatchEvent(new Event('input', { bubbles: true }))
+    await flush()
+    expect(phoneField.value).toBe('55 1234 5678')
+
+    // Simulate the browser's natural backspace at position 9 (between
+    // `5` and `6`). The digit `5` at position 8 is removed; the caret
+    // lands at position 8 (between the second ` ` and `6`).
+    phoneField.value = '55 1234 678'
+    phoneField.setSelectionRange(8, 8)
+    dispatchDeletion(phoneField, 'deleteContentBackward')
+    await flush()
+
+    // Formatter is idempotent on already-formatted input — the visible
+    // value stays `55 1234 678`. The postDelimiterBackspace scan pulls
+    // the caret from 8 (with ` ` on its left) back to 7 (between `4`
+    // and ` `), so the next backspace deletes a digit, not a delimiter.
+    expect(phoneField.value).toBe('55 1234 678')
+    expect(phoneField.selectionStart).toBe(7)
+  })
+
+  it('re-anchors the caret after deleteContentBackward removes a delimiter itself', async () => {
+    __setFormatterModuleForTests(phoneFormatter)
+    const api = form('checkout-form')
+    api.format({ type: 'phone', field: 'phone' })
+
+    const phoneField = api.getField('phone') as HTMLInputElement
+    phoneField.value = '5512345678'
+    phoneField.dispatchEvent(new Event('input', { bubbles: true }))
+    await flush()
+
+    // Simulate the browser's natural backspace at position 8 (between
+    // the second ` ` and `5`): the ` ` at position 7 is removed; the
+    // caret lands at 7.
+    phoneField.value = '55 12345678'
+    phoneField.setSelectionRange(7, 7)
+    dispatchDeletion(phoneField, 'deleteContentBackward')
+    await flush()
+
+    // Formatter re-inserts the delimiter (` `) at position 7. Caret
+    // stays at 7 — between `4` and the re-inserted ` ` — so the next
+    // backspace deletes `4`, not the delimiter.
+    expect(phoneField.value).toBe('55 1234 5678')
+    expect(phoneField.selectionStart).toBe(7)
+  })
+
+  it('re-anchors the caret after deleteWordBackward in the middle of a formatted value', async () => {
+    __setFormatterModuleForTests(phoneFormatter)
+    const api = form('checkout-form')
+    api.format({ type: 'phone', field: 'phone' })
+
+    const phoneField = api.getField('phone') as HTMLInputElement
+    phoneField.value = '5512345678'
+    phoneField.dispatchEvent(new Event('input', { bubbles: true }))
+    await flush()
+
+    // Simulate Cmd+Backspace at position 10 (between `6` and `7`). In
+    // real browsers `deleteWordBackward` deletes the trailing word plus
+    // its leading delimiter; we simulate the resulting state directly:
+    // value `55 123458` (9 chars), caret at 7 (between `4` and `5`).
+    phoneField.value = '55 123458'
+    phoneField.setSelectionRange(7, 7)
+    dispatchDeletion(phoneField, 'deleteWordBackward')
+    await flush()
+
+    // Formatter re-formats `55 123458` → `55 1234 58` (10 chars),
+    // re-inserting the delimiter at position 7. Caret stays at 7
+    // (between `4` and the re-inserted ` `) — the postDelimiterBackspace
+    // scan would have pulled it back to 6 if the formatter had landed
+    // one position earlier, but the cleave-style count matches the new
+    // value's digit layout, so the scan correctly leaves the caret
+    // anchored just before the re-inserted delimiter.
+    expect(phoneField.value).toBe('55 1234 58')
+    expect(phoneField.selectionStart).toBe(7)
+  })
+
+  it('pulls the caret back past the first slash when the cursor is parked after it in a DD/MM/YYYY date field', async () => {
+    __setFormatterModuleForTests(dateFormatter)
+    const api = form('checkout-form')
+    api.format({ type: 'date', field: 'phone' })
+
+    const phoneField = api.getField('phone') as HTMLInputElement
+    phoneField.value = '12345678'
+    phoneField.dispatchEvent(new Event('input', { bubbles: true }))
+    await flush()
+    expect(phoneField.value).toBe('12/34/5678')
+
+    // Cursor parked right after the first `/` (position 3). Backspace
+    // removes the `/`; the browser leaves the caret at position 2
+    // (between `2` and the deleted position).
+    phoneField.value = '1234/5678'
+    phoneField.setSelectionRange(2, 2)
+    dispatchDeletion(phoneField, 'deleteContentBackward')
+    await flush()
+
+    // Formatter re-formats to `12/34/5678`, re-inserting the `/`. Caret
+    // stays at 2 — between `2` and the re-inserted `/` — so the next
+    // backspace deletes `2`, not the slash.
+    expect(phoneField.value).toBe('12/34/5678')
+    expect(phoneField.selectionStart).toBe(2)
   })
 })

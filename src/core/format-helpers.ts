@@ -2,6 +2,9 @@
 //   - DOM cursor tracking equivalent to cleave.js' `getNextCursorPosition`
 //     (so typing/backspacing inside formatted inputs keeps the caret
 //     in a sensible place, even when delimiters are inserted or removed).
+//   - `postDelimiterBackspace` contract: after a deletion, the caret
+//     is pulled backwards past any leading delimiter so the user never
+//     ends up parked with a format character on the caret's left.
 //   - Raw-mirror lookup & creation: each formatted input gets a hidden
 //     sibling (`type="hidden"`) that holds the backend-ready `raw`
 //     value. The mirror is created on first `format()` call and reused
@@ -102,11 +105,22 @@ export const removeOwnedRawMirrors = (form: HTMLFormElement): void => {
 // assertions. The function avoids triggering `MutationObserver` cascades
 // for the hidden mirror by setting `.value` directly (the controller's
 // own delegated handler ignores hidden inputs via `isFieldElement`).
+//
+// `inputType` is the optional `InputEvent.inputType` value (e.g.
+// `'insertText'`, `'deleteContentBackward'`, `'deleteWordBackward'`).
+// When it indicates a deletion, this helper mirrors cleave.js'
+// `postDelimiterBackspace` contract: after the caret is re-anchored in
+// the freshly formatted value, walk backwards while the character
+// immediately to the left of the caret is a format character (delimiter,
+// prefix/suffix symbol, …) and decrement the caret. That keeps the
+// caret from "jumping" past a delimiter that disappeared when the user
+// deleted the digit sitting right next to it.
 export const applyFormattedValue = (
   visible: HTMLInputElement | HTMLTextAreaElement,
   mirror: HTMLInputElement | null,
   formatted: string,
-  raw: string
+  raw: string,
+  inputType?: string
 ): number => {
   // Capture the caret in the **raw** input the user just typed — this
   // is what cleave's `getNextCursorPosition` does. Using the formatted
@@ -119,18 +133,48 @@ export const applyFormattedValue = (
     rawInput.length
   )
 
+  if (mirror && mirror.value !== raw) mirror.value = raw
+
   if (rawInput === formatted) {
-    if (mirror && mirror.value !== raw) mirror.value = raw
-    return caret
+    // The formatter did not change the visible value — usually because
+    // the user is editing at the tail of a fully-formatted string. Even
+    // so, a backspace can leave the caret sitting with a delimiter on
+    // its left (because the digit right after the delimiter just
+    // disappeared). Apply the postDelimiterBackspace scan in this path
+    // too so the contract holds for both branches.
+    const newCaret = pullCaretPastLeadingDelimiter(caret, formatted, inputType)
+    if (newCaret !== caret) restoreCursor(visible, newCaret)
+    return newCaret
   }
 
   visible.value = formatted
 
-  if (mirror) mirror.value = raw
-
-  const newCaret = computeCursorPosition(caret, rawInput, formatted)
+  const newCaret = pullCaretPastLeadingDelimiter(
+    computeCursorPosition(caret, rawInput, formatted),
+    formatted,
+    inputType
+  )
   restoreCursor(visible, newCaret)
   return newCaret
+}
+
+// Mirrors cleave.js' `postDelimiterBackspace` contract. After a
+// deletion (`inputType` starts with `'delete'`) we never want the
+// caret to sit with a format character immediately on its left; if it
+// would, pull it backwards until it does (or until we hit index 0).
+// No-op when `inputType` is missing or does not indicate a deletion.
+const pullCaretPastLeadingDelimiter = (
+  caret: number,
+  value: string,
+  inputType: string | undefined
+): number => {
+  if (!inputType || !inputType.startsWith('delete')) return caret
+
+  let cursor = caret
+  while (cursor > 0 && isFormatChar(value[cursor - 1]!)) {
+    cursor -= 1
+  }
+  return cursor
 }
 
 const clamp = (value: number, min: number, max: number): number =>
