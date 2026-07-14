@@ -1,25 +1,25 @@
 # AGENTS
 
-## Instrucción Principal
+## Main Instruction
 
-Antes de comenzar cualquier tarea en este repositorio, la IA debe leer primero `.agents/agent-index.md`.
+Before starting any task in this repository, the AI must first read `.agents/agent-index.md`.
 
-Ese archivo funciona como índice maestro de las instrucciones internas del proyecto y define qué otros documentos de `.agents/` deben revisarse según el tipo de trabajo.
+That file acts as the master index of the project's internal instructions and defines which other documents in `.agents/` should be reviewed based on the type of work.
 
-## Regla De Lectura Obligatoria
+## Mandatory Reading Rule
 
-Al iniciar una nueva conversación o una nueva tarea dentro de este repositorio, la IA debe seguir este orden estrictamente:
+When starting a new conversation or a new task inside this repository, the AI must follow this order strictly:
 
-1. **Consulta de Grafo (MCP):** Siempre que el agente necesite ver archivos, la estructura del directorio o cualquier elemento del proyecto, debe utilizar primero el MCP `codebase-memory-mcp` para obtener la información del grafo.
-2. Leer `.agents/agent-index.md`.
-3. Determinar el tipo de tarea.
-4. Leer los documentos internos adicionales que `.agents/agent-index.md` indique para ese contexto.
+1. **Graph Query (MCP):** Whenever the agent needs to see files, the directory structure, or any element of the project, it must first use the `codebase-memory-mcp` MCP to get the information from the graph.
+2. Read `.agents/agent-index.md`.
+3. Determine the type of task.
+4. Read the additional internal documents that `.agents/agent-index.md` points to for that context.
 
 ---
 
-## Documentos Internos Disponibles
+## Available Internal Documents
 
-La IA debe usar `.agents/agent-index.md` como punto de entrada para localizar y revisar, cuando corresponda:
+The AI must use `.agents/agent-index.md` as the entry point to locate and review, when applicable:
 
 1. `.agents/package-replication-guide.md`
 2. `.agents/deploy-and-release-guide.md`
@@ -29,37 +29,37 @@ La IA debe usar `.agents/agent-index.md` como punto de entrada para localizar y 
 
 ---
 
-## Regla De Interpretación
+## Interpretation Rule
 
-Los archivos dentro de `.agents/` son instrucciones internas para la IA y no documentación pública del paquete.
+The files inside `.agents/` are internal instructions for the AI, not public documentation of the package.
 
-La IA debe tratarlos como contexto operativo del proyecto.
+The AI must treat them as operational context of the project.
 
-> **Nota Crítica de Git (actualizado 2026-07-13):** `AGENTS.md` y `.agents/` **sí se versionan** y aparecen en git. Solo se excluyen del tarball npm publicado mediante `.npmignore`. La antigua convención de mantenerlos fuera de Git está deprecada.
-
----
-
-## Casos Mínimos
-
-### Tarea general
-1. Consultar el grafo con `codebase-memory-mcp`.
-2. Leer `.agents/agent-index.md`.
-3. Si aplica, revisar `.agents/todo.md` y `.agents/lessons.md`.
-
-### Nuevo paquete o nuevo scaffold
-1. Consultar el grafo con `codebase-memory-mcp`.
-2. Leer `.agents/agent-index.md`, `.agents/package-replication-guide.md`, `.agents/new-project.md`, `.agents/todo.md` y `.agents/lessons.md`.
-
-### Release, deploy o publicación
-1. Consultar el grafo con `codebase-memory-mcp`.
-2. Leer `.agents/agent-index.md`, `.agents/deploy-and-release-guide.md`, `.agents/todo.md` y `.agents/lessons.md`.
+> **Critical Git Note (updated 2026-07-13):** `AGENTS.md` and `.agents/` **are versioned** and appear in git. They are only excluded from the published npm tarball via `.npmignore`. The old convention of keeping them out of Git is deprecated.
 
 ---
 
-## Regla De Persistencia
+## Minimum Cases
 
-Si el usuario agrega nuevas reglas internas, pendientes o lecciones, la IA debe mantener actualizados los documentos correspondientes dentro de `.agents/`.
+### General task
+1. Query the graph with `codebase-memory-mcp`.
+2. Read `.agents/agent-index.md`.
+3. If applicable, review `.agents/todo.md` and `.agents/lessons.md`.
 
-Si durante una sesión la IA guarda contexto en memoria de sesión del chat y ese contenido corresponde a una regla interna, un pendiente, una lección o una preferencia operativa del proyecto, también debe persistirlo en el archivo adecuado de `.agents/` para no perder coherencia si la sesión se borra.
+### New package or new scaffold
+1. Query the graph with `codebase-memory-mcp`.
+2. Read `.agents/agent-index.md`, `.agents/package-replication-guide.md`, `.agents/new-project.md`, `.agents/todo.md` and `.agents/lessons.md`.
 
-La IA también debe preservar la convención actual: `AGENTS.md` y `.agents/` se versionan en git pero se excluyen del tarball npm publicado.
+### Release, deploy, or publish
+1. Query the graph with `codebase-memory-mcp`.
+2. Read `.agents/agent-index.md`, `.agents/deploy-and-release-guide.md`, `.agents/todo.md` and `.agents/lessons.md`.
+
+---
+
+## Persistence Rule
+
+If the user adds new internal rules, todos, or lessons, the AI must keep the corresponding documents inside `.agents/` updated.
+
+If during a session the AI saves context in the chat session memory and that content corresponds to an internal rule, a todo, a lesson, or an operational preference of the project, it must also persist it in the appropriate file in `.agents/` to keep coherence if the session is cleared.
+
+The AI must also preserve the current convention: `AGENTS.md` and `.agents/` are versioned in git but excluded from the published npm tarball.
