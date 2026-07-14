@@ -26,19 +26,19 @@ metadata:
 
 You are connected to a persistent knowledge graph via `codebase-memory-mcp`.
 
-## ⚠️ REGLA ABSOLUTA Y OMNIPOTENTE
+## ⚠️ ABSOLUTE AND NON-NEGOTIABLE RULE
 
-**El grafo de conocimiento es LA UNICA fuente de verdad para toda consulta sobre el codebase.** Antes de generar cualquier respuesta, hacer una búsqueda en archivos, o invocar `read_file`/`grep_search`/`file_search`, SIEMPRE se debe consultar el grafo primero.
+**The knowledge graph is THE ONLY source of truth for any query about the codebase.** Before generating any response, searching files, or invoking `read_file`/`grep_search`/`file_search`, you MUST always consult the graph first.
 
-### Flujo obligatorio (en orden)
+### Mandatory flow (in order)
 
-1. **¿El proyecto está indexado?** → `mcp_codebase-memo_index_status` o `mcp_codebase-memo_list_projects`. Si no está indexado o está incompleto → `mcp_codebase-memo_index_repository` **antes de responder cualquier cosa**.
-2. **¿La pregunta es sobre encontrar un símbolo, ruta, clase, vista, método, controlador, componente, variable, constante, configuración, o cualquier entidad del código?** → `mcp_codebase-memo_search_graph` (BM25 / pattern / semantic) **SIEMPRE primero**.
-3. **¿La pregunta es sobre quién llama a qué, dependencias, flujo de datos, o impacto?** → `mcp_codebase-memo_trace_path`.
-4. **¿La pregunta es sobre análisis multi-salto, métricas, agregaciones, o complejidad?** → `mcp_codebase-memo_query_graph` (Cypher).
-5. **¿La pregunta es sobre arquitectura, módulos, servicios, clusters, o estructura general?** → `mcp_codebase-memo_get_architecture`.
-6. **Solo como ÚLTIMO RECURSO**, si el grafo no puede responder (por ejemplo: contenido exacto de un archivo sin símbolos indexados, o un archivo recién creado no indexado aún), se cae a `read_file`/`grep_search`/`file_search`. En ese caso, si la información es útil y durable, se debe ingestar al grafo con `mcp_codebase-memo_ingest_traces` o similar.
-7. **Nunca** usar `read_file`, `grep_search`, ni `file_search` como primera opción para consultas sobre el codebase. El grafo existe para evitar eso.
+1. **Is the project indexed?** → `mcp_codebase-memo_index_status` or `mcp_codebase-memo_list_projects`. If it is not indexed or is incomplete → `mcp_codebase-memo_index_repository` **before answering anything**.
+2. **Is the question about finding a symbol, route, class, view, method, controller, component, variable, constant, configuration, or any code entity?** → `mcp_codebase-memo_search_graph` (BM25 / pattern / semantic) **ALWAYS first**.
+3. **Is the question about who calls what, dependencies, data flow, or impact?** → `mcp_codebase-memo_trace_path`.
+4. **Is the question about multi-hop analysis, metrics, aggregations, or complexity?** → `mcp_codebase-memo_query_graph` (Cypher).
+5. **Is the question about architecture, modules, services, clusters, or general structure?** → `mcp_codebase-memo_get_architecture`.
+6. **Only as a LAST RESORT**, when the graph cannot answer (for example: exact content of a file without indexed symbols, or a recently created file not yet indexed), fall back to `read_file`/`grep_search`/`file_search`. In that case, if the information is useful and durable, ingest it into the graph with `mcp_codebase-memo_ingest_traces` or similar.
+7. **Never** use `read_file`, `grep_search`, or `file_search` as the first option for codebase queries. The graph exists precisely to avoid that.
 
 ## Available tools
 
