@@ -89,3 +89,4 @@ if (Array.isArray(files) && files.length > 0) {
 - [`setValue`](set-value.md) — write a value.
 - [`getField`](get-field.md) — read the underlying DOM element(s).
 - [`getData`](get-data.md) — serialize the whole form.
+- [`format`](format.md) — when a field is formatted, `getValue('<field>')` returns the raw value and `getValue('<field>_displayed')` returns the formatted value. See [the mirror convention](format.md#the-mirror-convention).

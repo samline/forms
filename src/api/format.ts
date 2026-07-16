@@ -3,6 +3,30 @@
 // fields, with cleave-style cursor tracking and an auto-managed hidden
 // raw mirror.
 //
+// Mirror convention
+// -----------------
+// `format()` mirrors the developer's authoring intent. The developer
+// writes a single visible input with the name they want the backend
+// to read (the "canonical" name, e.g. `phone`). The first time
+// `format()` runs for that field it:
+//
+//   1. Renames the visible from `phone` to `phone_displayed`
+//      (configurable via `FieldFormatConfig.displayField`). The
+//      visible keeps showing the formatted value the user types.
+//   2. Creates a hidden `<input type="hidden" name="phone">` that
+//      carries the raw value the backend ultimately receives.
+//
+// After the rename both names are first-class in the controller's
+// API:
+//   - `getValue('phone')`            -> raw
+//   - `getValue('phone_displayed')`  -> formatted
+//   - `watch('phone', cb)`           -> cb receives the raw value
+//   - `watch('phone_displayed', cb)` -> cb receives the formatted value
+//   - `setValue('phone', x)`         -> writes raw, reformats visible
+//   - `setValue('phone_displayed', x)` -> writes formatted, reformats raw
+//   - `getData()`                    -> FormData carries both keys
+//   - `validators.phone`             -> runs against the raw value
+//
 // Public surface lives on `FormController` as `format()` and
 // `formatAll()`. Both are chainable and both behave identically — the
 // alias exists only to read naturally when the caller wants to apply
@@ -15,21 +39,38 @@
 import type { FieldFormatConfig, FormController, FormFieldElement } from '../core/types'
 import {
   applyFormattedValue,
-  ensureRawMirror,
-  findRawMirror,
-  FORMATTER_RAW_ATTRIBUTE
+  ensureHiddenMirror,
+  findHiddenMirror,
+  findVisibleField,
+  FORMATTER_RAW_ATTRIBUTE,
+  renameVisibleField,
+  restoreVisibleName
 } from '../core/format-helpers'
 import { loadFormatter } from '../core/formatter-loader'
 import type { FormControllerHelpers, FormControllerState } from '../core/state'
 
-// Listeners added on demand; tracked here so a future `unformat(field)`
-// (out of scope for v1) can detach them without trawling `state.listeners`.
+// Listeners added on demand; tracked here so `destroy()` can detach
+// the input listeners and remove the mirrors the controller owns.
 type FormatEntry = {
-  fields: Set<HTMLInputElement | HTMLTextAreaElement>
-  mirrorName: string
-  handler: (event: Event) => void
+  canonicalName: string
+  displayName: string
+  visible: HTMLInputElement | HTMLTextAreaElement
+  mirror: HTMLInputElement
   mirrorIsOwned: boolean
+  /**
+   * The bound input listener. `null` until phase 2 of `applyFormat`
+   * installs the real closure (after the formatter peer resolves);
+   * the placeholder skips input events so the visible / mirror
+   * remain consistent even before the peer loads.
+   */
+  handler: ((event: Event) => void) | null
 }
+
+/**
+ * Sentinel for "no handler bound yet" so phase 2 of `applyFormat`
+ * can tell first-time bindings apart from idempotent re-binds.
+ */
+const UNBOUND: ((event: Event) => void) | null = null
 
 const registry = new WeakMap<FormControllerState, Map<string, FormatEntry>>()
 
@@ -49,44 +90,25 @@ const addListener = (
   state: FormControllerState,
   target: EventTarget,
   type: string,
-  handler: EventListener
+  handler: EventListener,
+  useCapture?: boolean
 ): void => {
-  target.addEventListener(type, handler)
-  state.listeners.push({ element: target, type, handler })
-}
-
-const buildHandler = (
-  field: HTMLInputElement | HTMLTextAreaElement,
-  mirror: HTMLInputElement | null,
-  formatFn: NonNullable<Awaited<ReturnType<typeof loadFormatter>>>['format'],
-  formatType: FieldFormatConfig['type'],
-  formatOptions: Record<string, unknown> | undefined,
-  mirrorFieldName: string
-): ((event: Event) => void) => {
-  const handler = (event: Event) => {
-    if (!field.isConnected) return
-    // Bug #1 fix: ensure the event actually came from this field,
-    // since the listener is delegated to the form.
-    if (event.target !== field) return
-    const rawInput = (event.target as HTMLInputElement | HTMLTextAreaElement).value
-    // `InputEvent.inputType` lets the cursor helper distinguish deletions
-    // (`deleteContentBackward`, `deleteWordBackward`, …) from insertions
-    // and apply cleave's `postDelimiterBackspace` contract: after a
-    // deletion the caret must never sit with a delimiter on its left.
-    const inputType = readInputType(event)
-    const { formatted, raw } = formatFn(rawInput, formatType, formatOptions)
-
-    if (!formatted && !raw) {
-      field.value = ''
-      if (mirror && mirror.value !== '') mirror.value = ''
-      return
-    }
-
-    applyFormattedValue(field, mirror, formatted, raw, inputType)
-    // Keep the registry mirror pointer alive for in-place cleanup.
-    void mirrorFieldName
+  if (useCapture) {
+    target.addEventListener(type, handler, { capture: true })
+  } else {
+    target.addEventListener(type, handler)
   }
-  return handler
+  // `exactOptionalPropertyTypes: true` rejects explicit `undefined`
+  // values for optional properties; only attach `capture` when it
+  // actually has a value.
+  const entry: {
+    element: EventTarget
+    type: string
+    handler: EventListener
+    capture?: boolean
+  } = { element: target, type, handler }
+  if (useCapture !== undefined) entry.capture = useCapture
+  state.listeners.push(entry)
 }
 
 // `InputEvent.inputType` is the canonical signal for "what just
@@ -98,7 +120,50 @@ const readInputType = (event: Event): string | undefined => {
   return typeof candidate.inputType === 'string' ? candidate.inputType : undefined
 }
 
+const buildHandler = (
+  visible: HTMLInputElement | HTMLTextAreaElement,
+  mirror: HTMLInputElement,
+  formatFn: NonNullable<Awaited<ReturnType<typeof loadFormatter>>>['format'],
+  formatType: FieldFormatConfig['type'],
+  formatOptions: Record<string, unknown> | undefined
+): ((event: Event) => void) => {
+  const handler = (event: Event) => {
+    if (!visible.isConnected || !mirror.isConnected) return
+
+    // Two valid event sources: the visible (user typing) or the
+    // mirror (a `setValue('phone', x)` or external script that
+    // wrote the raw). Any other source is unrelated.
+    const isVisible = event.target === visible
+    const isMirror = event.target === mirror
+    if (!isVisible && !isMirror) return
+
+    // When the mirror is the source, take its current value as the
+    // raw input — it is the developer's authoritative intent. When
+    // the visible is the source, take the visible's value as usual
+    // (it is the unformatted text the user just typed).
+    const rawInput = isMirror ? mirror.value : visible.value
+    const inputType = readInputType(event)
+    const { formatted, raw } = formatFn(rawInput, formatType, formatOptions)
+
+    if (!formatted && !raw) {
+      visible.value = ''
+      if (mirror.value !== '') mirror.value = ''
+      return
+    }
+
+    applyFormattedValue(visible, mirror, formatted, raw, inputType)
+  }
+  return handler
+}
+
 // Internal: core apply routine shared by `format()` and `formatAll()`.
+// Splits the setup into two phases so the developer-facing effects
+// (visible renamed, hidden created) are visible synchronously after
+// `format()` returns. The formatter peer still loads asynchronously
+// on the first call, but only the "bind input listener + apply
+// formatter to the current value" step is deferred — every other
+// piece of state is in place by the time the method returns.
+//
 // Returns the controller to preserve chainability even on the missing
 // peer path.
 const applyFormat = async (
@@ -108,109 +173,163 @@ const applyFormat = async (
 ): Promise<void> => {
   if (!state.element || !state.api) return
 
-  const formatter = await loadFormatter()
-  if (!formatter) return
-
   const formatType = config.type
   const formatOptions = config.options
   const fieldNames = resolveFieldNames(config)
   const bucket = getRegistry(state)
 
+  // Phase 1 (sync): rename the visible, create / reuse the hidden
+  // mirror, refresh the `formattedFields` registry. After this
+  // returns, the controller's API surface is fully functional for
+  // the field — `getValue('phone')` reads the hidden, `getValue(
+  // 'phone_displayed')` reads the visible. The input listener and
+  // the initial value pass through the formatter are installed
+  // once the peer resolves in phase 2.
   for (const fieldName of fieldNames) {
-    const fields = helpers.getFieldsByName(fieldName) as FormFieldElement[]
-    if (fields.length === 0) continue
+    const displayName = config.displayField ?? `${fieldName}_displayed`
 
-    // Filter to text-like inputs — the formatter does not work on
-    // checkboxes, radios, files, etc.
-    const writable = fields.filter(
+    // Resolve the visible input. Two authoring styles are supported:
+    //
+    //   1. The dev wrote `<input name="phone">` (the canonical
+    //      name). `format()` will rename it to `phone_displayed`
+    //      on first run.
+    //   2. The dev pre-authored `<input name="phone_displayed">`
+    //      (or whatever `displayField` resolves to). `format()`
+    //      leaves the name alone.
+    //
+    // Both paths end up with the same DOM: a visible carrying the
+    // display name + a hidden carrying the canonical name.
+    const canonicalFields = helpers.getFieldsByName(fieldName) as FormFieldElement[]
+    const candidates = canonicalFields.filter(
       (f): f is HTMLInputElement | HTMLTextAreaElement =>
-        (f instanceof HTMLInputElement &&
-          f.type !== 'checkbox' &&
-          f.type !== 'radio' &&
-          f.type !== 'file' &&
-          f.type !== 'submit' &&
-          f.type !== 'button') ||
+        (f instanceof HTMLInputElement && f.type !== 'hidden') ||
         f instanceof HTMLTextAreaElement
     )
+    let visible: HTMLInputElement | HTMLTextAreaElement | null = candidates[0] ?? null
+    if (!visible) {
+      visible = findVisibleField(state.element, displayName)
+    }
+    if (!visible) continue
 
-    if (writable.length === 0) continue
+    // Idempotency: a second `format()` call for the same canonical
+    // name refreshes the configuration but does not double-bind
+    // listeners or duplicate the hidden mirror.
+    const existing = bucket.get(fieldName)
 
-    for (const field of writable) {
-      // Idempotency: a second `format()` call for the same field
-      // refreshes the configuration in `state.formattedFields` but
-      // does not double-bind listeners or duplicate the hidden mirror.
-      const existing = bucket.get(fieldName)
-      const mirrorName = config.rawField ?? `${fieldName}_raw`
-      // Bug #2a fix: search by fieldName (the data-formatter-raw-for value),
-      // not mirrorName (the input name). findRawMirror looks for
-      // data-formatter-raw-for="<fieldName>", not data-formatter-raw-for="<fieldName>Raw".
-      let mirror = findRawMirror(state.element, fieldName) ?? null
-      const mirrorIsOwned = !mirror
-      if (!mirror) mirror = ensureRawMirror(state.element, fieldName)
-      // Sync the mirror's `name` attribute when the user overrides it
-      // via `config.rawField` (default `<field>Raw`).
-      if (mirror && mirror.name !== mirrorName) mirror.name = mirrorName
-      const trackerMirrorName = mirror?.name ?? mirrorName
+    // Pre-authored hidden? Reuse it. Otherwise create one.
+    let mirror = findHiddenMirror(state.element, fieldName)
+    const mirrorIsOwned = !mirror
+    if (!mirror) mirror = ensureHiddenMirror(state.element, fieldName)
 
-      if (existing) {
-        // Refresh the stored config so `destroy()` knows the entry is
-        // still active, but do not re-attach listeners.
-        existing.mirrorName = trackerMirrorName
-        existing.mirrorIsOwned = mirrorIsOwned
-        state.formattedFields.set(fieldName, {
-          config,
-          mirrorName: trackerMirrorName,
-          mirrorIsOwned
-        })
-        // Bug #2b fix: re-format the current value with the new options
-        // (e.g. country_code change needs to re-format the phone).
-        // Only re-format when the field has a value; when the field is
-        // empty we leave the mirror untouched so pre-existing raw values
-        // (set before format() was called) are preserved.
-        const current = field.value
-        if (current !== '') {
-          const { formatted, raw } = formatter.format(current, formatType, formatOptions)
-          applyFormattedValue(field, mirror, formatted, raw)
-        }
-        continue
-      }
+    // Rename the visible from the canonical name to the display
+    // name. No-op if the developer pre-authored the visible with
+    // the display name (skip-rename path).
+    renameVisibleField(visible, displayName)
 
-      const handler = buildHandler(
-        field,
-        mirror,
-        formatter.format,
-        formatType,
-        formatOptions,
-        trackerMirrorName
-      )
-
-      addListener(state, state.element, 'input', handler)
-      bucket.set(fieldName, {
-        fields: new Set([field]),
-        mirrorName: trackerMirrorName,
-        handler,
+    if (existing) {
+      // Refresh the stored config so `destroy()` knows the entry
+      // is still active, but do not re-attach listeners.
+      existing.displayName = displayName
+      existing.mirrorIsOwned = mirrorIsOwned
+      state.formattedFields.set(fieldName, {
+        config,
+        displayName,
         mirrorIsOwned
+      })
+    } else {
+      // Reserve the slot in the bucket so subsequent
+      // `getFieldsByName` lookups can find the visible + mirror
+      // and so phase 2 has a target to bind the handler to.
+      // The handler is installed in phase 2 (after the formatter
+      // peer resolves); until then the entry is tracked but the
+      // capture-phase input listener is not yet on the form.
+      bucket.set(fieldName, {
+        canonicalName: fieldName,
+        displayName,
+        visible,
+        mirror,
+        mirrorIsOwned,
+        handler: UNBOUND
       })
       state.formattedFields.set(fieldName, {
         config,
-        mirrorName: trackerMirrorName,
+        displayName,
         mirrorIsOwned
       })
-
-      // Apply the formatter to the current value so pre-filled data
-      // (e.g. coming from `setValue`, `prefill`, or server-rendered
-      // HTML) is normalised immediately and the hidden mirror is
-      // populated without waiting for a user keystroke.
-      const initial = field.value
-      if (initial !== '') {
-        const { formatted, raw } = formatter.format(initial, formatType, formatOptions)
-        applyFormattedValue(field, mirror, formatted, raw)
-      } else if (mirrorIsOwned && mirror && mirror.value !== '') {
-        // Only clear an owned mirror when the field is empty. Pre-existing
-        // mirrors are left untouched so their values are preserved.
-        mirror.value = ''
-      }
     }
+  }
+
+  // Phase 2 (async): load the formatter peer (cached on second
+  // call) and install the real input listener + initial-value
+  // pass. If the peer is missing, every entry is rolled back:
+  // the visible's name is restored, the owned hidden mirror is
+  // removed, the bucket + registry are cleared. The user sees a
+  // single `console.error` from `loadFormatter` and the form is
+  // left exactly as the developer authored it.
+  const formatter = await loadFormatter()
+  if (!formatter) {
+    rollbackPhase1(bucket, state.formattedFields)
+    return
+  }
+
+  for (const [, entry] of bucket) {
+    if (entry.handler !== UNBOUND) {
+      // Idempotent re-bind path: just re-format the current
+      // value with the new options. The handler is already
+      // installed.
+      const current = entry.visible.value
+      if (current !== '') {
+        const { formatted, raw } = formatter.format(current, formatType, formatOptions)
+        applyFormattedValue(entry.visible, entry.mirror, formatted, raw)
+      }
+      continue
+    }
+
+    // First-time bind: install the real capture-phase handler
+    // and run the initial value through the formatter so
+    // pre-filled data (set before format() ran) is normalised
+    // and the hidden mirror is populated without waiting for a
+    // user keystroke.
+    const handler = buildHandler(
+      entry.visible,
+      entry.mirror,
+      formatter.format,
+      formatType,
+      formatOptions
+    )
+    addListener(state, state.element, 'input', handler, true)
+    entry.handler = handler
+
+    const initial = entry.visible.value
+    if (initial !== '') {
+      const { formatted, raw } = formatter.format(initial, formatType, formatOptions)
+      applyFormattedValue(entry.visible, entry.mirror, formatted, raw)
+    } else if (entry.mirrorIsOwned && entry.mirror.value !== '') {
+      // Only clear an owned mirror when the visible is empty.
+      // Pre-existing mirrors are left untouched so their values
+      // are preserved.
+      entry.mirror.value = ''
+    }
+  }
+}
+
+// Roll back every change made in phase 1 of `applyFormat`. Used
+// when the formatter peer is missing — we promised the user that
+// `format()` is a no-op in that case, so we have to put the DOM
+// back the way it was before the sync rename + hidden creation.
+const rollbackPhase1 = (
+  bucket: Map<string, FormatEntry>,
+  registry: FormControllerState['formattedFields']
+): void => {
+  for (const [fieldName, entry] of bucket) {
+    if (entry.visible.isConnected) {
+      restoreVisibleName(entry.visible, fieldName)
+    }
+    if (entry.mirrorIsOwned && entry.mirror.isConnected) {
+      entry.mirror.remove()
+    }
+    bucket.delete(fieldName)
+    registry.delete(fieldName)
   }
 }
 
@@ -229,10 +348,27 @@ export const createFormat =
 
 export const createFormatAll = createFormat
 
+// Expose the lookup builder for the controller's delegated event
+// handler. It maps either name (canonical or display) to the
+// canonical so watchers on either name resolve to the same formatted
+// pair.
+export const resolveCanonicalForName = (
+  state: FormControllerState,
+  name: string
+): string | null => {
+  const bucket = registry.get(state)
+  if (!bucket) return null
+  for (const [canonical, entry] of bucket) {
+    if (canonical === name || entry.displayName === name) return canonical
+  }
+  return null
+}
+
 // Cleanup hook consumed by `api/destroy.ts`. Removes every listener
-// registered through this module and drops the owned raw mirrors that
-// were created during the controller's lifetime. Mirrors that already
-// existed in the DOM (i.e. `mirrorIsOwned === false`) are left alone.
+// registered through this module, restores the visible's name to the
+// canonical, and drops the owned hidden mirrors that were created
+// during the controller's lifetime. Pre-existing mirrors and the
+// developer's original HTML are left untouched.
 export const cleanupFormatRegistry = (state: FormControllerState): void => {
   if (!state.element) {
     registry.delete(state)
@@ -248,10 +384,16 @@ export const cleanupFormatRegistry = (state: FormControllerState): void => {
   }
 
   for (const [fieldName, entry] of bucket) {
-    state.element.removeEventListener('input', entry.handler)
-    if (entry.mirrorIsOwned) {
-      const mirror = findRawMirror(state.element, entry.mirrorName)
-      mirror?.remove()
+    if (entry.handler !== UNBOUND) {
+      state.element.removeEventListener('input', entry.handler, true)
+    }
+    // Restore the visible's name so the form goes back to the
+    // developer's authored state.
+    if (entry.visible.isConnected) {
+      restoreVisibleName(entry.visible, fieldName)
+    }
+    if (entry.mirrorIsOwned && entry.mirror.isConnected) {
+      entry.mirror.remove()
     }
     bucket.delete(fieldName)
     state.formattedFields.delete(fieldName)

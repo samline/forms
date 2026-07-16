@@ -87,3 +87,4 @@ profile.subscribe(state => {
 - [`parseFormData`](../api/parse-form-data.md) — same serializer, used directly without a controller.
 - [`getValue`](get-value.md) — read a single field’s value.
 - [`onSubmit`](../api/on-submit.md) — receives the same shape as arguments.
+- [`format`](format.md) — when a field is formatted, the `FormData` carries both the canonical name (with the raw value) and the `<field>_displayed` name (with the formatted value). See [the mirror convention](format.md#the-mirror-convention).

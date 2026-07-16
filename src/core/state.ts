@@ -40,16 +40,25 @@ export interface FormControllerState {
     element: EventTarget
     type: string
     handler: EventListenerOrEventListenerObject
+    /**
+     * `true` when the listener was registered with `capture: true`.
+     * Required for matching `removeEventListener` on teardown —
+     * the spec treats capture and bubble as distinct registrations.
+     */
+    capture?: boolean
   }>
   mutationObserver: MutationObserver | null
   // Tracks every field that `format()` is currently formatting, so
   // re-bindings are idempotent and `destroy()` can clean up the
-  // associated listeners + hidden raw mirrors.
+  // associated listeners + hidden raw mirror. Keyed by the canonical
+  // field name (the one the developer wrote in the HTML and the one
+  // the backend reads). `displayName` is the visible input's name
+  // (defaults to `${canonical}_displayed`).
   formattedFields: Map<
     string,
     {
       config: FieldFormatConfig
-      mirrorName: string
+      displayName: string
       mirrorIsOwned: boolean
     }
   >

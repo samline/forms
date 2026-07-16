@@ -45,7 +45,7 @@ Methods that return data (rather than the controller) end in a different return 
 - [`getValue(name)`](#getvalue) — read the current value of a field.
 - [`getField(name)`](#getfield) — read the underlying DOM element(s).
 - [`prefill(fieldName?)`](#prefill) — populate the form from `window.location.search`.
-- [`format(config)`](#format) — apply `@samline/formatter` to a field, with auto-managed raw mirror and cursor tracking.
+- [`format(config)`](#format) — apply `@samline/formatter` to a field. The visible is renamed to `<field>_displayed` and a hidden `<field>` raw mirror is created. Both names are first-class in the controller's API.
 - [`formatAll(config)`](#formatall) — alias of `format()` for `field: string[]` use cases.
 
 ## Validation
@@ -175,10 +175,10 @@ Populates the form (or a single field) from the current URL query string. Delega
 
 #### `format(config)`
 
-Apply an `@samline/formatter` pipeline to one or more fields inside the bound form. Creates and owns a hidden `<input name="<field>Raw">` mirror so `FormData`/`serialize()` automatically exposes the raw value.
+Apply an `@samline/formatter` pipeline to one or more fields inside the bound form. The first time `format()` runs for a field it renames the visible to `<field>_displayed` (or the value of `config.displayField`) and creates a hidden `<input type="hidden" name="<field>">` that carries the raw value. Both names are first-class in the controller's API — `getValue('phone')` returns the raw, `getValue('phone_displayed')` returns the formatted, `watch('phone', cb)` fires with the raw, and so on. See [The mirror convention](/forms/reference/api/#the-mirror-convention) for the full contract.
 
 :::caution[Optional peer dependency]
-`@samline/formatter` is optional. When it is not installed, `format()` and `formatAll()` log a single `console.error` describing the missing dependency and return the controller unchanged.
+`@samline/formatter` is optional. When it is not installed, `format()` and `formatAll()` log a single `console.error` describing the missing dependency, restore the visible's name to the canonical form, and return the controller unchanged. The form is left exactly as the developer authored it.
 :::
 
 #### `formatAll(config)`

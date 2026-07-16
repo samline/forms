@@ -428,8 +428,10 @@ The argument to [`format()`](/forms/reference/api/#formatconfig) and [`formatAll
 ```ts
 interface FieldFormatConfig {
   type: FormatType
+  /** Canonical name — the one the backend reads (raw value). */
   field: string | string[]
-  rawField?: string
+  /** Visible name — what the user types. Defaults to `${fieldName}_displayed`. */
+  displayField?: string
   options?: Record<string, unknown>
 }
 
@@ -447,7 +449,7 @@ interface FieldFormatConfigMap {
 }
 ```
 
-The `field` name is the `name` attribute of the visible input(s). `rawField` defaults to `${fieldName}Raw`. `options` is forwarded to `@samline/formatter` — see its [options reference](https://github.com/samline/formatter/blob/main/docs/options.md).
+The `field` name is the **canonical** name of the formatted pair. `format()` renames the visible from `field` to `displayField` (default `${fieldName}_displayed`) on first run and creates a hidden `<input type="hidden" name="<field>">` that carries the raw value. Both names are first-class in the controller's API — see [The mirror convention](/forms/reference/api/#the-mirror-convention) in the format reference. `options` is forwarded to `@samline/formatter` — see its [options reference](https://github.com/samline/formatter/blob/main/docs/options.md).
 
 ## `FormsApi`
 

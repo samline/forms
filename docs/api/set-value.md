@@ -97,3 +97,4 @@ form('contact-form')
 - [`getValue`](get-value.md) — read the current value.
 - [`getField`](get-field.md) — read the underlying DOM element.
 - [`reset`](reset.md) — restore the form’s initial values.
+- [`format`](format.md) — when a field is formatted, `setValue('<field>', x)` writes the raw to the hidden mirror and reformats the visible; `setValue('<field>_displayed', x)` writes the formatted to the visible and recomputes the raw. See [the mirror convention](format.md#the-mirror-convention).

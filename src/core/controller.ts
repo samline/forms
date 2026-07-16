@@ -9,7 +9,7 @@ import { createAutoSubmit } from '../api/auto-submit'
 import { createClearErrors } from '../api/clear-errors'
 import { createDestroy } from '../api/destroy'
 import { createDisableAutoSubmit } from '../api/disable-auto-submit'
-import { createFormat, createFormatAll } from '../api/format'
+import { createFormat, createFormatAll, resolveCanonicalForName } from '../api/format'
 import { createGetData } from '../api/get-data'
 import { createGetField } from '../api/get-field'
 import { createGetState } from '../api/get-state'
@@ -109,10 +109,25 @@ export const createFormController = (
   const addListener = (
     node: EventTarget,
     type: string,
-    handler: EventListenerOrEventListenerObject
+    handler: EventListenerOrEventListenerObject,
+    capture?: boolean
   ) => {
-    node.addEventListener(type, handler)
-    state.listeners.push({ element: node, type, handler })
+    if (capture) {
+      node.addEventListener(type, handler, { capture: true })
+    } else {
+      node.addEventListener(type, handler)
+    }
+    // `exactOptionalPropertyTypes: true` rejects explicit `undefined`
+    // values for optional properties; only attach `capture` when it
+    // actually has a value.
+    const entry: {
+      element: EventTarget
+      type: string
+      handler: EventListenerOrEventListenerObject
+      capture?: boolean
+    } = { element: node, type, handler }
+    if (capture !== undefined) entry.capture = capture
+    state.listeners.push(entry)
   }
 
   const clearFieldCache = () => state.fieldCache.clear()
@@ -130,6 +145,16 @@ export const createFormController = (
     const names = new Set<string>(Object.keys(state.validators))
     for (const field of getNamedFields(state.element)) {
       names.add(field.name)
+    }
+    // The formatted registry keeps the canonical name as the bucket
+    // key. The display name (e.g. `phone_displayed`) is also a
+    // tracked field because the developer can `watch`/`getValue` it
+    // and `getData()` exposes it in the serialized payload.
+    for (const [canonical, entry] of state.formattedFields) {
+      names.add(canonical)
+      if (entry.displayName && entry.displayName !== canonical) {
+        names.add(entry.displayName)
+      }
     }
     return Array.from(names)
   }
@@ -235,17 +260,30 @@ export const createFormController = (
 
     clearFieldCache()
 
+    // A formatted field is exposed under two names: the canonical
+    // (e.g. `phone`, on the hidden raw mirror) and the display
+    // (`phone_displayed`, on the visible). Resolve whichever side
+    // fired this event to the canonical so the controller's
+    // validation + error-clearing path runs once on the field the
+    // backend actually reads. Watchers on both names still fire
+    // below — each gets the value of the name it was registered
+    // against, so a `watch('phone', cb)` callback receives the raw
+    // and a `watch('phone_displayed', cb)` callback receives the
+    // formatted.
+    const canonical = resolveCanonicalForName(state, name) ?? name
+
     if (normalizedOptions.clearManualErrorsOnChange) {
-      delete state.manualErrors[name]
+      delete state.manualErrors[canonical]
     }
 
-    syncVisualState([name])
+    syncVisualState([canonical])
 
-    if (state.isValidated && state.validators[name]) {
-      validateNames([name])
+    if (state.isValidated && state.validators[canonical]) {
+      validateNames([canonical])
     }
 
-    emitFieldWatchers(name)
+    emitFieldWatchers(canonical)
+    if (canonical !== name) emitFieldWatchers(name)
     notifySubscribers()
     scheduleAutoSubmit()
   }

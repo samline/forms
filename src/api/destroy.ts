@@ -13,7 +13,14 @@ export const createDestroy =
 
     state.isDestroyed = true
     for (const listener of state.listeners) {
-      listener.element.removeEventListener(listener.type, listener.handler)
+      const options: EventListenerOptions | undefined = listener.capture
+        ? { capture: true }
+        : undefined
+      if (options) {
+        listener.element.removeEventListener(listener.type, listener.handler, options)
+      } else {
+        listener.element.removeEventListener(listener.type, listener.handler)
+      }
     }
     state.listeners.length = 0
 

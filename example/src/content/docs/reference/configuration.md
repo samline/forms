@@ -204,8 +204,8 @@ const checkout = form('checkout', {
 })
 ```
 
-The map key is just an identifier — the visible field name lives in `FieldFormatConfig.field`. See [`FieldFormatConfigMap`](/forms/reference/typescript/#fieldformatconfig-and-fieldformatconfigmap) for the full type, and the [formatting recipe](/forms/reference/examples/#recipe-format-inputs-with-samlineformatter) for an end-to-end example.
+The map key is just an identifier — the **canonical** field name lives in `FieldFormatConfig.field`. `format()` renames the visible to `<field>_displayed` (or `config.displayField`) on first run and creates a hidden `<input type="hidden" name="<field>">` that carries the raw value. Both names are first-class in the controller's API. See [`FieldFormatConfigMap`](/forms/reference/typescript/#fieldformatconfig-and-fieldformatconfigmap) for the full type, and the [formatting recipe](/forms/reference/examples/#recipe-format-inputs-with-samlineformatter) for an end-to-end example.
 
 :::caution[Optional peer dependency]
-`formats` requires `@samline/formatter`. When it is not installed, every entry logs a single `console.error` describing the missing dependency and the controller is created normally — no exceptions are thrown.
+`formats` requires `@samline/formatter`. When it is not installed, every entry logs a single `console.error` describing the missing dependency, restores the visible's name to the canonical form, and the controller is created normally — no exceptions are thrown.
 :::

@@ -417,20 +417,27 @@ const checkout = form('checkout', {
 })
 
 checkout.onSubmit((_form, _data, formData) => {
-  // formData already contains both:
-  //   phone='55 1234 5678',  phoneRaw='5512345678'
-  //   card='4111 1111 1111 1111', cardRaw='4111111111111111'
-  //   amount='$1,234',       amountRaw='1234'
+  // formData carries the raw value at the canonical name and the
+  // formatted value at the display name. The backend only needs
+  // the canonical (raw) keys:
+  //   phone           = '5512345678'
+  //   phone_displayed = '55 1234 5678'
+  //   card            = '4111111111111111'
+  //   card_displayed  = '4111 1111 1111 1111'
+  //   amount          = '1234'
+  //   amount_displayed= '$1,234'
   fetch('/api/checkout', { method: 'POST', body: formData })
 })
 ```
 
 Things to know:
 
-- Each formatted field gets a hidden sibling `<input type="hidden" name="<field>Raw">` that the controller creates and owns. The mirror carries `data-formatter-raw-for="<field>"` so the controller can find and remove it on `destroy()`.
-- If you authored your own `<input name="<field>_raw">` (or `<input data-formatter-raw-for="<field>">`) before wiring the controller, `format()` reuses it instead of duplicating it. Pre-existing mirrors survive `destroy()`; mirrors created by `format()` are removed.
-- Use `formatAll({ type, field: ['a', 'b', 'c'], options })` to bind the same configuration to several fields in one call. Each field gets its own hidden mirror (`aRaw`, `bRaw`, `cRaw`).
-- `@samline/formatter` is an **optional peer dependency**. When it is not installed, `format()` and `formatAll()` log a single `console.error` and return the controller unchanged so the rest of the form keeps working. No exceptions are thrown.
+- You write the HTML with the **canonical** name only (e.g. `<input name="phone" />`). `format()` renames the visible to `phone_displayed` on first run and creates a hidden sibling `<input type="hidden" name="phone">` that holds the raw value. The hidden carries `data-formatter-raw-for="phone"` so the controller can identify it as owned and remove it on `destroy()`.
+- Both names are first-class in the controller's API. `getValue('phone')` returns the raw, `getValue('phone_displayed')` returns the formatted, `watch('phone', cb)` fires with the raw, and so on. See the [full mirror contract in `format.md`](api/format.md#the-mirror-convention).
+- If you authored your own `<input type="hidden" name="<field>">` (or `<input data-formatter-raw-for="<field>">`) before wiring the controller, `format()` reuses it instead of duplicating it. Pre-existing mirrors survive `destroy()`; mirrors created by `format()` are removed.
+- If you prefer to pre-author the visible with the display name (e.g. `<input name="phone_displayed" />`) instead of letting `format()` rename it, `format()` picks that up and skips the rename. Both authoring styles end up with the same DOM.
+- Use `formatAll({ type, field: ['a', 'b', 'c'], options })` to bind the same configuration to several fields in one call. Each field gets its own pair (`a` + `a_displayed`, `b` + `b_displayed`, `c` + `c_displayed`).
+- `@samline/formatter` is an **optional peer dependency**. When it is not installed, `format()` and `formatAll()` log a single `console.error` and return the controller unchanged so the rest of the form keeps working. No exceptions are thrown. The visible's name is restored to its original form so the DOM is left exactly as you authored it.
 
 ---
 

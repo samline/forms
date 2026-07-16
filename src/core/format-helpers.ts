@@ -5,21 +5,28 @@
 //   - `postDelimiterBackspace` contract: after a deletion, the caret
 //     is pulled backwards past any leading delimiter so the user never
 //     ends up parked with a format character on the caret's left.
-//   - Raw-mirror lookup & creation: each formatted input gets a hidden
-//     sibling (`type="hidden"`) that holds the backend-ready `raw`
-//     value. The mirror is created on first `format()` call and reused
-//     on subsequent calls so re-binding the controller does not duplicate
-//     hidden inputs.
+//   - Hidden-mirror lookup & creation: each formatted input gets a
+//     hidden sibling (`type="hidden"`) that holds the backend-ready
+//     `raw` value under the **canonical** field name (the one the
+//     developer wrote in the HTML and the one the backend reads).
+//     The visible input is renamed to `<field>_displayed` on the
+//     first `format()` call. Both names are first-class in the
+//     controller's API — see `docs/api/format.md` for the contract.
 //
 // The helpers here are pure DOM utilities — they do not know about the
 // controller state.
 
 import type { FormFieldElement } from './types'
 
+/**
+ * Marks a hidden input as the raw mirror of a formatted field.
+ * Presence of this attribute is how `format()` distinguishes
+ * mirrors it owns (created at `format()` time) from mirrors the
+ * developer pre-authored in the HTML (which survive `destroy()`).
+ */
 export const FORMATTER_RAW_ATTRIBUTE = 'data-formatter-raw-for'
 
-// Resolve a field by name (used to read the original input that owns the
-// raw mirror). Returns the first matching element or `null`.
+// Resolve a field by name. Returns the first matching element or `null`.
 export const getFormatterField = (
   form: HTMLFormElement,
   name: string
@@ -45,9 +52,35 @@ const cssEscape = (value: string): string => {
   return value.replace(/([!"#$%&'()*+,./:;<=>?@\[\\\]^`{|}~])/g, '\\$1')
 }
 
-// Find the hidden input that mirrors `raw` for the given field name.
-// Returns the existing element or `null`.
-export const findRawMirror = (
+// Find the visible (non-hidden) input that owns the formatted pair for
+// `fieldName`. Looks up by the display name (defaults to
+// `<fieldName>_displayed`, or whatever the developer passed in
+// `FieldFormatConfig.displayField`). Returns `null` when no visible
+// field matches.
+export const findVisibleField = (
+  form: HTMLFormElement,
+  displayName: string
+): HTMLInputElement | HTMLTextAreaElement | null => {
+  const node = form.querySelector(
+    `[name="${cssEscape(displayName)}"]:not([type="hidden"])`
+  )
+  if (node instanceof HTMLInputElement || node instanceof HTMLTextAreaElement) {
+    return node
+  }
+  return null
+}
+
+// Find the hidden input that mirrors `raw` for the given canonical
+// field name. Returns the existing element or `null`.
+//
+// The canonical name is the one the developer wrote in the HTML
+// (e.g. `phone`) and the one the backend reads. The hidden input
+// is named `phone` and carries the raw value. It is identified
+// either by the `data-formatter-raw-for` attribute (set when the
+// controller creates the mirror) or by a pre-authored hidden with
+// the same name (no attribute — owned externally, preserved on
+// `destroy()`).
+export const findHiddenMirror = (
   form: HTMLFormElement,
   fieldName: string
 ): HTMLInputElement | null => {
@@ -56,32 +89,30 @@ export const findRawMirror = (
   )
   if (byAttr) return byAttr
 
-  // Backwards-compatible lookup: existing deployments may have used
-  // `<input name="<field>_raw">` or `<input name="<field>Raw">` to carry the raw value. Reuse it.
   const byName = form.querySelector<HTMLInputElement>(
-    `[name="${cssEscape(`${fieldName}_raw`)}"]`
+    `input[type="hidden"][name="${cssEscape(fieldName)}"]`
   )
   if (byName) return byName
-  const byNameOld = form.querySelector<HTMLInputElement>(
-    `[name="${cssEscape(`${fieldName}Raw`)}"]`
-  )
-  if (byNameOld) return byNameOld
 
   return null
 }
 
 // Create a hidden input that will mirror the raw value of `fieldName`.
-// Idempotent: if a mirror already exists it is returned as-is.
-export const ensureRawMirror = (
+// Idempotent: if a mirror already exists it is returned as-is. The
+// mirror is named with the canonical `fieldName` (not a derived
+// suffix) so the value the backend reads sits at the developer's
+// natural name. The `data-formatter-raw-for` attribute is set so
+// `destroy()` can identify the mirror as owned and remove it.
+export const ensureHiddenMirror = (
   form: HTMLFormElement,
   fieldName: string
 ): HTMLInputElement => {
-  const existing = findRawMirror(form, fieldName)
+  const existing = findHiddenMirror(form, fieldName)
   if (existing) return existing
 
   const input = document.createElement('input')
   input.type = 'hidden'
-  input.name = `${fieldName}_raw`
+  input.name = fieldName
   input.setAttribute('aria-hidden', 'true')
   input.tabIndex = -1
   input.setAttribute(FORMATTER_RAW_ATTRIBUTE, fieldName)
@@ -89,10 +120,33 @@ export const ensureRawMirror = (
   return input
 }
 
-// Remove every raw mirror owned by `format()`. Mirrors created by this
-// controller carry the `data-formatter-raw-for` attribute; mirrors that
-// existed before are left untouched.
-export const removeOwnedRawMirrors = (form: HTMLFormElement): void => {
+// Rename a visible input from its current `name` to `displayName`.
+// Idempotent: if the input already has `displayName` it is left
+// alone. Used by `format()` to migrate the developer's authored
+// `<input name="phone">` to `<input name="phone_displayed">` so
+// the canonical `name` slot is free for the hidden raw mirror.
+export const renameVisibleField = (
+  visible: HTMLInputElement | HTMLTextAreaElement,
+  displayName: string
+): void => {
+  if (visible.name === displayName) return
+  visible.name = displayName
+}
+
+// Restore a visible input to `originalName`. Called by the format
+// registry on `destroy()` to put the DOM back the way the developer
+// authored it (modulo the value, which the developer controls).
+export const restoreVisibleName = (
+  visible: HTMLInputElement | HTMLTextAreaElement,
+  originalName: string
+): void => {
+  visible.name = originalName
+}
+
+// Remove every hidden mirror owned by `format()`. Mirrors created by
+// this controller carry the `data-formatter-raw-for` attribute;
+// mirrors that existed before are left untouched.
+export const removeOwnedHiddenMirrors = (form: HTMLFormElement): void => {
   form
     .querySelectorAll<HTMLInputElement>(`[${FORMATTER_RAW_ATTRIBUTE}]`)
     .forEach(node => node.remove())

@@ -84,3 +84,4 @@ const maxSize = Number(field?.dataset.maxSize ?? '0')
 
 - [`getValue`](get-value.md) — read the value.
 - [`setValue`](set-value.md) — write a value through the controller.
+- [`format`](format.md) — when a field is formatted, `getField('<field>')` returns the hidden raw mirror and `getField('<field>_displayed')` returns the visible input. See [the mirror convention](format.md#the-mirror-convention).

@@ -86,3 +86,4 @@ draft.prefill()
 
 - [`setValue`](set-value.md) — underlying primitive.
 - [`getValue`](get-value.md) — read the prefilled values.
+- [`format`](format.md) — when a field is formatted, prefilling the canonical name writes the raw and reformats the visible; prefilling the display name writes the formatted and recomputes the raw. See [the mirror convention](format.md#the-mirror-convention).

@@ -123,3 +123,4 @@ offA()
 - [`watch`](watch.md) — chainable, no unsubscribe.
 - [`unwatch`](unwatch.md) — bulk removal of watchers.
 - [`subscribe`](subscribe.md) — global state observer.
+- [`format`](format.md) — when a field is formatted, `observe('<field>', cb)` fires with the raw value and `observe('<field>_displayed', cb)` fires with the formatted value. Both fire on the same keystroke. See [the mirror convention](format.md#the-mirror-convention).

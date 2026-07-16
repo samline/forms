@@ -114,3 +114,4 @@ form('search-form')
 - [`observe`](observe.md) — same callback, returns an unsubscribe function and fires immediately.
 - [`unwatch`](unwatch.md) — remove watched callbacks.
 - [`subscribe`](subscribe.md) — react to the whole form state.
+- [`format`](format.md) — when a field is formatted, `watch('<field>', cb)` fires with the raw value and `watch('<field>_displayed', cb)` fires with the formatted value. Both fire on the same keystroke. See [the mirror convention](format.md#the-mirror-convention).
