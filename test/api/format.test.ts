@@ -669,4 +669,194 @@ describe('format() integration', () => {
 
     expect(card.hasAttribute('css-filled')).toBe(true)
   })
+
+  // === css-error lands on the visible, not the hidden ===
+  // Bug reported in 2.3.0 / 2.3.2: `validate()`, `revalidate()`
+  // and `setErrors()` all reach `syncVisualState` with the
+  // **canonical** name as the key. For a formatted field, the
+  // canonical is the hidden raw mirror — which lives at the end
+  // of the form, outside the project label wrapper. The
+  // project CSS animates the label via `:has([css-error])` on a
+  // parent label, so setting the attribute on the hidden left
+  // the label invisible. `css-filled` was already covered by
+  // the user-typing path (`handleDelegatedEvent`) — the bug was
+  // limited to the validate/setErrors/revalidate paths.
+  //
+  // The fix: `syncVisualState` resolves each input name to its
+  // display name for the field lookup, and to its canonical
+  // name for the error lookup. Both lookups happen on every
+  // call so the fix is independent of the caller.
+
+  it('validate() lands css-error on the visible, not the hidden', async () => {
+    __setFormatterModuleForTests(phoneFormatter)
+    const api = form('checkout-form', {
+      autoValidate: true,
+      validators: { phone: { pattern: /^\d{10}$/ } }
+    })
+    api.format({ type: 'phone', field: 'phone' })
+    await flush()
+
+    const formElement = document.getElementById('checkout-form') as HTMLFormElement
+    const visible = formElement.querySelector<HTMLInputElement>(
+      'input[name="phone_displayed"]'
+    )!
+    const hidden = formElement.querySelector<HTMLInputElement>(
+      'input[type="hidden"][name="phone"]'
+    )!
+
+    api.setValue('phone', '123')
+    api.validate()
+
+    expect(api.getState().errors.phone).toBeDefined()
+    expect(visible.hasAttribute('css-error')).toBe(true)
+    expect(hidden.hasAttribute('css-error')).toBe(false)
+  })
+
+  it('validate(["phone"]) lands css-error on the visible, not the hidden', async () => {
+    __setFormatterModuleForTests(phoneFormatter)
+    const api = form('checkout-form', {
+      autoValidate: true,
+      validators: { phone: { pattern: /^\d{10}$/ } }
+    })
+    api.format({ type: 'phone', field: 'phone' })
+    await flush()
+
+    const formElement = document.getElementById('checkout-form') as HTMLFormElement
+    const visible = formElement.querySelector<HTMLInputElement>(
+      'input[name="phone_displayed"]'
+    )!
+    const hidden = formElement.querySelector<HTMLInputElement>(
+      'input[type="hidden"][name="phone"]'
+    )!
+
+    api.setValue('phone', '123')
+    api.validate(['phone'])
+
+    expect(visible.hasAttribute('css-error')).toBe(true)
+    expect(hidden.hasAttribute('css-error')).toBe(false)
+  })
+
+  it('revalidate() lands css-error on the visible, not the hidden', async () => {
+    __setFormatterModuleForTests(phoneFormatter)
+    const api = form('checkout-form', {
+      autoValidate: true,
+      validators: { phone: { pattern: /^\d{10}$/ } }
+    })
+    api.format({ type: 'phone', field: 'phone' })
+    await flush()
+
+    const formElement = document.getElementById('checkout-form') as HTMLFormElement
+    const visible = formElement.querySelector<HTMLInputElement>(
+      'input[name="phone_displayed"]'
+    )!
+    const hidden = formElement.querySelector<HTMLInputElement>(
+      'input[type="hidden"][name="phone"]'
+    )!
+
+    api.setValue('phone', '123')
+    api.revalidate()
+
+    expect(visible.hasAttribute('css-error')).toBe(true)
+    expect(hidden.hasAttribute('css-error')).toBe(false)
+  })
+
+  it('setErrors(["phone"]) (array form) lands css-error on the visible, not the hidden', async () => {
+    __setFormatterModuleForTests(phoneFormatter)
+    const api = form('checkout-form', { autoValidate: false })
+    api.format({ type: 'phone', field: 'phone' })
+    await flush()
+
+    const formElement = document.getElementById('checkout-form') as HTMLFormElement
+    const visible = formElement.querySelector<HTMLInputElement>(
+      'input[name="phone_displayed"]'
+    )!
+    const hidden = formElement.querySelector<HTMLInputElement>(
+      'input[type="hidden"][name="phone"]'
+    )!
+
+    api.setErrors(['phone'])
+
+    expect(visible.hasAttribute('css-error')).toBe(true)
+    expect(hidden.hasAttribute('css-error')).toBe(false)
+  })
+
+  it('setErrors({ phone: [...] }) (map form) lands css-error on the visible, not the hidden', async () => {
+    __setFormatterModuleForTests(phoneFormatter)
+    const api = form('checkout-form', { autoValidate: false })
+    api.format({ type: 'phone', field: 'phone' })
+    await flush()
+
+    const formElement = document.getElementById('checkout-form') as HTMLFormElement
+    const visible = formElement.querySelector<HTMLInputElement>(
+      'input[name="phone_displayed"]'
+    )!
+    const hidden = formElement.querySelector<HTMLInputElement>(
+      'input[type="hidden"][name="phone"]'
+    )!
+
+    api.setErrors({ phone: ['Phone is required.'] })
+
+    expect(visible.hasAttribute('css-error')).toBe(true)
+    expect(hidden.hasAttribute('css-error')).toBe(false)
+  })
+
+  it('clearErrors(["phone"]) clears css-error from the visible, not the hidden', async () => {
+    __setFormatterModuleForTests(phoneFormatter)
+    const api = form('checkout-form', { autoValidate: false })
+    api.format({ type: 'phone', field: 'phone' })
+    await flush()
+
+    const formElement = document.getElementById('checkout-form') as HTMLFormElement
+    const visible = formElement.querySelector<HTMLInputElement>(
+      'input[name="phone_displayed"]'
+    )!
+    const hidden = formElement.querySelector<HTMLInputElement>(
+      'input[type="hidden"][name="phone"]'
+    )!
+
+    api.setErrors(['phone'])
+    expect(visible.hasAttribute('css-error')).toBe(true)
+
+    api.clearErrors(['phone'])
+
+    expect(visible.hasAttribute('css-error')).toBe(false)
+    expect(hidden.hasAttribute('css-error')).toBe(false)
+  })
+
+  it('initial mount with autoValidate leaves the visible carrying css-error, not the hidden', async () => {
+    // The mount-time `syncVisualState()` call uses
+    // `getTrackedFieldNames()` which already includes both the
+    // canonical and the display name. Make sure the resolution
+    // path is correct: the visible is the element that ends up
+    // with the attribute, the hidden is data-only.
+    __setFormatterModuleForTests(phoneFormatter)
+    const formElement = document.getElementById('checkout-form') as HTMLFormElement
+    // Pre-populate the canonical hidden (developer scenario:
+    // server-rendered hidden, visible empty, then format()
+    // attaches). This is the case the bug report flagged.
+    const preset = document.createElement('input')
+    preset.type = 'hidden'
+    preset.name = 'phone'
+    preset.setAttribute('data-formatter-raw-for', 'phone')
+    preset.value = '123'
+    formElement.appendChild(preset)
+
+    const api = form('checkout-form', {
+      autoValidate: true,
+      validators: { phone: { pattern: /^\d{10}$/ } }
+    })
+    api.format({ type: 'phone', field: 'phone' })
+    await flush()
+    api.validate()
+
+    const visible = formElement.querySelector<HTMLInputElement>(
+      'input[name="phone_displayed"]'
+    )!
+    const hidden = formElement.querySelector<HTMLInputElement>(
+      'input[type="hidden"][name="phone"]'
+    )!
+
+    expect(visible.hasAttribute('css-error')).toBe(true)
+    expect(hidden.hasAttribute('css-error')).toBe(false)
+  })
 })

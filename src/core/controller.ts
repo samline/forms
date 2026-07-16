@@ -176,11 +176,28 @@ export const createFormController = (
 
   const syncVisualState = (names?: string[]) => {
     if (!state.element) return
-    const targetNames = names ?? getTrackedFieldNames()
+
+    // Resolve every input name to its display name so visual
+    // attributes (`css-filled`, `css-error`) land on the visible
+    // input, never on the hidden raw mirror. After `format()` runs
+    // the canonical name (`phone`) is held by the hidden, which
+    // lives at the end of the form, outside any label wrapper —
+    // so writing the attribute there is invisible to the project
+    // CSS that targets `:has([css-error])` on a parent label. The
+    // visual attribute contract is documented in
+    // `api/format.ts:resolveDisplayNameForName` and in
+    // `docs/css-styling.md`.
+    //
+    // Errors are still keyed by canonical name (the backend's
+    // view of the field); reverse-resolve so the lookup works
+    // whether the caller passed canonical, display, or both.
+    const sourceNames = names ?? getTrackedFieldNames()
     const errors = getMergedErrors()
-    for (const name of targetNames) {
-      const fields = getFieldsByName(name)
-      const hasError = Boolean(errors[name]?.length)
+    for (const name of sourceNames) {
+      const displayName = resolveDisplayNameForName(state, name)
+      const canonical = resolveCanonicalForName(state, name) ?? name
+      const fields = getFieldsByName(displayName)
+      const hasError = Boolean(errors[canonical]?.length)
       for (const field of fields) {
         applyBooleanAttribute(field, attributes.filled, isFieldFilled(field))
         applyBooleanAttribute(field, attributes.error, hasError)

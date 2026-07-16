@@ -139,6 +139,8 @@ A common pattern is to style a parent label that contains the input:
 
 > `:has()` is supported in evergreen browsers. If you need older browser support, attach the attributes to the wrapper from your own code or use class-based selectors instead.
 
+> **Formatted fields.** The hidden raw mirror created by [`format()`](api/format.md) lives at the end of the form, outside any label. The controller always applies `css-filled` and `css-error` to the **visible** input (the one inside the label) for fields wired through `format()` — the hidden is intentionally excluded from the `:has()` selector. This is what makes the recipe above work without changes for formatted fields.
+
 ### Custom attribute names
 
 ```ts
