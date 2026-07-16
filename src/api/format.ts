@@ -164,6 +164,16 @@ const buildHandler = (
 // formatter to the current value" step is deferred — every other
 // piece of state is in place by the time the method returns.
 //
+// Phase 2 only touches the entries for the fields in THIS
+// `applyFormat` call — never iterates the whole bucket. Multiple
+// concurrent `format()` calls (e.g. `format(phone)`, `format(date)`,
+// `format(general)` in the same script tick) each have their own
+// phase 2, and each binds its own entry with its own config. If
+// phase 2 walked the whole bucket, the first call to resume would
+// bind every entry with the first call's config and the rest would
+// short-circuit on the "already bound" check, leaving subsequent
+// fields wired to the wrong formatter.
+//
 // Returns the controller to preserve chainability even on the missing
 // peer path.
 const applyFormat = async (
@@ -177,6 +187,13 @@ const applyFormat = async (
   const formatOptions = config.options
   const fieldNames = resolveFieldNames(config)
   const bucket = getRegistry(state)
+
+  // Track the entries phase 1 just inserted (or re-bound) so
+  // phase 2 only touches those — never the entries of a previous
+  // `format()` call. Without this, the first call to resume from
+  // `await loadFormatter()` would bind every entry in the bucket
+  // with the first call's config.
+  const phase1Entries: FormatEntry[] = []
 
   // Phase 1 (sync): rename the visible, create / reuse the hidden
   // mirror, refresh the `formattedFields` registry. After this
@@ -236,6 +253,7 @@ const applyFormat = async (
         displayName,
         mirrorIsOwned
       })
+      phase1Entries.push(existing)
     } else {
       // Reserve the slot in the bucket so subsequent
       // `getFieldsByName` lookups can find the visible + mirror
@@ -243,40 +261,48 @@ const applyFormat = async (
       // The handler is installed in phase 2 (after the formatter
       // peer resolves); until then the entry is tracked but the
       // capture-phase input listener is not yet on the form.
-      bucket.set(fieldName, {
+      const entry: FormatEntry = {
         canonicalName: fieldName,
         displayName,
         visible,
         mirror,
         mirrorIsOwned,
         handler: UNBOUND
-      })
+      }
+      bucket.set(fieldName, entry)
       state.formattedFields.set(fieldName, {
         config,
         displayName,
         mirrorIsOwned
       })
+      phase1Entries.push(entry)
     }
   }
 
   // Phase 2 (async): load the formatter peer (cached on second
   // call) and install the real input listener + initial-value
-  // pass. If the peer is missing, every entry is rolled back:
-  // the visible's name is restored, the owned hidden mirror is
-  // removed, the bucket + registry are cleared. The user sees a
-  // single `console.error` from `loadFormatter` and the form is
-  // left exactly as the developer authored it.
+  // pass. If the peer is missing, every entry phase 1 created is
+  // rolled back: the visible's name is restored, the owned hidden
+  // mirror is removed, the bucket + registry are cleared. The user
+  // sees a single `console.error` from `loadFormatter` and the form
+  // is left exactly as the developer authored it.
   const formatter = await loadFormatter()
   if (!formatter) {
-    rollbackPhase1(bucket, state.formattedFields)
+    rollbackPhase1(phase1Entries, bucket, state.formattedFields)
     return
   }
 
-  for (const [, entry] of bucket) {
+  for (const entry of phase1Entries) {
     if (entry.handler !== UNBOUND) {
-      // Idempotent re-bind path: just re-format the current
-      // value with the new options. The handler is already
-      // installed.
+      // Idempotent re-bind path (e.g. the country_code watch
+      // re-calling `format({ type: 'phone', field: 'phone' })`
+      // with a new country): re-format the current value with
+      // the new options. The handler is already installed with
+      // its original closure; we do not re-bind it on every
+      // re-call because the listener was bound with capture and
+      // updating it would require detach + reattach, which is
+      // out of scope for v2.3. If you need hot-swap semantics,
+      // call `destroy()` + `format()` again.
       const current = entry.visible.value
       if (current !== '') {
         const { formatted, raw } = formatter.format(current, formatType, formatOptions)
@@ -317,19 +343,24 @@ const applyFormat = async (
 // when the formatter peer is missing — we promised the user that
 // `format()` is a no-op in that case, so we have to put the DOM
 // back the way it was before the sync rename + hidden creation.
+//
+// Only the entries that the current `applyFormat` call touched
+// are rolled back; pre-existing entries from previous calls are
+// left alone.
 const rollbackPhase1 = (
+  entries: FormatEntry[],
   bucket: Map<string, FormatEntry>,
   registry: FormControllerState['formattedFields']
 ): void => {
-  for (const [fieldName, entry] of bucket) {
+  for (const entry of entries) {
     if (entry.visible.isConnected) {
-      restoreVisibleName(entry.visible, fieldName)
+      restoreVisibleName(entry.visible, entry.canonicalName)
     }
     if (entry.mirrorIsOwned && entry.mirror.isConnected) {
       entry.mirror.remove()
     }
-    bucket.delete(fieldName)
-    registry.delete(fieldName)
+    bucket.delete(entry.canonicalName)
+    registry.delete(entry.canonicalName)
   }
 }
 

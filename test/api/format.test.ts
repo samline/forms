@@ -521,4 +521,80 @@ describe('format() integration', () => {
     expect(visible.value).toBe('12/34/5678')
     expect(visible.selectionStart).toBe(2)
   })
+
+  // === multiple sequential format() calls (regression) ===
+  // Bug: when the form script calls `format(phone)`, `format(date)`,
+  // `format(general)` in the same tick, the first phase 2 to resume
+  // from `await loadFormatter()` used to iterate the whole bucket
+  // and bind every entry with the first call's config. The other
+  // calls then short-circuited on the "already bound" check,
+  // leaving subsequent fields wired to the wrong formatter. The
+  // easytrip registration form hit this and reported "phone works,
+  // birth_date and tag_number don't" — the formatter was running
+  // for all three, but birth_date and tag_number were being fed
+  // through the phone formatter. The fix is to scope phase 2 to
+  // the entries the current `applyFormat` call touched.
+
+  it('binds each field to its own formatter when multiple format() calls run in the same tick', async () => {
+    document.body.innerHTML = `
+      <form id="multi-format-form">
+        <input name="phone" type="tel" />
+        <input name="birth_date" type="text" />
+        <input name="tag_number" type="text" />
+      </form>
+    `
+
+    // Each formatter stamps its type into the raw value so we can
+    // tell which one ran. A real formatter would format the
+    // visible; the wire-up test only cares that the right
+    // formatter is invoked for the right field.
+    const stamp = (type: string): FormatterModule => ({
+      format: value => {
+        const v = String(value ?? '').replace(/\s/g, '')
+        return { formatted: `[${type}]${v}`, raw: `${type}:${v}`, type }
+      }
+    })
+    const router: FormatterModule = {
+      format: (value, type, options) => {
+        if (type === 'phone') return stamp('phone').format(value, type, options)
+        if (type === 'date') return stamp('date').format(value, type, options)
+        if (type === 'general') return stamp('general').format(value, type, options)
+        return { formatted: String(value), raw: String(value), type: String(type) }
+      }
+    }
+    __setFormatterModuleForTests(router)
+
+    const api = form('multi-format-form')
+
+    // Three sequential format() calls in the same tick, mimicking
+    // the easytrip registration form.
+    api.format({ type: 'phone', field: 'phone', options: { country: 'MX' } })
+    api.format({ type: 'date', field: 'birth_date', options: { datePattern: ['d', 'm', 'Y'] } })
+    api.format({ type: 'general', field: 'tag_number', options: { blocks: [8, 1], prefix: 'EASY' } })
+    await flush()
+
+    const formElement = document.getElementById('multi-format-form') as HTMLFormElement
+
+    // Type into each field and verify the right formatter ran.
+    const phoneVisible = formElement.querySelector<HTMLInputElement>('input[name="phone_displayed"]')!
+    phoneVisible.value = '5512345678'
+    phoneVisible.dispatchEvent(new Event('input', { bubbles: true }))
+    await flush()
+    expect(formElement.querySelector<HTMLInputElement>('input[name="phone"]')?.value)
+      .toBe('phone:5512345678')
+
+    const bdVisible = formElement.querySelector<HTMLInputElement>('input[name="birth_date_displayed"]')!
+    bdVisible.value = '25122026'
+    bdVisible.dispatchEvent(new Event('input', { bubbles: true }))
+    await flush()
+    expect(formElement.querySelector<HTMLInputElement>('input[name="birth_date"]')?.value)
+      .toBe('date:25122026')
+
+    const tagVisible = formElement.querySelector<HTMLInputElement>('input[name="tag_number_displayed"]')!
+    tagVisible.value = '12345678'
+    tagVisible.dispatchEvent(new Event('input', { bubbles: true }))
+    await flush()
+    expect(formElement.querySelector<HTMLInputElement>('input[name="tag_number"]')?.value)
+      .toBe('general:12345678')
+  })
 })
