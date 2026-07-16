@@ -9,7 +9,12 @@ import { createAutoSubmit } from '../api/auto-submit'
 import { createClearErrors } from '../api/clear-errors'
 import { createDestroy } from '../api/destroy'
 import { createDisableAutoSubmit } from '../api/disable-auto-submit'
-import { createFormat, createFormatAll, resolveCanonicalForName } from '../api/format'
+import {
+  createFormat,
+  createFormatAll,
+  resolveCanonicalForName,
+  resolveDisplayNameForName
+} from '../api/format'
 import { createGetData } from '../api/get-data'
 import { createGetField } from '../api/get-field'
 import { createGetState } from '../api/get-state'
@@ -265,18 +270,21 @@ export const createFormController = (
     // (`phone_displayed`, on the visible). Resolve whichever side
     // fired this event to the canonical so the controller's
     // validation + error-clearing path runs once on the field the
-    // backend actually reads. Watchers on both names still fire
-    // below — each gets the value of the name it was registered
-    // against, so a `watch('phone', cb)` callback receives the raw
-    // and a `watch('phone_displayed', cb)` callback receives the
-    // formatted.
+    // backend actually reads. The display name is the visible's
+    // name — `syncVisualState` targets it so visual attributes
+    // (`css-filled`, `css-error`) land on the element the user
+    // sees, not on the hidden. Project CSS commonly uses
+    // `:has([css-filled])` on a parent label to animate the
+    // label; that selector only matches when the visible (inside
+    // the label) carries the attribute, never the hidden.
     const canonical = resolveCanonicalForName(state, name) ?? name
+    const displayName = resolveDisplayNameForName(state, name)
 
     if (normalizedOptions.clearManualErrorsOnChange) {
       delete state.manualErrors[canonical]
     }
 
-    syncVisualState([canonical])
+    syncVisualState([displayName])
 
     if (state.isValidated && state.validators[canonical]) {
       validateNames([canonical])

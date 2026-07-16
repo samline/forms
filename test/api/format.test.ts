@@ -597,4 +597,76 @@ describe('format() integration', () => {
     expect(formElement.querySelector<HTMLInputElement>('input[name="tag_number"]')?.value)
       .toBe('general:12345678')
   })
+
+  // === visual attributes land on the visible, not the hidden ===
+  // Bug: in 2.3.0, `handleDelegatedEvent` resolved the event target
+  // to the canonical name and called `syncVisualState([canonical])`.
+  // For a formatted field, the canonical is the hidden raw mirror
+  // — which lives outside the project label wrapper. The project
+  // CSS animates the label via `:has([css-filled])` on the label
+  // parent, which only matches the visible (a child of the label).
+  // Setting `css-filled` on the hidden left the label invisible.
+  // The fix: `syncVisualState` targets the display name (the
+  // visible's name) for formatted fields, so the visual attribute
+  // lands on the right element.
+
+  it('sets css-filled on the visible, not the hidden, so label CSS matches', async () => {
+    __setFormatterModuleForTests(phoneFormatter)
+    const api = form('checkout-form')
+    api.format({ type: 'phone', field: 'phone' })
+    await flush()
+
+    const formElement = document.getElementById('checkout-form') as HTMLFormElement
+    const visible = formElement.querySelector<HTMLInputElement>(
+      'input[name="phone_displayed"]'
+    )!
+    const hidden = formElement.querySelector<HTMLInputElement>(
+      'input[type="hidden"][name="phone"]'
+    )!
+
+    visible.value = '5512345678'
+    visible.dispatchEvent(new Event('input', { bubbles: true }))
+    await flush()
+
+    expect(visible.hasAttribute('css-filled')).toBe(true)
+    // The hidden is data-only; it should not carry visual
+    // attributes the project's label CSS targets.
+    expect(hidden.hasAttribute('css-filled')).toBe(false)
+  })
+
+  it('sets css-filled on the visible when setValue writes the canonical', async () => {
+    __setFormatterModuleForTests(phoneFormatter)
+    const api = form('checkout-form')
+    api.format({ type: 'phone', field: 'phone' })
+    await flush()
+
+    const formElement = document.getElementById('checkout-form') as HTMLFormElement
+    const visible = formElement.querySelector<HTMLInputElement>(
+      'input[name="phone_displayed"]'
+    )!
+    const hidden = formElement.querySelector<HTMLInputElement>(
+      'input[type="hidden"][name="phone"]'
+    )!
+
+    api.setValue('phone', '5512345678')
+
+    expect(visible.hasAttribute('css-filled')).toBe(true)
+    expect(hidden.hasAttribute('css-filled')).toBe(false)
+  })
+
+  it('keeps css-filled on the visible for non-formatted fields (regression guard)', async () => {
+    // No format() call — the field has no mirror.
+    const api = form('checkout-form', {
+      autoValidate: true
+    })
+
+    const formElement = document.getElementById('checkout-form') as HTMLFormElement
+    const card = formElement.querySelector<HTMLInputElement>('input[name="card"]')!
+
+    card.value = '4111111111111111'
+    card.dispatchEvent(new Event('input', { bubbles: true }))
+    await flush()
+
+    expect(card.hasAttribute('css-filled')).toBe(true)
+  })
 })

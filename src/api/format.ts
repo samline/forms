@@ -395,6 +395,30 @@ export const resolveCanonicalForName = (
   return null
 }
 
+// Companion to `resolveCanonicalForName` that resolves a name to
+// the corresponding display name (the visible's name, not the
+// canonical). The controller uses this to drive `syncVisualState`
+// — the visual attributes (`css-filled`, `css-error`) need to land
+// on the visible element, which is what the project's CSS targets
+// via `:has([css-filled])` on the label parent. Setting them on
+// the canonical (the hidden) leaves the label invisible because
+// the hidden lives outside the label wrapper.
+//
+// For non-formatted fields, the display name is just the field's
+// own name — there's no rename and no mirror.
+export const resolveDisplayNameForName = (
+  state: FormControllerState,
+  name: string
+): string => {
+  const bucket = registry.get(state)
+  if (!bucket) return name
+  for (const [canonical, entry] of bucket) {
+    if (canonical === name) return entry.displayName
+    if (entry.displayName === name) return entry.displayName
+  }
+  return name
+}
+
 // Cleanup hook consumed by `api/destroy.ts`. Removes every listener
 // registered through this module, restores the visible's name to the
 // canonical, and drops the owned hidden mirrors that were created
