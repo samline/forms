@@ -4,6 +4,20 @@ All notable changes to `@samline/forms` are documented in this file. The format 
 
 ## [Unreleased]
 
+## [2.3.4] - 2026-07-16
+
+### Fixed
+
+- `readFieldValue` and `writeFieldValue` now respect the `name="foo[]"` convention for multi-value inputs. Previously, `getValue` returned only the first matching input's value and `setValue` wrote the same string to every matching input, breaking custom validators that check `Array.isArray(value)` on fields like `docusign_email[]`. The `[]` suffix is the de facto HTML pattern for array inputs (PHP, Rails, Express, Spring); the controller now treats it as the explicit signal for "collect all values as an array".
+
+### Added
+
+- Eleven regression tests under `test/api/array-syntax.test.ts` covering `getValue` / `setValue` with `name="foo[]"` for text, email, checkbox, and file inputs (the last via a hand-built `FileList`), plus guards that `name="foo"` (no brackets) keeps the original first-value / broadcast semantics and that custom validators keyed on the bracketed name now receive the full array.
+
+### Changed
+
+- `docs/api/get-value.md` and `docs/api/set-value.md` document the `name="foo[]"` behaviour in the per-field-type tables, with a new example for each direction and a dedicated edge-case bullet describing the explicit opt-in. `example/src/content/docs/reference/api.md` mirrors the note in the Starlight reference so the npm-bundled docs and the live site stay in sync.
+
 ## [2.3.3] - 2026-07-16
 
 ### Fixed
@@ -136,7 +150,8 @@ All notable changes to `@samline/forms` are documented in this file. The format 
 
 - Initial release of `@samline/forms`. Vanilla JS form controller with framework-specific variants (React, Vue, Svelte) initially included; bundled `.local/` agent docs at the repo root.
 
-[Unreleased]: https://github.com/samline/forms/compare/v2.3.3...HEAD
+[Unreleased]: https://github.com/samline/forms/compare/v2.3.4...HEAD
+[2.3.4]: https://github.com/samline/forms/compare/v2.3.3...v2.3.4
 [2.3.3]: https://github.com/samline/forms/compare/v2.3.2...v2.3.3
 [2.3.2]: https://github.com/samline/forms/compare/v2.3.1...v2.3.2
 [2.3.1]: https://github.com/samline/forms/compare/v2.3.0...v2.3.1

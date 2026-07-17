@@ -162,9 +162,13 @@ Registers a listener that fires immediately with the current state and on every 
 
 Writes a value into a field and dispatches the correct DOM event so watchers, validators, and visual state run as if a user typed. Returns the controller unchanged when the field does not exist.
 
+When the field name ends in `[]` (the multi-value input convention used by PHP, Rails, Express, etc.), `setValue` distributes the array elements one per input: surplus inputs (more inputs than array elements) are cleared to `''`, and surplus array elements (more elements than inputs) are dropped. Bare names — `name="foo"` with multiple inputs — keep the original broadcast semantics and receive the same value on every matching input.
+
 #### `getValue(name)`
 
 Returns the normalized value of a field: `string`, `string[]`, `File[]`, or `undefined`.
+
+When the field name ends in `[]` and there is more than one matching input, `getValue` returns an array of values from all matching inputs (in DOM order). For file inputs, the `FileList` from every input is concatenated. The `[]` suffix is the de facto HTML pattern for array inputs (PHP, Rails, Express, Spring); the controller now treats it as the explicit signal for "collect all values as an array".
 
 #### `getField(name)`
 
