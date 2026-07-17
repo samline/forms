@@ -13,6 +13,9 @@ const contactForm = form('contact-form', {
   clearManualErrorsOnChange: true,
   validators: {
     email: { required: true, pattern: /^[^\s@]+@[^\s@]+\.[^\s@]+$/ }
+  },
+  formats: {
+    phone: { type: 'phone', field: 'phone', options: { country: 'MX' } }
   }
 })
 ```
@@ -29,6 +32,7 @@ interface FormControllerOptions {
   clearManualErrorsOnChange?: boolean
   clearErrorsOnSubmit?: boolean
   validators?: ValidationSchema
+  formats?: FieldFormatConfigMap
 }
 ```
 
@@ -44,6 +48,7 @@ interface FormControllerOptions {
 | `clearErrorsOnSubmit` | `boolean` | `true` | Clear all manual errors before submit validation runs. |
 | `clearManualErrorsOnChange` | `boolean` | `true` | Clear the manual error of a field when it changes. Set `false` to keep manual errors until you call [`clearErrors`](api/clear-errors.md). |
 | `validators` | `ValidationSchema` | `{}` | Field → rules map. See [docs/typescript.md](typescript.md#validationschema) and the rule reference below. |
+| `formats` | [`FieldFormatConfigMap`](typescript.md#fieldformatconfig-and-fieldformatconfigmap) | `{}` | Declarative `@samline/formatter` configuration. Each entry is applied during `form()` initialization using the same logic as [`format()`](api/format.md). Requires the optional peer dependency. |
 
 ---
 
@@ -196,4 +201,26 @@ const DEFAULT_OPTIONS = {
 }
 ```
 
-Everything else (`autoSubmit`, `validators`, partial `attributes`) defaults to neutral / empty values.
+Everything else (`autoSubmit`, `validators`, `formats`, partial `attributes`) defaults to neutral / empty values.
+
+---
+
+## `formats`
+
+Declarative way to bind one or more `@samline/formatter` pipelines at construction time. Each entry is applied during `form()` initialization using the same logic as [`format()`](api/format.md).
+
+```ts
+import { form } from '@samline/forms'
+
+const checkout = form('checkout', {
+  formats: {
+    phone:  { type: 'phone',      field: 'phone',  options: { country: 'MX' } },
+    card:   { type: 'creditCard', field: 'card' },
+    amount: { type: 'numeral',    field: 'amount', options: { prefix: '$' } }
+  }
+})
+```
+
+The map key is just an identifier — the **canonical** field name lives in `FieldFormatConfig.field`. `format()` renames the visible to `<field>_displayed` (or `config.displayField`) on first run and creates a hidden `<input type="hidden" name="<field>">` that carries the raw value. Both names are first-class in the controller's API. See [`FieldFormatConfigMap`](typescript.md#fieldformatconfig-and-fieldformatconfigmap) for the full type, and the [formatting recipe](recipes.md#13-format-inputs-with-samlineformatter) for an end-to-end example.
+
+`formats` requires `@samline/formatter`. When it is not installed, every entry logs a single `console.error` describing the missing dependency, restores the visible's name to the canonical form, and the controller is created normally — no exceptions are thrown.

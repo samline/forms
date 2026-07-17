@@ -51,7 +51,10 @@ import { form } from '@samline/forms'
 
 const profile = form('profile-form', {
   autoValidate: false,
-  attributes: { error: 'is-invalid' }
+  attributes: { error: 'is-invalid' },
+  formats: {
+    phone: { type: 'phone', field: 'phone', options: { country: 'MX' } }
+  }
 })
 
 profile.options.autoValidate            // false (overridden)
@@ -59,7 +62,10 @@ profile.options.autoSubmit              // false (default)
 profile.options.clearErrorsOnSubmit     // true (default)
 profile.options.attributes.error        // 'is-invalid'
 profile.options.attributes.filled       // 'css-filled' (default)
+profile.options.formats.phone           // FieldFormatConfig (overridden)
 ```
+
+The `formats` key is the declarative counterpart to [`format()`](format.md) — see [the option reference](../options.md#formats) for the full shape.
 
 ## Edge cases
 

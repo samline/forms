@@ -63,3 +63,18 @@ If the user adds new internal rules, todos, or lessons, the AI must keep the cor
 If during a session the AI saves context in the chat session memory and that content corresponds to an internal rule, a todo, a lesson, or an operational preference of the project, it must also persist it in the appropriate file in `.agents/` to keep coherence if the session is cleared.
 
 The AI must also preserve the current convention: `AGENTS.md` and `.agents/` are versioned in git but excluded from the published npm tarball.
+
+---
+
+## Documentation must be in sync before pushing
+
+Every code change that touches a public method, type, option, or peer-aware behaviour **must** come with up-to-date documentation before it is pushed to the repository. Out-of-date docs are a release-blocker, not a follow-up.
+
+The package ships two documentation surfaces that must agree with the source code at all times:
+
+1. **`docs/`** — the user-facing reference bundled with the npm tarball (`docs/api/`, `docs/options.md`, `docs/typescript.md`, `docs/recipes.md`, `docs/css-styling.md`, etc.).
+2. **`example/src/content/docs/reference/`** — the Starlight site published to `https://samline.github.io/forms`.
+
+Both surfaces must reflect the current public API in `src/index.ts` and `src/core/types.ts`. When a release adds, removes, or renames a method, type, option, or peer-dependent feature, the agent MUST update both surfaces in the same change. Do not split the docs work into a follow-up commit.
+
+The full checklist (what to grep, what to open, what to look for) lives in `.agents/documentation.md` — read it before any release task.

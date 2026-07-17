@@ -68,6 +68,7 @@ These do not require a controller. They accept plain values or a raw `HTMLFormEl
 - [`parseFormData(formElement)`](#parseformdata) — same serializer used internally, no controller needed.
 - [`validateValues(values, schema)`](#validatevalues) — run a schema against a values map.
 - [`validateFieldValue(field, value, rules, values)`](#validatefieldvalue) — run a rule set against a single value.
+- [`regex`](#regex) — named regular expressions and default error messages, exported by the optional peer [`@samline/formatter`](https://github.com/samline/formatter). Install the peer before importing.
 
 ---
 
@@ -295,3 +296,13 @@ for (const controller of Object.values(browser.available)) {
 ```
 
 For an equivalent surface in a no-bundler setup, see the [Browser global reference](/forms/reference/browser/).
+
+### Peer helpers
+
+#### `regex`
+
+:::caution[Optional peer dependency]
+Exported by [`@samline/formatter`](https://github.com/samline/formatter), not by `@samline/forms`. Install the peer before importing.
+:::
+
+A named dictionary of common regular expressions and their default error messages, intended to feed the `pattern` rule of any field validator. Full reference, examples, and edge cases live in the dedicated [`regex`](/forms/reference/regex/) page — do not redeclare hand-rolled patterns when the peer is on disk.

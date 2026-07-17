@@ -49,3 +49,4 @@ Every public method and helper gets its own page. Use this index to navigate to 
 - [`parseFormData(formElement)`](parse-form-data.md) — same serializer used internally, no controller needed.
 - [`validateValues(values, schema)`](validate-values.md) — run a schema against a values map.
 - [`validateFieldValue(field, value, rules, values)`](validate-field-value.md) — run a rule set against a single value.
+- [`regex`](regex.md) — named regular expressions and default error messages, re-exported from the optional peer [`@samline/formatter`](https://github.com/samline/formatter). Install the peer before importing.

@@ -57,6 +57,7 @@ const siteConfig = defineSiteConfig({
 				{ slug: 'reference/configuration' },
 				{ slug: 'reference/api' },
 				{ slug: 'reference/typescript' },
+				{ slug: 'reference/regex' },
 				{ slug: 'reference/browser' },
 				{ slug: 'reference/css-styling' },
 				{ slug: 'reference/examples' },

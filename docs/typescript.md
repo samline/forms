@@ -56,6 +56,16 @@ interface FormController {
   setValue: (name: string, value: unknown) => FormController
   validate: (fields?: string[]) => ValidationResult
   revalidate: (fields?: string[]) => ValidationResult
+  /**
+   * Apply the same `@samline/formatter` pipeline to a single field or
+   * to a list of fields sharing one configuration. Chainable.
+   *
+   * Requires the optional peer dependency `@samline/formatter`. When
+   * the peer is not installed the call logs a single `console.error`
+   * and returns the controller unchanged.
+   */
+  format: (config: FieldFormatConfig) => FormController
+  formatAll: (config: FieldFormatConfig) => FormController
   reset: () => FormController
   autoSubmit: (options?: boolean | AutoSubmitOptions) => FormController
   disableAutoSubmit: () => FormController
@@ -81,6 +91,13 @@ interface FormControllerOptions {
   clearManualErrorsOnChange?: boolean
   clearErrorsOnSubmit?: boolean
   validators?: ValidationSchema
+  /**
+   * Declarative format configuration. Each entry is applied during
+   * `form()` initialization using the same logic as `controller.format(...)`.
+   * The key is just an identifier — the visible field name lives in
+   * `FieldFormatConfig.field`.
+   */
+  formats?: FieldFormatConfigMap
 }
 ```
 
@@ -465,6 +482,61 @@ interface VisualAttributes {
   error: string
 }
 ```
+
+`Partial<VisualAttributes>` is accepted, so you can override only one of them. See [docs/css-styling.md](css-styling.md).
+
+---
+
+## `FieldFormatConfig` and `FieldFormatConfigMap`
+
+The argument to [`format()`](api/format.md) and [`formatAll()`](api/format.md). The map is the shape of `options.formats`.
+
+```ts
+type FormatType =
+  | 'general'
+  | 'phone'
+  | 'numeral'
+  | 'date'
+  | 'time'
+  | 'creditCard'
+  | 'creditCardType'
+
+interface FieldFormatConfig {
+  /** One of the supported `@samline/formatter` `FormatType` values. */
+  type: FormatType
+  /**
+   * Canonical name of the formatted field. The value the backend
+   * ultimately receives (the `raw` output of the formatter) is
+   * exposed under this name; the formatter is responsible for
+   * keeping it in sync with the visible input.
+   */
+  field: string | string[]
+  /**
+   * Name of the visible input that shows the formatted value to
+   * the user. Defaults to `${fieldName}_displayed`.
+   *
+   * The visible is **renamed** from `field` to `displayField` on
+   * the first `format()` call (idempotent on re-binding). A hidden
+   * `<input type="hidden" name="<field>">` is created next to it
+   * to carry the raw value. Both names are first-class in the
+   * controller's API (`getValue`, `getField`, `setValue`, `watch`,
+   * `getData`) — see [`docs/api/format.md`](api/format.md) for the full contract.
+   */
+  displayField?: string
+  /**
+   * Format-specific options forwarded to `@samline/formatter`.
+   * Any key documented for the chosen `type` is accepted (e.g.
+   * `country`, `delimiter`, `numeralDecimalMark`, `datePattern`).
+   */
+  options?: Record<string, unknown>
+}
+
+interface FieldFormatConfigMap {
+  [field: string]: Omit<FieldFormatConfig, 'field'>
+}
+```
+
+The `field` name is the **canonical** name of the formatted pair. `format()` renames the visible from `field` to `displayField` (default `${fieldName}_displayed`) on first run and creates a hidden `<input type="hidden" name="<field>">` that carries the raw value. Both names are first-class in the controller's API — see [The mirror convention](api/format.md#the-mirror-convention) in the format reference. `options` is forwarded to `@samline/formatter` — see its [options reference](https://github.com/samline/formatter/blob/main/docs/options.md).
 
 ---
 

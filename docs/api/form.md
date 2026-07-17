@@ -105,6 +105,9 @@ const signup = form('signup-form', {
       }
     },
     password: { required: true, minLength: 8 }
+  },
+  formats: {
+    phone: { type: 'phone', field: 'phone', options: { country: 'MX' } }
   }
 })
 ```
@@ -135,6 +138,6 @@ form(profileRef)
 
 ## Related
 
-- [`createFormController`](element.md) — the lower-level factory.
+- [`createFormController`](../typescript.md#formcontroller) — the lower-level factory.
 - [`destroy`](destroy.md) — tear the controller down.
 - [docs/options.md](../options.md) — every option in detail.

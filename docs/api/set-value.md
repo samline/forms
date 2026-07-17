@@ -29,7 +29,7 @@ The same [`FormController`](../typescript.md#formcontroller) — chainable. Retu
 | `<input type="radio">` (group with the same `name`) | The radio whose `value` matches `String(value)` is checked. |
 | `<input type="file">` | File inputs are read-only — `setValue` cannot assign a file. Passing `[]` clears the input. |
 | `<select>` (single) | `String(value)` must match an option value. |
-| `<select multiple>` | Treated like a checkbox group: every option whose value is in `Array.from(value)` is selected. |
+| `<select multiple>` | `String(value)` is assigned to `field.value` — i.e. the value is coerced to a single string, just like a regular text input. `setValue` does **not** iterate the array and select individual options; use the per-`option` `selected` attribute from your own code, or pass the values one at a time. |
 | `<textarea>` | `String(value)` is assigned to `field.value`. |
 
 After writing, the controller dispatches a synthetic event on the **first** matching field:
