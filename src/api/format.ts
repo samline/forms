@@ -120,6 +120,50 @@ const readInputType = (event: Event): string | undefined => {
   return typeof candidate.inputType === 'string' ? candidate.inputType : undefined
 }
 
+// When the value reaching the formatter is in raw form (the
+// server's `old()` payload, a `setValue('phone', x)` write to the
+// canonical hidden, etc.), the controller injects
+// `interpretInputAs: 'auto'` so the formatter's heuristic detects
+// the raw shape and segments the digits correctly. The override
+// only kicks in when the caller did not set the option
+// themselves, so an explicit `interpretInputAs: 'display'` (e.g.
+// the dev pre-rendered the visible in display order from the
+// server) or `interpretInputAs: 'raw'` (a pre-existing API contract
+// that always ships the canonical raw) is still respected. For
+// non-date / non-time format types the option is a no-op on the
+// peer side, so applying it uniformly is safe.
+//
+// `@samline/formatter` v2.0.0 changed its default to `'auto'`,
+// which would handle the initial pass correctly on its own. The
+// override is kept as a defensive measure so the controller's
+// behaviour does not silently regress if a future formatter
+// version flips the default again — and so the intent is
+// documented in code rather than implicit in the formatter's
+// version-dependent default.
+//
+// Two call sites need this override:
+//   - The first-time-bind `initial` pass in `applyFormat` (the
+//     visible value at mount time — typically the `old()` raw).
+//   - The `isMirror` branch of the input handler (a `setValue` to
+//     the canonical name, or any external script that wrote the
+//     raw directly to the hidden mirror).
+//
+// The visible-source branch of the input handler (user keystrokes)
+// does NOT need the override: what the user typed is always in
+// display order. The re-bind path also does not need the override:
+// the visible value at that point is whatever the formatter
+// previously produced, in display order.
+const buildAutoInterpretedOptions = (
+  formatOptions: Record<string, unknown> | undefined
+): Record<string, unknown> => ({
+  ...(formatOptions ?? {}),
+  interpretInputAs: 'auto'
+})
+
+const shouldForceAutoInterpretation = (
+  formatOptions: Record<string, unknown> | undefined
+): boolean => formatOptions?.interpretInputAs === undefined
+
 const buildHandler = (
   visible: HTMLInputElement | HTMLTextAreaElement,
   mirror: HTMLInputElement,
@@ -143,7 +187,20 @@ const buildHandler = (
     // (it is the unformatted text the user just typed).
     const rawInput = isMirror ? mirror.value : visible.value
     const inputType = readInputType(event)
-    const { formatted, raw } = formatFn(rawInput, formatType, formatOptions)
+    // When the source is the mirror, the value is in raw form
+    // (e.g. a `setValue('birthday', '19901212')` write to the
+    // canonical hidden). Force `interpretInputAs: 'raw'` so the
+    // formatter segments the digits correctly — the v1.2.0+
+    // default of `'display'` would otherwise scramble raw
+    // inputs. Visible-source events (user typing) keep the
+    // caller's options as-is: what the user typed is in
+    // display order. An explicit `interpretInputAs` is always
+    // respected.
+    const sourceOptions =
+      isMirror && shouldForceAutoInterpretation(formatOptions)
+        ? buildAutoInterpretedOptions(formatOptions)
+        : formatOptions
+    const { formatted, raw } = formatFn(rawInput, formatType, sourceOptions)
 
     if (!formatted && !raw) {
       visible.value = ''
@@ -328,7 +385,23 @@ const applyFormat = async (
 
     const initial = entry.visible.value
     if (initial !== '') {
-      const { formatted, raw } = formatter.format(initial, formatType, formatOptions)
+      // The initial value is almost always the server's `old()`
+      // payload (e.g. "19901212" for a date with `Ymd` raw) —
+      // the canonical raw form, not the display. Inject
+      // `interpretInputAs: 'auto'` so the formatter's heuristic
+      // detects the raw shape and segments the digits correctly;
+      // honour an explicit `formatOptions.interpretInputAs` when
+      // the caller set one (e.g. the dev pre-rendered the
+      // visible in display order from the server, or they have
+      // a pre-existing API contract that always ships the
+      // canonical raw). `@samline/formatter` v2.0.0+ already
+      // defaults to `'auto'`, so the override is defensive
+      // against future formatter changes rather than strictly
+      // required today.
+      const initialOptions = shouldForceAutoInterpretation(formatOptions)
+        ? buildAutoInterpretedOptions(formatOptions)
+        : formatOptions
+      const { formatted, raw } = formatter.format(initial, formatType, initialOptions)
       applyFormattedValue(entry.visible, entry.mirror, formatted, raw)
     } else if (entry.mirrorIsOwned && entry.mirror.value !== '') {
       // Only clear an owned mirror when the visible is empty.

@@ -9,7 +9,7 @@ A change to the public API is **not done** until both surfaces are updated. This
 
 ## When to read this file
 
-- Before any release / version bump (e.g. `2.3.3` → `2.3.4`).
+- Before any release / version bump (e.g. `2.3.3` → `2.4.0`).
 - After any change to `src/index.ts` (the public surface) or `src/core/types.ts` (the public types).
 - After any change to a per-method factory in `src/api/*.ts` (signature, behaviour, return shape).
 - After any change to peer-dependent behaviour (`@samline/formatter` integration, `regex`, `formats`).

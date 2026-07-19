@@ -72,6 +72,21 @@ The same [`FormController`](../typescript.md#formcontroller) — chainable. The 
 5. If a hidden input already exists in the form for the same canonical name — either with the `data-formatter-raw-for="<field>"` attribute or as a plain `<input type="hidden" name="<field>">` — `format()` reuses it instead of duplicating it. The previously authored value is preserved across `destroy()` (see [Cleanup](#cleanup)).
 6. Calling `format()` twice for the same canonical name is idempotent: the listener is bound once and the configuration is refreshed in the internal registry.
 
+## Initial value interpretation (server pre-fill)
+
+When the visible field already carries a value at the moment `format()` first runs — typically a server-rendered `value="{{ old('field') }}"` in a Blade template, or a value set by a previous `setValue` call — the controller runs that value through the formatter once before any user interaction. The formatter's input is the visible's value, which on a server pre-fill is the **canonical raw** (e.g. `"19901212"` for a date with a `Ymd` raw), not the display form.
+
+`@samline/formatter` v2.0.0+ changed its default `interpretInputAs` to `'auto'`, which detects the raw shape by the absence of delimiters and the digit length matching the raw pattern. The controller still injects `interpretInputAs: 'auto'` explicitly for the initial pass and for mirror-source events so the intent is documented in code and the behaviour is robust against a future formatter change that flips the default again.
+
+To bridge the two layers, the controller:
+
+- For the **initial pass** (and for input events whose source is the hidden mirror, e.g. a `setValue('field', raw)` that wrote the canonical raw), overrides the formatter call to use `interpretInputAs: 'auto'`. This handles the realistic `old()` re-render case where the server hands the visible the canonical raw.
+- For **live keystrokes** on the visible input, the formatter is invoked with the caller's `options` as-is — what the user typed is in display order, and the formatter's default (`'auto'` since v2.0.0) does the right thing.
+- For the **re-bind** path (a second `format()` call with new options for the same field), the formatter is also invoked with the caller's `options` as-is — the visible at that point is whatever the formatter previously produced, in display order.
+- An **explicit `interpretInputAs`** in `options` is always respected, never overridden. Use `'display'` if you pre-render the visible in display order from the server, or `'raw'` if you want the legacy pre-1.2.0 round-trip semantics for the initial pass.
+
+This is transparent for the common case: a Blade re-render with `value="{{ old('birthday') }}"` carrying `"19901212"` repopulates the visible as `"12/12/1990"` without any extra wiring on the consumer side. The option is opt-in only when the consumer needs the inverse convention.
+
 ## Pre-authoring the visible
 
 The default flow is: write `<input name="phone" />` and let `format()` rename it to `phone_displayed`. If you'd rather keep the visible's name stable in your HTML, pre-author it with the display name:

@@ -2,7 +2,22 @@
 
 All notable changes to `@samline/forms` are documented in this file. The format follows [Keep a Changelog](https://keepachangelog.com/en/1.1.0/) and the project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
-## [Unreleased]
+## [2.4.0] - 2026-07-19
+
+### Fixed
+
+- `applyFormat` phase 2 and the capture-phase input handler now override `interpretInputAs` to `'auto'` for the initial value pass and for input events whose source is the hidden raw mirror, so a server pre-fill of the canonical raw (e.g. a Blade re-render with `value="{{ old('birthday') }}"` carrying `"19901212"` for a `d/m/Y` display + `Ymd` raw combo) is correctly converted to the display form on mount. Without the override, `@samline/formatter` v1.2.0+ — which changed `interpretInputAs` to default to `'display'` — mis-segmented the raw digits and the visible ended up showing the scrambled value (e.g. `"19/09/1212"`) instead of `"12/12/1990"`. As of `@samline/formatter@2.0.0`, the default is `'auto'` (which handles the same case via the formatter's own heuristic), so the override is now a defensive explicit declaration of intent rather than strictly required. It still serves two purposes: (1) it documents the controller's context awareness in code, and (2) it protects against a future formatter change that flips the default again. Live keystrokes on the visible input keep the formatter's default because what the user types is in display order. An explicit `interpretInputAs` in `config.options` is always respected, never overridden — pass `'display'` if you pre-render the visible in display order from the server, or `'raw'` if you want the legacy pre-1.2.0 round-trip semantics for the initial pass.
+
+### Added
+
+- Five regression tests under `test/api/format.test.ts`: the easytrip / Blade `old()` case (raw initial value → display form on mount), the live keystroke path (no `interpretInputAs` override applied to user typing), `setValue('field', raw)` writes the canonical raw with the `'auto'` interpretation forced, the explicit `interpretInputAs: 'display'` opt-in is preserved, and the re-bind path forwards the caller's options verbatim.
+
+### Changed
+
+- `docs/api/format.md` adds an "Initial value interpretation (server pre-fill)" section that documents the override and the four contexts (initial pass, mirror-source events, live keystrokes, re-bind) with the explicit opt-in caveat. With the formatter v2.0.0 default flip, the prose now notes that the override is defensive rather than strictly required.
+- `example/src/content/docs/reference/api.md` (Starlight mirror) gains a "Server pre-fill" note in the `format()` summary so the npm-bundled docs and the live site stay in sync.
+- `example/src/content/docs/reference/typescript.md` notes the `interpretInputAs` override in the `FieldFormatConfig` prose so consumers reading the type signature know the initial pass is the special case.
+- The peer dependency `@samline/formatter` is now `^2.0.0` (was `^1.0.1`). The `^1.x` range no longer receives the v2.0.0 fix, so consumers on the previous major must pin explicitly or upgrade.
 
 ## [2.3.4] - 2026-07-16
 
@@ -150,7 +165,8 @@ All notable changes to `@samline/forms` are documented in this file. The format 
 
 - Initial release of `@samline/forms`. Vanilla JS form controller with framework-specific variants (React, Vue, Svelte) initially included; bundled `.local/` agent docs at the repo root.
 
-[Unreleased]: https://github.com/samline/forms/compare/v2.3.4...HEAD
+[Unreleased]: https://github.com/samline/forms/compare/v2.4.0...HEAD
+[2.4.0]: https://github.com/samline/forms/compare/v2.3.4...v2.4.0
 [2.3.4]: https://github.com/samline/forms/compare/v2.3.3...v2.3.4
 [2.3.3]: https://github.com/samline/forms/compare/v2.3.2...v2.3.3
 [2.3.2]: https://github.com/samline/forms/compare/v2.3.1...v2.3.2

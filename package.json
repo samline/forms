@@ -1,6 +1,6 @@
 {
   "name": "@samline/forms",
-  "version": "2.3.4",
+  "version": "2.4.0",
   "description": "Form controller for vanilla JS and direct browser usage.",
   "type": "module",
   "license": "MIT",
@@ -41,7 +41,7 @@
     "prepublishOnly": "npm run clean && npm run build && npm run typecheck && npm test"
   },
   "peerDependencies": {
-    "@samline/formatter": "^1.0.1"
+    "@samline/formatter": "^2.0.0"
   },
   "peerDependenciesMeta": {
     "@samline/formatter": {
@@ -49,7 +49,7 @@
     }
   },
   "devDependencies": {
-    "@samline/formatter": "^1.0.1",
+    "@samline/formatter": "^2.0.0",
     "@types/node": "^24.0.0",
     "jsdom": "^26.1.0",
     "tsup": "^8.5.0",

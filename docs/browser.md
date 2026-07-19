@@ -11,10 +11,10 @@ For every other case (modern apps, bundlers, TypeScript projects), use the main 
 ## Script tag
 
 ```html
-<script src="https://unpkg.com/@samline/forms@2.3.4/dist/browser/global.global.js"></script>
+<script src="https://unpkg.com/@samline/forms@2.4.0/dist/browser/global.global.js"></script>
 ```
 
-> Pin the version in production. Replace `2.3.4` with the version you ship.
+> Pin the version in production. Replace `2.4.0` with the version you ship.
 
 The bundle is a single IIFE that registers a global object.
 
@@ -49,7 +49,7 @@ The factory returns a `FormController` with the same signatures, semantics, and 
   <button type="submit">Send</button>
 </form>
 
-<script src="https://unpkg.com/@samline/forms@2.3.4/dist/browser/global.global.js"></script>
+<script src="https://unpkg.com/@samline/forms@2.4.0/dist/browser/global.global.js"></script>
 <script>
   const contactForm = window.Forms.newForm({
     id: 'contact-form',
@@ -141,7 +141,7 @@ declare global {
 
 ## Common pitfalls
 
-- **Pin the version.** The CDN URL above is `2.3.4`. Replace it whenever you upgrade.
+- **Pin the version.** The CDN URL above is `2.4.0`. Replace it whenever you upgrade.
 - **The script must be loaded before any code that uses `window.Forms`.** Place the `<script>` tag in `<head>` with `defer`, or before the user script in `<body>`.
 - **No bundler means no tree-shaking.** The browser bundle includes the full controller (~5 KB gzipped). That is by design — the alternative would defeat the purpose of a no-bundler setup.
 - **CSP:** if your site uses a strict Content Security Policy, allow `unpkg.com` in `script-src` (or self-host the file).

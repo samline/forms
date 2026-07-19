@@ -449,7 +449,7 @@ interface FieldFormatConfigMap {
 }
 ```
 
-The `field` name is the **canonical** name of the formatted pair. `format()` renames the visible from `field` to `displayField` (default `${fieldName}_displayed`) on first run and creates a hidden `<input type="hidden" name="<field>">` that carries the raw value. Both names are first-class in the controller's API — see [The mirror convention](/forms/reference/api/#the-mirror-convention) in the format reference. `options` is forwarded to `@samline/formatter` — see its [options reference](https://github.com/samline/formatter/blob/main/docs/options.md).
+The `field` name is the **canonical** name of the formatted pair. `format()` renames the visible from `field` to `displayField` (default `${fieldName}_displayed`) on first run and creates a hidden `<input type="hidden" name="<field>">` that carries the raw value. Both names are first-class in the controller's API — see [The mirror convention](/forms/reference/api/#the-mirror-convention) in the format reference. `options` is forwarded to `@samline/formatter` — see its [options reference](https://github.com/samline/formatter/blob/main/docs/options.md). The controller injects `interpretInputAs: 'auto'` for the initial pass (server pre-fill) and for input events whose source is the hidden mirror, so a Blade `old()` carrying the canonical raw is correctly converted to the display form on mount. As of `@samline/formatter@2.0.0` the formatter's own default is `'auto'`, so the override is a defensive explicit declaration of intent. An explicit `interpretInputAs` in `options` is always respected.
 
 ## `FormsApi`
 

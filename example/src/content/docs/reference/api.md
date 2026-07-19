@@ -186,6 +186,8 @@ Apply an `@samline/formatter` pipeline to one or more fields inside the bound fo
 `@samline/formatter` is optional. When it is not installed, `format()` and `formatAll()` log a single `console.error` describing the missing dependency, restore the visible's name to the canonical form, and return the controller unchanged. The form is left exactly as the developer authored it.
 :::
 
+**Server pre-fill (e.g. Blade `old()`)**. When the visible field already carries a value at the moment `format()` first runs — typically a server-rendered `value="{{ old('birthday') }}"` carrying the canonical raw — the controller runs that value through the formatter once before any user interaction. The initial pass overrides `interpretInputAs` to `'auto'` so a raw Ymd like `"19901212"` is correctly converted to the display form (`"12/12/1990"`); live keystrokes on the visible keep the formatter's default (`'auto'` since `@samline/formatter@2.0.0`) because what the user types is in display order. The same override applies to input events whose source is the hidden mirror (e.g. a `setValue('field', raw)` that wrote the canonical raw). An explicit `interpretInputAs` in `config.options` is always respected, never overridden — pass `'display'` if you pre-render the visible in display order from the server, or `'raw'` for the legacy pre-1.2.0 round-trip. See [`format`](/forms/reference/api/#formatconfig) for the full contract.
+
 #### `formatAll(config)`
 
 Alias of `format()` for readability when `field` is `string[]`.

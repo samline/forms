@@ -859,4 +859,344 @@ describe('format() integration', () => {
     expect(visible.hasAttribute('css-error')).toBe(true)
     expect(hidden.hasAttribute('css-error')).toBe(false)
   })
+
+  // === Regression: server pre-fill of a raw value corrupts the display ===
+  // Bug report: easytrip's Blade re-render after a validation error
+  // shipped `value="{{ old('birthday') }}"` carrying the canonical
+  // raw Ymd (e.g. "19901212"). `@samline/formatter` v2.0.0+
+  // defaults `interpretInputAs` to `'auto'`, which detects the
+  // raw shape by the absence of delimiters and the digit length
+  // matching the raw pattern, and segments the digits correctly.
+  // The controller still injects `interpretInputAs: 'auto'`
+  // explicitly for the initial pass and for mirror-source events
+  // so the intent is documented in code and the behaviour is
+  // robust against future formatter changes. The live input
+  // listener keeps the formatter's defaults (no override) so
+  // user keystrokes (always in display order) are unaffected.
+  // The same override applies to mirror-source events so
+  // `setValue('birthday', '19901212')` round-trips correctly.
+
+  // Build a formatter that mimics the peer v1.2.0+ default
+  // (`interpretInputAs: 'display'`) so the test fails without
+  // the `applyFormat` override and passes with it. Records every
+  // call so the assertions can verify which mode was used.
+  const buildRecordingDateFormatter = () => {
+    const calls: Array<{
+      value: string
+      options: Record<string, unknown> | undefined
+    }> = []
+    const record = (value: unknown, options: Record<string, unknown> | undefined) => {
+      calls.push({ value: String(value ?? ''), options })
+    }
+    // Mirrors the peer v2.0.0 `'auto'` heuristic. The default
+    // date delimiter is `/`; the raw pattern for the test's
+    // easTrip-style config is `['Y','m','d']` (8 digits).
+    const interpretAuto = (
+      digits: string,
+      original: string,
+      _opts: { interpretInputAs?: 'raw' | 'display' | 'auto' }
+    ): 'raw' | 'display' => {
+      const delimiter = '/'
+      if (original.includes(delimiter)) return 'display'
+      if (digits.length === 8) return 'raw'
+      return 'display'
+    }
+    const formatter: FormatterModule = {
+      format: (value, _type, options) => {
+        const opts = (options ?? {}) as { interpretInputAs?: 'raw' | 'display' | 'auto' }
+        record(value, options)
+        const digits = String(value ?? '').replace(/\D/g, '').slice(0, 8)
+        const interpretAs =
+          opts.interpretInputAs === 'auto' || opts.interpretInputAs === undefined
+            ? interpretAuto(digits, String(value ?? ''), opts)
+            : opts.interpretInputAs
+        if (interpretAs === 'raw') {
+          // Raw Ymd → display d/m/Y (e.g. "19901212" → "12/12/1990")
+          // and back to raw Ymd. Mirrors the peer's round-trip.
+          if (digits.length === 8) {
+            return {
+              formatted: `${digits.slice(6, 8)}/${digits.slice(4, 6)}/${digits.slice(0, 4)}`,
+              raw: digits,
+              type: 'date'
+            }
+          }
+          return { formatted: digits, raw: digits, type: 'date' }
+        }
+        // Default display d/m/Y: 8 raw digits in display order are
+        // treated as day/month/year as typed (this is what produces
+        // the corruption: "19901212" → "19/09/1212" via the peer).
+        // Round-trip the raw by rearranging d/m/Y → Y/m/d.
+        if (digits.length === 8) {
+          return {
+            formatted: `${digits.slice(0, 2)}/${digits.slice(2, 4)}/${digits.slice(4, 8)}`,
+            raw: `${digits.slice(4, 8)}${digits.slice(2, 4)}${digits.slice(0, 2)}`,
+            type: 'date'
+          }
+        }
+        if (digits.length === 6) {
+          return {
+            formatted: `${digits.slice(0, 2)}/${digits.slice(2, 4)}/${digits.slice(4)}`,
+            raw: `${digits.slice(4)}${digits.slice(2, 4)}${digits.slice(0, 2)}`,
+            type: 'date'
+          }
+        }
+        return { formatted: digits, raw: digits, type: 'date' }
+      }
+    }
+    return { formatter, calls }
+  }
+
+  it('reformats a server-pre-filled raw value into the display form on first bind', async () => {
+    const { formatter, calls } = buildRecordingDateFormatter()
+    __setFormatterModuleForTests(formatter)
+
+    document.body.innerHTML = `
+      <form id="birthday-form">
+        <input name="birthday" value="19901212" />
+      </form>
+    `
+
+    const api = form('birthday-form')
+    api.format({
+      type: 'date',
+      field: 'birthday',
+      options: {
+        datePattern: ['d', 'm', 'Y'],
+        delimiter: '/',
+        dateRawPattern: ['Y', 'm', 'd'],
+        dateRawPatternDelimiter: ''
+      }
+    })
+    await flush()
+
+    const formElement = document.getElementById('birthday-form') as HTMLFormElement
+    const visible = formElement.querySelector<HTMLInputElement>(
+      'input[name="birthday_displayed"]'
+    )!
+    const hidden = formElement.querySelector<HTMLInputElement>(
+      'input[type="hidden"][name="birthday"]'
+    )!
+
+    // The raw Ymd is correctly segmented into the display form.
+    expect(visible.value).toBe('12/12/1990')
+    expect(hidden.value).toBe('19901212')
+    expect(api.getValue('birthday')).toBe('19901212')
+    expect(api.getValue('birthday_displayed')).toBe('12/12/1990')
+
+    // The initial pass forced `interpretInputAs: 'auto'` so the
+    // peer's heuristic detects the raw Ymd and segments the
+    // digits correctly. (The peer defaults to 'auto' since
+    // v2.0.0; the override is a defensive explicit declaration
+    // of intent.)
+    expect(calls).toHaveLength(1)
+    expect(calls[0]?.value).toBe('19901212')
+    expect(
+      (calls[0]?.options as { interpretInputAs?: 'raw' | 'display' | 'auto' } | undefined)
+        ?.interpretInputAs
+    ).toBe('auto')
+  })
+
+  it('keeps the live input listener in display mode (does not force raw on keystrokes)', async () => {
+    const { formatter, calls } = buildRecordingDateFormatter()
+    __setFormatterModuleForTests(formatter)
+
+    document.body.innerHTML = `
+      <form id="birthday-form">
+        <input name="birthday" />
+      </form>
+    `
+
+    const api = form('birthday-form')
+    api.format({
+      type: 'date',
+      field: 'birthday',
+      options: {
+        datePattern: ['d', 'm', 'Y'],
+        delimiter: '/',
+        dateRawPattern: ['Y', 'm', 'd'],
+        dateRawPatternDelimiter: ''
+      }
+    })
+    await flush()
+
+    // Simulate a user keystroke in display order ("13/12/1990"
+    // after editing one digit). The listener must NOT pass
+    // `interpretInputAs: 'raw'` — what the user types is in
+    // display order, and forcing 'raw' would scramble the digits.
+    const formElement = document.getElementById('birthday-form') as HTMLFormElement
+    const visible = formElement.querySelector<HTMLInputElement>(
+      'input[name="birthday_displayed"]'
+    )!
+    visible.value = '13/12/1990'
+    visible.dispatchEvent(new Event('input', { bubbles: true }))
+    await flush()
+
+    // The visible stays in display order, the hidden gets the Ymd.
+    expect(visible.value).toBe('13/12/1990')
+    expect(
+      formElement.querySelector<HTMLInputElement>('input[type="hidden"][name="birthday"]')!
+        .value
+    ).toBe('19901213')
+
+    // The keystroke was processed with the formatter's default
+    // (no `interpretInputAs` override) — the listener honours
+    // what the user typed.
+    const keystroke = calls[calls.length - 1]
+    expect(keystroke?.value).toBe('13/12/1990')
+    expect(
+      (keystroke?.options as { interpretInputAs?: 'raw' | 'display' | 'auto' } | undefined)
+        ?.interpretInputAs
+    ).toBeUndefined()
+  })
+
+  it('forwards the raw interpretation when setValue writes the canonical (date) name', async () => {
+    const { formatter, calls } = buildRecordingDateFormatter()
+    __setFormatterModuleForTests(formatter)
+
+    document.body.innerHTML = `
+      <form id="birthday-form">
+        <input name="birthday" />
+      </form>
+    `
+
+    const api = form('birthday-form')
+    api.format({
+      type: 'date',
+      field: 'birthday',
+      options: {
+        datePattern: ['d', 'm', 'Y'],
+        delimiter: '/',
+        dateRawPattern: ['Y', 'm', 'd'],
+        dateRawPatternDelimiter: ''
+      }
+    })
+    await flush()
+
+    calls.length = 0 // drop the initial pass
+
+    // setValue('birthday', '19901212') — write the raw Ymd to the
+    // canonical hidden. The handler runs from the mirror (the
+    // event target is the hidden), so it must forward the raw
+    // interpretation; otherwise the formatter would mis-segment
+    // the raw into "19/09/1212".
+    api.setValue('birthday', '19901212')
+
+    const formElement = document.getElementById('birthday-form') as HTMLFormElement
+    expect(
+      formElement.querySelector<HTMLInputElement>('input[name="birthday_displayed"]')!.value
+    ).toBe('12/12/1990')
+    expect(
+      formElement.querySelector<HTMLInputElement>('input[type="hidden"][name="birthday"]')!.value
+    ).toBe('19901212')
+
+    // The handler call from the mirror source forced
+    // `interpretInputAs: 'auto'`.
+    const mirrorCall = calls[calls.length - 1]
+    expect(mirrorCall?.value).toBe('19901212')
+    expect(
+      (mirrorCall?.options as { interpretInputAs?: 'raw' | 'display' | 'auto' } | undefined)
+        ?.interpretInputAs
+    ).toBe('auto')
+  })
+
+  it('honours an explicit interpretInputAs set by the caller on the initial pass', async () => {
+    const { formatter, calls } = buildRecordingDateFormatter()
+    __setFormatterModuleForTests(formatter)
+
+    document.body.innerHTML = `
+      <form id="display-form">
+        <input name="birthday" value="12/12/1990" />
+      </form>
+    `
+
+    // The dev pre-rendered the visible with the display-formatted
+    // value. They explicitly set `interpretInputAs: 'display'`
+    // to tell the formatter "treat the initial value as display,
+    // not raw". The override in `applyFormat` must respect that
+    // and not clobber it with `'raw'`.
+    const api = form('display-form')
+    api.format({
+      type: 'date',
+      field: 'birthday',
+      options: {
+        datePattern: ['d', 'm', 'Y'],
+        delimiter: '/',
+        dateRawPattern: ['Y', 'm', 'd'],
+        dateRawPatternDelimiter: '',
+        interpretInputAs: 'display'
+      }
+    })
+    await flush()
+
+    const formElement = document.getElementById('display-form') as HTMLFormElement
+    const visible = formElement.querySelector<HTMLInputElement>(
+      'input[name="birthday_displayed"]'
+    )!
+
+    // Initial pass with display interpretation: the visible value
+    // "12/12/1990" is passed through and the raw Ymd is extracted.
+    expect(visible.value).toBe('12/12/1990')
+    expect(
+      formElement.querySelector<HTMLInputElement>('input[type="hidden"][name="birthday"]')!.value
+    ).toBe('19901212')
+
+    // The caller's `interpretInputAs: 'display'` is preserved
+    // — the override only kicks in when the option is absent.
+    expect(calls).toHaveLength(1)
+    expect(
+      (calls[0]?.options as { interpretInputAs?: 'raw' | 'display' | 'auto' } | undefined)
+        ?.interpretInputAs
+    ).toBe('display')
+  })
+
+  it('leaves the re-bind (re-call format() with new options) path using the user-supplied options verbatim', async () => {
+    const { formatter, calls } = buildRecordingDateFormatter()
+    __setFormatterModuleForTests(formatter)
+
+    document.body.innerHTML = `
+      <form id="rebinding-form">
+        <input name="birthday" value="12/12/1990" />
+      </form>
+    `
+
+    const api = form('rebinding-form')
+    api.format({
+      type: 'date',
+      field: 'birthday',
+      options: {
+        datePattern: ['d', 'm', 'Y'],
+        delimiter: '/',
+        dateRawPattern: ['Y', 'm', 'd'],
+        dateRawPatternDelimiter: ''
+      }
+    })
+    await flush()
+
+    calls.length = 0
+
+    // Re-call format() with a fresh options object. The
+    // re-bind path runs the formatter on the current visible
+    // value using the user-supplied options verbatim — no
+    // implicit `interpretInputAs: 'raw'` override.
+    api.format({
+      type: 'date',
+      field: 'birthday',
+      options: {
+        datePattern: ['d', 'm', 'Y'],
+        delimiter: '/',
+        dateRawPattern: ['Y', 'm', 'd'],
+        dateRawPatternDelimiter: ''
+      }
+    })
+    await flush()
+
+    // The re-bind call forwarded the user's options as-is
+    // (no `interpretInputAs` was injected).
+    expect(calls.length).toBeGreaterThan(0)
+    const reBindCall = calls[calls.length - 1]
+    expect(
+      (reBindCall?.options as { interpretInputAs?: 'raw' | 'display' } | undefined)
+        ?.interpretInputAs
+    ).toBeUndefined()
+  })
 })
