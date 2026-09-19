@@ -34,7 +34,7 @@ jobs:
           node-version: 22
           cache: npm
           cache-dependency-path: example/package-lock.json
-      - run: npm ci
-      - run: npm run check
-      - run: npm run build
-      - run: npm audit --audit-level=high
+      - run: corepack npm ci
+      - run: corepack npm run check
+      - run: corepack npm run build
+      - run: corepack npm audit --audit-level=high
