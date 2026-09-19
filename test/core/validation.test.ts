@@ -44,4 +44,12 @@ describe('validation', () => {
     ])
     expect(result.errors.terms).toEqual(['Accept the terms.'])
   })
+
+  it('resets stateful regular expressions between validations', () => {
+    const pattern = /^a$/g
+
+    expect(validateFieldValue('value', 'a', { pattern }, { value: 'a' })).toEqual([])
+    expect(validateFieldValue('value', 'a', { pattern }, { value: 'a' })).toEqual([])
+    expect(pattern.lastIndex).toBe(0)
+  })
 })

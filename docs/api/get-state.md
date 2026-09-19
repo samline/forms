@@ -56,18 +56,19 @@ console.log(state.errors)
 console.log(state.isValid)
 ```
 
-### Drive ARIA attributes
+### Drive an accessible error message
 
 ```ts
 const profile = form('profile-form')
 
 profile.element?.addEventListener('input', () => {
   const state = profile.getState()
-  for (const field of profile.element!.querySelectorAll<HTMLInputElement>('input[name]')) {
-    field.setAttribute('aria-invalid', state.errors[field.name] ? 'true' : 'false')
-  }
+  emailError.hidden = !state.errors.email
+  emailError.textContent = state.errors.email?.[0] ?? ''
 })
 ```
+
+The controller manages `aria-invalid`; use state to manage the message referenced by `aria-describedby`.
 
 ### Snapshot on submit
 

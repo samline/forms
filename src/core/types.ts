@@ -13,23 +13,11 @@ export type FormatType =
 export interface FieldFormatConfig {
   /** One of the supported `@samline/formatter` `FormatType` values. */
   type: FormatType
-  /**
-   * Canonical name of the formatted field. The value the backend
-   * ultimately receives (the `raw` output of the formatter) is
-   * exposed under this name; the formatter is responsible for
-   * keeping it in sync with the visible input.
-   */
+  /** Canonical field name or fields whose raw values are submitted. */
   field: string | string[]
   /**
-   * Name of the visible input that shows the formatted value to
-   * the user. Defaults to `${fieldName}_displayed`.
-   *
-   * The visible is **renamed** from `field` to `displayField` on
-   * the first `format()` call (idempotent on re-binding). A hidden
-   * `<input type="hidden" name="<field>">` is created next to it
-   * to carry the raw value. Both names are first-class in the
-   * controller's API (`getValue`, `getField`, `setValue`, `watch`,
-   * `getData`) — see `docs/api/format.md` for the full contract.
+   * Name of the visible input for a single field. Array configurations
+   * must omit this option and derive one display name per field.
    */
   displayField?: string
   /**

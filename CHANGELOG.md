@@ -2,6 +2,26 @@
 
 All notable changes to `@samline/forms` are documented in this file. The format follows [Keep a Changelog](https://keepachangelog.com/en/1.1.0/) and the project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [Unreleased]
+
+## [2.5.0] - 2026-09-19
+
+### Fixed
+
+- Corrected the browser IIFE so `Forms.form`, `Forms.newForm`, `Forms.destroyForm`, and `Forms.available` are exposed directly instead of under `Forms.default`.
+- Fixed duplicate field processing, formatted-field reset state, submitter serialization, duplicate browser controllers, stateful regular expressions, external associated controls, multiple selects, reserved field names, escaped class names, pending auto-submit cancellation, and async formatter teardown.
+- Added `aria-invalid` synchronization and focus management for invalid submissions.
+
+### Added
+
+- Added ESM/CJS browser entrypoints, package artifact smoke tests, CJS/ESM type-consumer tests, coverage thresholds, pull-request CI, dependency auditing, and Dependabot configuration.
+- Added regression coverage for the corrected DOM, validation, serialization, formatting, and registry behavior.
+
+### Changed
+
+- Added `docs/` to the npm package, corrected conditional type exports, exported `FormDataPrimitive` and `FormFieldWatcher`, and made multi-field formatter configuration reject a shared `displayField` without mutating the form.
+- Updated root and documentation-site dependencies to audited versions and synchronized both documentation surfaces.
+
 ## [2.4.0] - 2026-07-19
 
 ### Fixed
@@ -165,7 +185,8 @@ All notable changes to `@samline/forms` are documented in this file. The format 
 
 - Initial release of `@samline/forms`. Vanilla JS form controller with framework-specific variants (React, Vue, Svelte) initially included; bundled `.local/` agent docs at the repo root.
 
-[Unreleased]: https://github.com/samline/forms/compare/v2.4.0...HEAD
+[Unreleased]: https://github.com/samline/forms/compare/v2.5.0...HEAD
+[2.5.0]: https://github.com/samline/forms/compare/v2.4.0...v2.5.0
 [2.4.0]: https://github.com/samline/forms/compare/v2.3.4...v2.4.0
 [2.3.4]: https://github.com/samline/forms/compare/v2.3.3...v2.3.4
 [2.3.3]: https://github.com/samline/forms/compare/v2.3.2...v2.3.3

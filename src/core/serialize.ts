@@ -11,11 +11,16 @@ const appendValue = (
   key: string,
   value: FormDataEntryValue
 ): void => {
-  const current = data[key]
-  if (current === undefined) {
-    data[key] = value
+  if (!Object.prototype.hasOwnProperty.call(data, key)) {
+    Object.defineProperty(data, key, {
+      value,
+      writable: true,
+      enumerable: true,
+      configurable: true
+    })
     return
   }
+  const current = data[key] as SerializedFormValue
   if (Array.isArray(current)) {
     current.push(value)
     return
@@ -23,8 +28,13 @@ const appendValue = (
   data[key] = [current, value]
 }
 
-export const parseFormData = (formElement: HTMLFormElement): SerializedFormResult => {
-  const raw = new FormData(formElement)
+export const parseFormData = (
+  formElement: HTMLFormElement,
+  submitter?: HTMLElement | null
+): SerializedFormResult => {
+  const raw = submitter
+    ? new FormData(formElement, submitter)
+    : new FormData(formElement)
   const formData = new FormData()
   const data: Record<string, SerializedFormValue> = {}
 

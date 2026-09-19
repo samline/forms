@@ -6,9 +6,9 @@ This page explains what `@samline/forms` is, how the controller is wired, and wh
 
 ## When to use this variant
 
-Use the vanilla variant when you work with native HTML forms, embedded scripts, static sites, or applications where you do not need a framework wrapper. This is the primary — and only — runtime entrypoint of `@samline/forms` since v2.1.0.
+Use the main `@samline/forms` entrypoint for native HTML forms. The package also provides `@samline/forms/browser` as an ESM/CJS browser module and `@samline/forms/browser/global` as the global IIFE distribution.
 
-> Note: the latest published version is `2.4.0` — see [Releases](https://github.com/samline/forms/releases) for the changelog.
+> Note: the latest version is `2.5.0` — see [Releases](https://github.com/samline/forms/releases) for the changelog.
 
 If you want a `<script>`-only setup without a bundler, see [docs/browser.md](browser.md).
 
@@ -18,7 +18,7 @@ If you want a `<script>`-only setup without a bundler, see [docs/browser.md](bro
 
 A controller is created with [`form()`](api/form.md) and is bound to exactly one `HTMLFormElement`. Once bound, it:
 
-- Listens to `input` and `change` events delegated at the form level.
+- Listens to delegated `input` events, including controls associated through `form="id"`.
 - Listens to the native `submit` event.
 - Maintains a small internal state (values, errors, watched fields, subscribers, submit handlers).
 - Applies DOM attributes (`css-filled`, `css-error`) to fields when needed.
@@ -70,7 +70,7 @@ Use this as a quick lookup when you need to know what a method will touch.
 
 | Method | DOM mutation | Events fired | Subscribers notified | AutoSubmit trigger | Visual state |
 | --- | --- | --- | --- | --- | --- |
-| [`setValue`](api/set-value.md) | yes (writes value, then `input` / `change`) | `input` or `change` | yes | yes | re-synced for that field |
+| [`setValue`](api/set-value.md) | yes (writes value, then `input`) | `input` | yes | yes | re-synced for that field |
 | [`getValue`](api/get-value.md) | no | no | no | no | unchanged |
 | [`getField`](api/get-field.md) | no | no | no | no | unchanged |
 | [`prefill`](api/prefill.md) | yes (writes via [`setValue`](api/set-value.md)) | per-field | yes | yes | re-synced per touched field |
@@ -90,7 +90,7 @@ Use this as a quick lookup when you need to know what a method will touch.
 | [`getState`](api/get-state.md) | no | no | no | no | unchanged |
 | [`destroy`](api/destroy.md) | removes `css-filled` / `css-error` indirectly via listener teardown | no | no longer fires | disabled | unchanged |
 
-> Native field input events (`input` / `change`) are always delegated at the form level — the controller never attaches listeners to individual fields.
+> Native field `input` events are delegated. Controls outside the form that use `form="id"` are handled through a document-level delegated listener.
 
 ---
 
@@ -118,7 +118,7 @@ import {
 } from '@samline/forms'
 ```
 
-- [`parseFormData(formElement)`](api/parse-form-data.md) — same serializer the controller uses internally. Returns `{ data, formData }`.
+- [`parseFormData(formElement, submitter?)`](api/parse-form-data.md) — same serializer the controller uses internally. Returns `{ data, formData }`.
 - [`validateFieldValue(field, value, rules, values)`](api/validate-field-value.md) — runs the rule set against a single value.
 - [`validateValues(values, schema)`](api/validate-values.md) — runs the rule set against a full values map.
 
@@ -166,7 +166,7 @@ const registries = {
 }
 ```
 
-Use `form()` directly when you do not need the registry (for example, transient controllers in tests). The vanilla entrypoint never touches `globalThis` — you decide whether to assign it to `window`. If you are loading the package via `<script>` without a bundler, prefer [`@samline/forms/browser`](browser.md) and consume `window.Forms` directly.
+Use `form()` directly when you do not need the registry. The main entrypoint never touches `globalThis`. For a module that also registers `window.Forms`, import `@samline/forms/browser`; for a direct `<script>` tag, load the `@samline/forms/browser/global` IIFE described in [the browser guide](browser.md).
 
 ---
 

@@ -5,6 +5,8 @@ Every public method and helper gets its own page. Use this index to navigate to 
 ## Lifecycle
 
 - [`form(target, options?)`](form.md) — bind a controller to an `HTMLFormElement`.
+- [`createFormController(target, options?)`](form.md#createformcontroller) — underlying controller factory.
+- [`browser`](../browser.md) — registry-oriented browser API and global build.
 - [`element`](element.md) — the bound form (`f` is an alias).
 - [`destroy()`](destroy.md) — tear down listeners, observer, and caches.
 - [`reset()`](reset.md) — restore native form values and clear errors.
@@ -46,7 +48,7 @@ Every public method and helper gets its own page. Use this index to navigate to 
 
 ## Pure helpers
 
-- [`parseFormData(formElement)`](parse-form-data.md) — same serializer used internally, no controller needed.
+- [`parseFormData(formElement, submitter?)`](parse-form-data.md) — same serializer used internally, no controller needed.
 - [`validateValues(values, schema)`](validate-values.md) — run a schema against a values map.
 - [`validateFieldValue(field, value, rules, values)`](validate-field-value.md) — run a rule set against a single value.
-- [`regex`](regex.md) — named regular expressions and default error messages, re-exported from the optional peer [`@samline/formatter`](https://github.com/samline/formatter). Install the peer before importing.
+- [`regex`](regex.md) — named regular expressions and default error messages exported by the optional peer [`@samline/formatter`](https://github.com/samline/formatter), not by `@samline/forms`.

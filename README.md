@@ -1,8 +1,8 @@
 # Forms
 
-> A small, framework-free form controller for vanilla JS and direct browser usage.
+> A TypeScript-first, framework-free controller for native HTML forms.
 
-> It binds to an `HTMLFormElement`, keeps field state in sync with the DOM, runs validation, lets you react to changes via watchers or subscribers, and ships a serialized payload for `fetch` flows.
+> Add validation, reactive field state, accessible error handling, serialization, auto-submit, and optional input formatting without adopting a UI framework.
 
 ---
 
@@ -42,10 +42,10 @@ Requires Node 20+ when bundling. Runtime target is ES2020.
 Use the browser build when you do not have a bundler and need to run the package directly in HTML, Shopify, WordPress, or any traditional template.
 
 ```html
-<script src="https://unpkg.com/@samline/forms@2.4.0/dist/browser/global.global.js"></script>
+<script src="https://unpkg.com/@samline/forms@2.5.0/dist/browser/global.global.js"></script>
 ```
 
-> Pin the version in production. Replace `2.4.0` with the version you ship.
+> Pin the version in production. Replace `2.5.0` with the version you ship.
 
 The browser bundle exposes a single global: `window.Forms`.
 
@@ -55,7 +55,7 @@ The browser bundle exposes a single global: `window.Forms`.
   <button type="submit">Send</button>
 </form>
 
-<script src="https://unpkg.com/@samline/forms@2.4.0/dist/browser/global.global.js"></script>
+<script src="https://unpkg.com/@samline/forms@2.5.0/dist/browser/global.global.js"></script>
 <script>
   const contactForm = window.Forms.newForm({ id: 'contact-form' })
 
@@ -78,7 +78,8 @@ See [docs/browser.md](docs/browser.md) for the full browser surface.
 | Entrypoint | When to use |
 | --- | --- |
 | `@samline/forms` | Main vanilla API for bundlers, ESM, or CJS consumers. |
-| `@samline/forms/browser` | Pre-bundled IIFE that registers `window.Forms` for direct `<script>` usage. |
+| `@samline/forms/browser` | ESM/CJS browser module with registry exports, bundled types, and `window.Forms` registration. |
+| `@samline/forms/browser/global` | Pre-bundled IIFE for direct `<script>` usage; the CDN URL resolves to `dist/browser/global.global.js`. |
 
 The vanilla entrypoint also exports `browser`, the same `{ form, newForm, destroyForm, available }` surface as the IIFE but as a module-level singleton (no `globalThis` side-effect). Use it from a bundler when you want the registry helpers without the IIFE — see [docs/browser.md → Using the same shape from a bundler](docs/browser.md#using-the-same-shape-from-a-bundler).
 

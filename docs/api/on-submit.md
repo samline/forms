@@ -28,12 +28,12 @@ The submit pipeline runs in this order:
 
 1. If `clearErrorsOnSubmit` is `true` (default), manual errors are cleared.
 2. Validation runs for every field with rules. `isValidated` becomes `true`.
-3. If validation fails, the browser’s native submit is prevented, submit handlers are **not** invoked, `submitCount` is incremented, and subscribers are notified.
+3. If validation fails, the browser’s native submit is prevented, submit handlers are **not** invoked, `aria-invalid="true"` is synchronized, the first connected, enabled, non-hidden invalid field receives focus, `submitCount` is incremented, and subscribers are notified.
 4. If validation passes:
    - `submitCount` is incremented.
    - Subscribers are notified.
    - If at least one handler was registered with `preventDefault: true`, the native submit is prevented. Otherwise (all handlers `preventDefault: false`), the native submit proceeds.
-   - Every registered handler is invoked in registration order.
+    - Every registered handler is invoked in registration order. When the event supplies a successful named submit button, its name/value is included in `data` and `formData`.
 
 ## Examples
 

@@ -58,6 +58,17 @@ describe('browser singleton', () => {
     expect(browser.available['contact-form']).toBe(controller)
   })
 
+  it('destroys an existing controller before replacing the same id', () => {
+    const first = browser.newForm({ id: 'contact-form' })
+    if (!first) throw new Error('expected controller')
+    const destroySpy = vi.spyOn(first, 'destroy')
+
+    const second = browser.newForm({ id: 'contact-form' })
+
+    expect(destroySpy).toHaveBeenCalledTimes(1)
+    expect(browser.available['contact-form']).toBe(second)
+  })
+
   it('newForm logs an error and returns undefined when id is missing', () => {
     const errorSpy = vi
       .spyOn(console, 'error')

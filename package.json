@@ -1,10 +1,25 @@
 {
   "name": "@samline/forms",
-  "version": "2.4.0",
-  "description": "Form controller for vanilla JS and direct browser usage.",
+  "version": "2.5.0",
+  "description": "TypeScript-first, framework-free form controller with validation, reactive state, serialization, auto-submit, and input formatting.",
+  "keywords": [
+    "forms",
+    "form-validation",
+    "form-state",
+    "typescript",
+    "vanilla-javascript",
+    "browser"
+  ],
   "type": "module",
   "license": "MIT",
   "homepage": "https://samline.github.io/forms",
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/samline/forms.git"
+  },
+  "bugs": {
+    "url": "https://github.com/samline/forms/issues"
+  },
   "publishConfig": {
     "access": "public",
     "tag": "latest"
@@ -12,21 +27,40 @@
   "engines": {
     "node": ">=20"
   },
-  "sideEffects": false,
+  "sideEffects": [
+    "./dist/browser/index.js",
+    "./dist/browser/index.cjs",
+    "./dist/browser/global.global.js"
+  ],
   "files": [
-    "dist"
+    "dist",
+    "docs"
   ],
   "main": "./dist/index.cjs",
   "module": "./dist/index.js",
   "types": "./dist/index.d.ts",
   "exports": {
     ".": {
-      "types": "./dist/index.d.ts",
-      "import": "./dist/index.js",
-      "require": "./dist/index.cjs"
+      "import": {
+        "types": "./dist/index.d.ts",
+        "default": "./dist/index.js"
+      },
+      "require": {
+        "types": "./dist/index.d.cts",
+        "default": "./dist/index.cjs"
+      }
     },
     "./browser": {
-      "types": "./dist/browser/global.d.ts",
+      "import": {
+        "types": "./dist/browser/index.d.ts",
+        "default": "./dist/browser/index.js"
+      },
+      "require": {
+        "types": "./dist/browser/index.d.cts",
+        "default": "./dist/browser/index.cjs"
+      }
+    },
+    "./browser/global": {
       "default": "./dist/browser/global.global.js"
     }
   },
@@ -37,8 +71,10 @@
     "pack:check": "npm pack --dry-run",
     "typecheck": "tsc --noEmit",
     "test": "vitest run",
+    "test:coverage": "vitest run --coverage",
+    "test:package": "node scripts/test-package.mjs && tsc -p tsconfig.package.json",
     "test:watch": "vitest",
-    "prepublishOnly": "npm run clean && npm run build && npm run typecheck && npm test"
+    "prepublishOnly": "npm run clean && npm run build && npm run typecheck && npm test && npm run test:package && npm run pack:check"
   },
   "peerDependencies": {
     "@samline/formatter": "^2.0.0"
@@ -48,12 +84,20 @@
       "optional": true
     }
   },
+  "overrides": {
+    "esbuild": "^0.28.1",
+    "nanoid": "^3.3.18",
+    "postcss": "^8.5.23",
+    "vite": "^8.0.0"
+  },
   "devDependencies": {
     "@samline/formatter": "^2.0.0",
-    "@types/node": "^24.0.0",
-    "jsdom": "^26.1.0",
-    "tsup": "^8.5.0",
-    "typescript": "^5.8.3",
-    "vitest": "^3.1.1"
+    "@types/node": "^26.6.2",
+    "@vitest/coverage-v8": "^5.0.1",
+    "jsdom": "^30.1.0",
+    "tsup": "^8.5.1",
+    "typescript": "^5.9.3",
+    "vite": "^8.0.0",
+    "vitest": "^5.0.1"
   }
 }

@@ -66,7 +66,7 @@ This affects which DOM attributes the controller toggles. You provide the CSS �
 When `true` (default), the controller:
 
 - Runs an initial validation pass on mount for every field that has rules.
-- Validates each field on every `input` / `change` event when the field has rules.
+- Validates each field on every delegated `input` event when the field has rules.
 
 Set this to `false` if you want to validate manually (e.g. only on submit, or only when the user moves past a step):
 
@@ -204,7 +204,7 @@ const checkout = form('checkout', {
 })
 ```
 
-The map key is just an identifier — the **canonical** field name lives in `FieldFormatConfig.field`. `format()` renames the visible to `<field>_displayed` (or `config.displayField`) on first run and creates a hidden `<input type="hidden" name="<field>">` that carries the raw value. Both names are first-class in the controller's API. See [`FieldFormatConfigMap`](/forms/reference/typescript/#fieldformatconfig-and-fieldformatconfigmap) for the full type, and the [formatting recipe](/forms/reference/examples/#recipe-format-inputs-with-samlineformatter) for an end-to-end example.
+The map key is just an identifier — the **canonical** field name lives in `FieldFormatConfig.field`. `displayField` works only when `field` is a single string; combining it with an array logs an error and leaves the form unchanged. Array configurations derive one `<field>_displayed` name per field.
 
 :::caution[Optional peer dependency]
 `formats` requires `@samline/formatter`. When it is not installed, every entry logs a single `console.error` describing the missing dependency, restores the visible's name to the canonical form, and the controller is created normally — no exceptions are thrown.

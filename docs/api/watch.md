@@ -24,7 +24,7 @@ The same [`FormController`](../typescript.md#formcontroller) — chainable.
 
 ## Behaviour
 
-- The callback fires only on changes (not on registration).
+- The callback fires immediately on registration and after every change, matching `observe()`; only the return type differs.
 - A field can have multiple watchers.
 - Watchers persist for the lifetime of the controller. Use [`unwatch`](unwatch.md) to remove them, or [`observe`](observe.md) if you need explicit unsubscribe semantics.
 - The callback fires after the controller has processed the change — manual errors are cleared (when applicable), validation has run for fields with rules, visual state has been re-synced, and subscribers have been notified.
@@ -105,13 +105,13 @@ form('search-form')
 ## Edge cases
 
 - **The callback receives the value, not the event object.** Use [`getField`](get-field.md) if you need the underlying DOM element.
-- **`watch` does not fire on mount.** If you need an initial call, use [`observe`](observe.md) instead.
-- **A field name that does not match any DOM field** is still tracked — the callback fires on every form-level change with the (empty) value, but you should fix the selector.
-- **Watchers are not invoked from [`setValue`](set-value.md) directly.** `setValue` writes the value and dispatches a `change` / `input` event, which goes through the same delegated listener path as user input, so the watcher fires normally.
+- **`watch` fires immediately**, just like [`observe`](observe.md); it differs only by returning the controller instead of an unsubscribe function.
+- **A field name that does not match any DOM field** receives one initial call with `undefined` and `null`. It runs again only if an `input` event later comes from a field with that name.
+- **Watchers are not invoked from [`setValue`](set-value.md) directly.** `setValue` writes the value and dispatches one `input` event, which goes through the same delegated listener path as user input.
 
 ## Related
 
-- [`observe`](observe.md) — same callback, returns an unsubscribe function and fires immediately.
+- [`observe`](observe.md) — same immediate callback, but returns an unsubscribe function.
 - [`unwatch`](unwatch.md) — remove watched callbacks.
 - [`subscribe`](subscribe.md) — react to the whole form state.
 - [`format`](format.md) — when a field is formatted, `watch('<field>', cb)` fires with the raw value and `watch('<field>_displayed', cb)` fires with the formatted value. Both fire on the same keystroke. See [the mirror convention](format.md#the-mirror-convention).

@@ -30,15 +30,12 @@ The same [`FormController`](../typescript.md#formcontroller) — chainable. Retu
 | `<input type="radio">` (group with the same `name`) | The radio whose `value` matches `String(value)` is checked. |
 | `<input type="file">` | File inputs are read-only — `setValue` cannot assign a file. Passing `[]` clears the input. |
 | `<select>` (single) | `String(value)` must match an option value. |
-| `<select multiple>` | `String(value)` is assigned to `field.value` — i.e. the value is coerced to a single string, just like a regular text input. `setValue` does **not** iterate the array and select individual options; use the per-`option` `selected` attribute from your own code, or pass the values one at a time. |
+| `<select multiple>` | Every option whose value occurs in the supplied array is selected. A scalar selects its matching option. |
 | `<select>` (group with `name="foo[]"`) receiving an array | One array element per select, in order: `select[i].value = String(value[i])`. Inputs beyond the array length are cleared to `''`; extra array elements are dropped. |
 | `<textarea>` | `String(value)` is assigned to `field.value`. |
 | `<textarea>` (group with `name="foo[]"`) receiving an array | One array element per textarea, in order: `textarea[i].value = String(value[i])`. Inputs beyond the array length are cleared to `''`; extra array elements are dropped. |
 
-After writing, the controller dispatches a synthetic event on the **first** matching field:
-
-- `change` for `<select>` and for `<input type="checkbox">` / `<input type="radio">`.
-- `input` for everything else.
+After writing, the controller dispatches one synthetic `input` event on the **first** matching field.
 
 The synthetic event flows through the form-level delegated listener, so the rest of the pipeline runs as if the user had typed: manual errors are cleared (default), validation runs (if `autoValidate`), watchers fire, subscribers are notified, and `autoSubmit` is scheduled.
 

@@ -23,8 +23,9 @@ type FormFieldValue = string | string[] | File[] | undefined
 The normalized value:
 
 - `string` for text inputs, textareas, single selects, the single checked radio, or a single checked checkbox.
-- `string[]` for radio groups where none is checked (empty array) or for checkbox groups with multiple selections.
+- `string[]` for checkbox groups with multiple selections.
 - `string[]` for any field whose `name` ends in `[]` and that matches more than one input — the values of every matching input, in DOM order.
+- `string[]` for the selected options of `<select multiple>`.
 - `File[]` for `<input type="file">` (may be empty), or the concatenation of every selected file across all inputs that share a `name` ending in `[]`.
 - `undefined` when no field with that `name` exists.
 
@@ -41,6 +42,7 @@ The normalized value:
 | `<input type="file">` | `Array.from(field.files)`. |
 | `<input type="file">` (group with `name="foo[]"`) | The concatenation of `Array.from(input.files)` across every matching input, in DOM order. |
 | `<select>` | `field.value`. |
+| `<select multiple>` | Values of every selected option. |
 | `<select>` (group with `name="foo[]"`) | `[select[0].value, select[1].value, ...]`. |
 | `<textarea>` | `field.value`. |
 | `<textarea>` (group with `name="foo[]"`) | `[textarea[0].value, textarea[1].value, ...]`. |

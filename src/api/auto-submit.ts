@@ -8,6 +8,10 @@ export const createAutoSubmit =
   (state: FormControllerState, helpers: FormControllerHelpers) =>
   (next: boolean | { debounce?: number } = true) => {
     state.autoSubmitEnabled = next !== false
+    if (!state.autoSubmitEnabled && state.autoSubmitTimer) {
+      clearTimeout(state.autoSubmitTimer)
+      state.autoSubmitTimer = null
+    }
     state.autoSubmitDebounce =
       typeof next === 'object' && next ? next.debounce ?? 0 : 0
     helpers.notifySubscribers()

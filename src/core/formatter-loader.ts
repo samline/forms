@@ -84,3 +84,9 @@ export const __setFormatterModuleForTests = (
 ): void => {
   state = { status: 'resolved', module }
 }
+
+export const __setFormatterPromiseForTests = (
+  promise: Promise<FormatterModule | null>
+): void => {
+  state = { status: 'pending', promise }
+}

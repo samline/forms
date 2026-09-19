@@ -40,6 +40,7 @@ const newForm = (input: NewFormInput): FormController | undefined => {
     console.error('Form ID is required')
     return
   }
+  available[id]?.destroy()
   const controller = form(id, { ...options })
   available[id] = controller
   return controller

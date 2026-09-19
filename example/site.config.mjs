@@ -21,7 +21,7 @@ const siteConfig = defineSiteConfig({
 
 	// Used in <meta name="description"> and social share cards.
 	description:
-		'@samline/forms — a small, framework-free form controller for vanilla JS and direct browser usage.',
+		'@samline/forms — TypeScript-first form validation, reactive state, serialization, auto-submit, and optional formatting without a UI framework.',
 
 	// ---- GitHub Pages deployment -----------------------------------------
 	// GitHub Pages serves this site at:

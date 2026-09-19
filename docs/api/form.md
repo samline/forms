@@ -66,7 +66,7 @@ On creation the controller:
 
 1. Resolves the form element.
 2. Merges the provided options with defaults (`autoValidate: true`, `clearErrorsOnSubmit: true`, `clearManualErrorsOnChange: true`, `attributes: { filled: 'css-filled', error: 'css-error' }`).
-3. Wires `input`, `change`, and `submit` listeners at the form level.
+3. Wires delegated `input` and `submit` listeners, including controls associated through `form="id"`.
 4. Starts a `MutationObserver` on the form subtree to track dynamic fields.
 5. Optionally enables [`autoSubmit`](../api/auto-submit.md) when `options.autoSubmit` is truthy.
 6. Runs an initial validation pass if `autoValidate` is enabled.
@@ -136,8 +136,19 @@ form(profileRef)
 - **Reusing a target across multiple controllers** is supported but they each install their own listeners — call [`destroy()`](destroy.md) on the previous one to avoid duplicate work.
 - **`createFormController` is also exported** as the lower-level factory; prefer `form` for ergonomic imports.
 
+## `createFormController`
+
+```ts
+function createFormController(
+  target: FormTarget,
+  options?: FormControllerOptions
+): FormController
+```
+
+This is the factory used by `form()` and accepts the same arguments. It is exported for integrations that prefer an explicit constructor-style name.
+
 ## Related
 
-- [`createFormController`](../typescript.md#formcontroller) — the lower-level factory.
+- [`FormController`](../typescript.md#formcontroller) — the returned controller type.
 - [`destroy`](destroy.md) — tear the controller down.
 - [docs/options.md](../options.md) — every option in detail.

@@ -30,8 +30,9 @@ export const resolveFormElement = (target: FormTarget): HTMLFormElement | null =
 }
 
 export const getNamedFields = (form: HTMLFormElement): FormFieldElement[] =>
-  Array.from(form.querySelectorAll('input[name], select[name], textarea[name]')).filter(
-    isFormFieldElement
+  Array.from(form.elements).filter(
+    (element): element is FormFieldElement =>
+      isFormFieldElement(element) && Boolean(element.name)
   )
 
 export const queryNamedFields = (
@@ -112,6 +113,10 @@ export const readFieldValue = (fields: FormFieldElement[]): FormFieldValue => {
     return fields.map(f => f.value)
   }
 
+  if (first instanceof HTMLSelectElement && first.multiple) {
+    return Array.from(first.selectedOptions, option => option.value)
+  }
+
   if (first instanceof HTMLSelectElement || first instanceof HTMLTextAreaElement) {
     return first.value
   }
@@ -188,6 +193,14 @@ export const writeFieldValue = (fields: FormFieldElement[], value: unknown): voi
       continue
     }
 
+    if (field instanceof HTMLSelectElement && field.multiple) {
+      const selectedValues = normalizedArray ?? [normalizedValue]
+      for (const option of field.options) {
+        option.selected = selectedValues.includes(option.value)
+      }
+      continue
+    }
+
     if (distributeArray && normalizedArray) {
       field.value = normalizedArray[index] ?? ''
       continue
@@ -199,9 +212,7 @@ export const writeFieldValue = (fields: FormFieldElement[], value: unknown): voi
 
 export const clearAttributes = (form: HTMLFormElement, attributes: string[]): void => {
   for (const attribute of attributes) {
-    form
-      .querySelectorAll(`[${attribute}]`)
-      .forEach(node => node.removeAttribute(attribute))
+    getNamedFields(form).forEach(field => field.removeAttribute(attribute))
   }
 }
 

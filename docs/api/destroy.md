@@ -16,7 +16,7 @@ destroy(): void
 
 When invoked, the controller:
 
-- Removes every listener it added (`input`, `change`, `submit`, plus any others).
+- Removes every listener it added (`input`, `submit`, formatter listeners, and document delegation for external controls).
 - Cancels any pending auto-submit debounce timer.
 - Disconnects the form `MutationObserver`.
 - Clears `watchedFields`, `subscribers`, `submitHandlers`, and `fieldCache`.

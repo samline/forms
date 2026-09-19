@@ -65,8 +65,13 @@ export const validateFieldValue = (
   if (maxLength.value !== undefined && getValueLength(value) > maxLength.value) {
     errors.push(maxLength.message ?? `Maximum length is ${maxLength.value}.`)
   }
-  if (pattern.value && hasValue(value) && !pattern.value.test(toPatternTarget(value))) {
-    errors.push(pattern.message ?? 'Value does not match the required pattern.')
+  if (pattern.value && hasValue(value)) {
+    pattern.value.lastIndex = 0
+    const matches = pattern.value.test(toPatternTarget(value))
+    pattern.value.lastIndex = 0
+    if (!matches) {
+      errors.push(pattern.message ?? 'Value does not match the required pattern.')
+    }
   }
 
   const custom = rules.validate

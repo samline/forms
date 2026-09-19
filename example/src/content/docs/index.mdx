@@ -1,9 +1,9 @@
 ---
 title: '@samline/forms'
-description: 'A small, framework-free form controller for vanilla JS and direct browser usage.'
+description: 'TypeScript-first form validation, reactive state, serialization, auto-submit, and optional formatting without a UI framework.'
 template: doc
 hero:
-  tagline: 'Bind forms, validate, watch fields, and submit with fetch — no framework required.'
+  tagline: 'Validate, observe, serialize, and submit native forms without adopting a UI framework.'
   actions:
     - text: Get started
       link: /forms/getting-started
@@ -17,12 +17,12 @@ hero:
 
 import { Card, CardGrid } from '@astrojs/starlight/components';
 
-`@samline/forms` binds to an `HTMLFormElement`, keeps field state in sync with the DOM, runs validation, lets you react to changes via watchers or subscribers, and ships a serialized payload for `fetch` flows. It is the only runtime entrypoint since v2.0.0 — no framework wrapper, no virtual DOM, just one factory and a focused method surface.
+`@samline/forms` binds to an `HTMLFormElement`, keeps field state in sync with the DOM, runs validation, lets you react to changes via watchers or subscribers, and ships a serialized payload for `fetch` flows. Use the main entrypoint, the browser module, or the global IIFE without a framework wrapper or virtual DOM.
 
 ## Why @samline/forms?
 
 - **Vanilla-first** — Works with native HTML forms, embedded scripts, static sites, and server-rendered templates (Blade, ERB, Twig).
-- **Two entrypoints** — Import the ESM factory for bundlers, or drop a single `<script>` for the browser global (`window.Forms`).
+- **Three distribution surfaces** — Main ESM/CJS API, browser registry module, or a global IIFE for `window.Forms`.
 - **Optional peer** — Pairs with [`@samline/formatter`](https://github.com/samline/formatter) for phone, card, numeral and date masks — installs only when you need it.
 - **Chainable API** — Most methods return the same `FormController` so setup reads fluently.
 - **Reactive** — `watch`, `observe`, and `subscribe` give you per-field and whole-form reactions without manual plumbing.

@@ -16,7 +16,7 @@ This page shows how the attributes behave, which elements they apply to, and how
 The attributes are added and removed on:
 
 - Mount (initial sync).
-- Every `input` / `change` event delegated at the form level.
+- Every delegated `input` event, including controls associated through `form="id"`.
 - Every explicit call to [`validate`](api/validate.md), [`revalidate`](api/revalidate.md), [`setErrors`](api/set-errors.md), or [`clearErrors`](api/clear-errors.md).
 - DOM mutations detected by the controller’s `MutationObserver` (new fields, changed `name` / `type` attributes).
 
@@ -158,22 +158,21 @@ form('signup-form', {
 
 ## Accessibility
 
-The controller does not set ARIA attributes. If you want screen-reader friendly error feedback, pair the visual attributes with `aria-invalid` and `aria-describedby` from your own template:
+The controller sets `aria-invalid="true"` while a field has validation or manual errors and removes it when the field becomes valid. Invalid submission focuses the first connected, enabled, non-hidden invalid field. Provide `aria-describedby` and an error message element in your template:
 
 ```html
 <label class="field">
   <span>Email</span>
-  <input name="email" type="email" aria-invalid="false" aria-describedby="email-error" />
+  <input name="email" type="email" aria-describedby="email-error" />
   <small id="email-error" hidden></small>
 </label>
 ```
 
-When you surface validation messages, toggle `aria-invalid` and reveal the error element. The controller’s [`getState()`](api/get-state.md) returns the current errors per field so you can drive this from a single source of truth:
+The controller’s [`getState()`](api/get-state.md) returns the current errors per field so you can reveal and populate the message from a single source of truth:
 
 ```ts
 const state = profileForm.getState()
 
-emailInput.setAttribute('aria-invalid', state.errors.email ? 'true' : 'false')
 emailErrorEl.hidden = !state.errors.email
 emailErrorEl.textContent = state.errors.email?.[0] ?? ''
 ```

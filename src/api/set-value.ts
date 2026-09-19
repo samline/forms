@@ -15,13 +15,6 @@ export const createSetValue =
     const firstField = fields[0]
     if (!firstField) return state.api!
 
-    const eventType =
-      firstField instanceof HTMLSelectElement ||
-      (firstField instanceof HTMLInputElement &&
-        (firstField.type === 'checkbox' || firstField.type === 'radio'))
-        ? 'change'
-        : 'input'
-
-    firstField.dispatchEvent(new Event(eventType, { bubbles: true }))
+    firstField.dispatchEvent(new Event('input', { bubbles: true }))
     return state.api!
   }

@@ -25,7 +25,7 @@ A function. Calling it removes the observer for this field.
 ## Behaviour
 
 - On registration, the callback is invoked once synchronously with the current value, the bound form, and a state snapshot.
-- Subsequent changes (user input, programmatic [`setValue`](set-value.md), or DOM mutations that change the value) invoke the callback again with the new value.
+- Subsequent user `input` events and programmatic [`setValue`](set-value.md) calls invoke the callback again. DOM mutations alone do not fire field watchers.
 - A field can have multiple observers.
 - The unsubscribe function is idempotent — calling it more than once is safe.
 

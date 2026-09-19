@@ -71,7 +71,7 @@ This affects which DOM attributes the controller toggles. You provide the CSS. S
 When `true` (default), the controller:
 
 - Runs an initial validation pass on mount for every field that has rules.
-- Validates each field on every `input` / `change` event when the field has rules.
+- Validates each field on every delegated `input` event when the field has rules.
 
 Set this to `false` if you want to validate manually (e.g. only on submit, or only when the user moves past a step):
 

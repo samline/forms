@@ -26,7 +26,7 @@ A function. Calling it removes the listener.
 
 State mutations that fire subscribers include:
 
-- Any `input` / `change` event on a tracked field.
+- Any `input` event on a tracked field.
 - [`setValue`](set-value.md).
 - [`setErrors`](set-errors.md) and [`clearErrors`](clear-errors.md).
 - [`autoSubmit`](auto-submit.md) and [`disableAutoSubmit`](disable-auto-submit.md).

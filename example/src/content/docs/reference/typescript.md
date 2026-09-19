@@ -19,11 +19,14 @@ import type {
   FieldValidationContext,
   FieldValidationRules,
   FieldValidator,
+  FormatType,
   FormController,
   FormControllerOptions,
+  FormDataPrimitive,
   FormErrors,
   FormFieldElement,
   FormFieldValue,
+  FormFieldWatcher,
   FormsApi,
   FormsAvailable,
   FormStateListener,
@@ -62,6 +65,8 @@ interface FormController {
   setValue: (name: string, value: unknown) => FormController
   validate: (fields?: string[]) => ValidationResult
   revalidate: (fields?: string[]) => ValidationResult
+  format: (config: FieldFormatConfig) => FormController
+  formatAll: (config: FieldFormatConfig) => FormController
   reset: () => FormController
   autoSubmit: (options?: boolean | AutoSubmitOptions) => FormController
   disableAutoSubmit: () => FormController
@@ -232,7 +237,7 @@ type FormFieldWatcher = (
 - `form` — the bound `HTMLFormElement`.
 - `state` — a snapshot of the whole controller state.
 
-`observe` fires this once immediately with the current value, then on every change. `watch` is a chainable alias and only fires on changes after it is registered.
+`observe` and `watch` fire once immediately with the current value, then on every matching `input` event. `observe` returns an unsubscribe function; `watch` returns the controller.
 
 ## `SerializedFormResult`
 
@@ -428,9 +433,7 @@ The argument to [`format()`](/forms/reference/api/#formatconfig) and [`formatAll
 ```ts
 interface FieldFormatConfig {
   type: FormatType
-  /** Canonical name — the one the backend reads (raw value). */
   field: string | string[]
-  /** Visible name — what the user types. Defaults to `${fieldName}_displayed`. */
   displayField?: string
   options?: Record<string, unknown>
 }
@@ -444,12 +447,10 @@ type FormatType =
   | 'creditCard'
   | 'creditCardType'
 
-interface FieldFormatConfigMap {
-  [field: string]: Omit<FieldFormatConfig, 'field'>
-}
+type FieldFormatConfigMap = Record<string, FieldFormatConfig>
 ```
 
-The `field` name is the **canonical** name of the formatted pair. `format()` renames the visible from `field` to `displayField` (default `${fieldName}_displayed`) on first run and creates a hidden `<input type="hidden" name="<field>">` that carries the raw value. Both names are first-class in the controller's API — see [The mirror convention](/forms/reference/api/#the-mirror-convention) in the format reference. `options` is forwarded to `@samline/formatter` — see its [options reference](https://github.com/samline/formatter/blob/main/docs/options.md). The controller injects `interpretInputAs: 'auto'` for the initial pass (server pre-fill) and for input events whose source is the hidden mirror, so a Blade `old()` carrying the canonical raw is correctly converted to the display form on mount. As of `@samline/formatter@2.0.0` the formatter's own default is `'auto'`, so the override is a defensive explicit declaration of intent. An explicit `interpretInputAs` in `options` is always respected.
+The `field` name is the **canonical** name of the formatted pair. A custom `displayField` is valid only for one string field; passing it with a field array logs an error and leaves the form unchanged. Array configurations derive `${fieldName}_displayed` independently for every field. Every map value includes its own `field` because the map key is only an identifier.
 
 ## `FormsApi`
 

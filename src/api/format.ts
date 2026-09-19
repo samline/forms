@@ -57,6 +57,8 @@ type FormatEntry = {
   visible: HTMLInputElement | HTMLTextAreaElement
   mirror: HTMLInputElement
   mirrorIsOwned: boolean
+  defaultVisible: string | null
+  defaultRaw: string | null
   /**
    * The bound input listener. `null` until phase 2 of `applyFormat`
    * installs the real closure (after the formatter peer resolves);
@@ -239,6 +241,12 @@ const applyFormat = async (
   config: FieldFormatConfig
 ): Promise<void> => {
   if (!state.element || !state.api) return
+  if (Array.isArray(config.field) && config.displayField) {
+    console.error(
+      '[samline/forms] `displayField` can only be used when `field` is a string.'
+    )
+    return
+  }
 
   const formatType = config.type
   const formatOptions = config.options
@@ -324,6 +332,8 @@ const applyFormat = async (
         visible,
         mirror,
         mirrorIsOwned,
+        defaultVisible: null,
+        defaultRaw: null,
         handler: UNBOUND
       }
       bucket.set(fieldName, entry)
@@ -344,6 +354,10 @@ const applyFormat = async (
   // sees a single `console.error` from `loadFormatter` and the form
   // is left exactly as the developer authored it.
   const formatter = await loadFormatter()
+  if (state.isDestroyed) {
+    rollbackPhase1(phase1Entries, bucket, state.formattedFields)
+    return
+  }
   if (!formatter) {
     rollbackPhase1(phase1Entries, bucket, state.formattedFields)
     return
@@ -409,6 +423,17 @@ const applyFormat = async (
       // are preserved.
       entry.mirror.value = ''
     }
+    entry.defaultVisible = entry.visible.value
+    entry.defaultRaw = entry.mirror.value
+  }
+}
+
+export const resetFormattedFields = (state: FormControllerState): void => {
+  const bucket = registry.get(state)
+  if (!bucket) return
+  for (const entry of bucket.values()) {
+    if (entry.defaultVisible !== null) entry.visible.value = entry.defaultVisible
+    if (entry.defaultRaw !== null) entry.mirror.value = entry.defaultRaw
   }
 }
 

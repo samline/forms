@@ -1,11 +1,14 @@
-# `parseFormData(formElement)`
+# `parseFormData(formElement, submitter?)`
 
 Pure serializer. Returns a plain object mirror of the form plus a fresh `FormData` instance. Does not require a controller — useful for one-off serialization (e.g. server-side hydration, scripts that read forms outside of a binding).
 
 ## Signature
 
 ```ts
-function parseFormData(formElement: HTMLFormElement): SerializedFormResult
+function parseFormData(
+  formElement: HTMLFormElement,
+  submitter?: HTMLElement | null
+): SerializedFormResult
 ```
 
 ```ts
@@ -23,6 +26,7 @@ type FormDataPrimitive = FormDataEntryValue // string | File
 | Name | Type | Required | Description |
 | --- | --- | --- | --- |
 | `formElement` | `HTMLFormElement` | yes | The form to serialize. |
+| `submitter` | `HTMLElement \| null` | no | Successful named submit button whose contribution should be included. |
 
 ## Returns
 
@@ -33,7 +37,8 @@ A [`SerializedFormResult`](../typescript.md#serializedformresult) with two fresh
 
 ## Behaviour
 
-- Reads directly from the live DOM via `new FormData(formElement)`.
+- Reads directly from the live DOM via `new FormData(formElement, submitter)` when a submitter is supplied.
+- Preserves fields named `constructor` or `__proto__` as ordinary own properties in `data`.
 - Drops entries where the value is an empty `File` (`size === 0` and `name === ''`).
 - Builds the `data` mirror while iterating, grouping repeated names into arrays.
 - Does not mutate the form or any global state.

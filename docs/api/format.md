@@ -51,7 +51,7 @@ formatAll(config: FieldFormatConfig): FormController
 | --- | --- | --- | --- |
 | `type` | `'general' \| 'phone' \| 'numeral' \| 'date' \| 'time' \| 'creditCard' \| 'creditCardType'` | yes | One of the supported `FormatType` values exported by `@samline/formatter`. |
 | `field` | `string \| string[]` | yes | The **canonical** name of the field — the one the backend reads. The visible you authored in the HTML should already have this name (or the display name, see [Pre-authoring the visible](#pre-authoring-the-visible) below). |
-| `displayField` | `string` | no | Name of the visible input that displays the formatted value. Defaults to `${fieldName}_displayed`. |
+| `displayField` | `string` | no | Name of the visible input for a single `field`. Combining it with a field array logs an error and leaves the form unchanged; arrays derive `${fieldName}_displayed` per field. |
 | `options` | `Record<string, unknown>` | no | Format-specific options forwarded to `@samline/formatter`. See the [formatter options reference](https://github.com/samline/formatter/blob/main/docs/options.md). |
 
 ## Returns

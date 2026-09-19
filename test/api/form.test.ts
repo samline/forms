@@ -86,6 +86,10 @@ describe('form controller (integration)', () => {
     )
 
     expect(onSubmit).not.toHaveBeenCalled()
+    expect(document.activeElement).toBe(api.getField('email'))
+    expect((api.getField('email') as HTMLInputElement).getAttribute('aria-invalid')).toBe(
+      'true'
+    )
 
     api.setValue('email', 'sam@example.com')
     formElement.dispatchEvent(
@@ -93,6 +97,143 @@ describe('form controller (integration)', () => {
     )
 
     expect(onSubmit).toHaveBeenCalledTimes(1)
+    expect((api.getField('email') as HTMLInputElement).hasAttribute('aria-invalid')).toBe(
+      false
+    )
+  })
+
+  it('skips hidden invalid fields when focusing after submit', () => {
+    const formElement = document.getElementById('contact-form') as HTMLFormElement
+    formElement.insertAdjacentHTML('afterbegin', '<input type="hidden" name="token">')
+    const api = form('contact-form', {
+      validators: {
+        token: { required: true },
+        email: { required: true }
+      }
+    })
+
+    formElement.dispatchEvent(new Event('submit', { bubbles: true, cancelable: true }))
+
+    expect(document.activeElement).toBe(api.getField('email'))
+  })
+
+  it('includes the submitter name and value in submitted data', () => {
+    const api = form('contact-form')
+    const onSubmit = vi.fn()
+    const formElement = api.element!
+    const button = formElement.querySelector('button')!
+    button.name = 'action'
+    button.value = 'save'
+    api.onSubmit(onSubmit)
+
+    formElement.dispatchEvent(
+      new SubmitEvent('submit', {
+        bubbles: true,
+        cancelable: true,
+        submitter: button
+      })
+    )
+
+    expect(onSubmit).toHaveBeenCalledWith(
+      formElement,
+      expect.objectContaining({ action: 'save' }),
+      expect.any(FormData),
+      expect.anything()
+    )
+  })
+
+  it('handles a checkbox interaction only once', () => {
+    const api = form('contact-form')
+    const watcher = vi.fn()
+    api.watch('interests', watcher)
+    watcher.mockClear()
+
+    ;(api.getField('interests') as HTMLInputElement[])[0]?.click()
+
+    expect(watcher).toHaveBeenCalledTimes(1)
+  })
+
+  it('runs the delegated pipeline when setValue writes a checkbox', () => {
+    const api = form('contact-form')
+    const watcher = vi.fn()
+    api.watch('interests', watcher)
+    watcher.mockClear()
+
+    api.setValue('interests', ['design'])
+
+    expect(watcher).toHaveBeenCalledTimes(1)
+    expect(api.getValue('interests')).toBe('design')
+  })
+
+  it('tracks controls associated through the form attribute', () => {
+    const external = document.createElement('input')
+    external.name = 'outside'
+    external.setAttribute('form', 'contact-form')
+    document.body.appendChild(external)
+    const api = form('contact-form')
+    const watcher = vi.fn()
+    api.watch('outside', watcher)
+    watcher.mockClear()
+
+    external.value = 'external value'
+    external.dispatchEvent(new Event('input', { bubbles: true }))
+
+    expect(api.getValue('outside')).toBe('external value')
+    expect(api.getData().data.outside).toBe('external value')
+    expect(watcher).toHaveBeenCalledTimes(1)
+  })
+
+  it('does not cache stale external associated controls', () => {
+    const api = form('contact-form')
+    expect(api.getValue('dynamic')).toBeUndefined()
+
+    const external = document.createElement('input')
+    external.name = 'dynamic'
+    external.value = 'added'
+    external.setAttribute('form', 'contact-form')
+    document.body.appendChild(external)
+    expect(api.getValue('dynamic')).toBe('added')
+
+    external.remove()
+    expect(api.getValue('dynamic')).toBeUndefined()
+  })
+
+  it('reads and writes all selected values in a multiple select', () => {
+    const select = document.createElement('select')
+    select.name = 'topics'
+    select.multiple = true
+    select.innerHTML = '<option value="a">A</option><option value="b">B</option>'
+    document.getElementById('contact-form')?.appendChild(select)
+    const api = form('contact-form')
+
+    api.setValue('topics', ['a', 'b'])
+
+    expect(api.getValue('topics')).toEqual(['a', 'b'])
+    expect(Array.from(select.selectedOptions, option => option.value)).toEqual(['a', 'b'])
+  })
+
+  it('serializes reserved field names as own data properties', () => {
+    const formElement = document.getElementById('contact-form')!
+    formElement.insertAdjacentHTML(
+      'beforeend',
+      '<input name="constructor" value="ctor"><input name="__proto__" value="proto">'
+    )
+    const data = form('contact-form').getData().data
+
+    expect(Object.keys(data)).toContain('constructor')
+    expect(Object.keys(data)).toContain('__proto__')
+    expect(data.constructor).toBe('ctor')
+    expect(data.__proto__).toBe('proto')
+  })
+
+  it('supports class names that require CSS escaping in append()', () => {
+    const api = form('contact-form')
+
+    api.append({ tag: 'div', class: 'alert:error', content: 'first' })
+    api.append({ tag: 'div', class: 'alert:error', content: 'second' })
+
+    expect(api.element?.getElementsByClassName('alert:error')).toHaveLength(1)
+    expect(api.element?.getElementsByClassName('alert:error')[0]?.textContent).toBe('second')
   })
 
   it('clears manual errors on change by default and keeps them when configured otherwise', () => {
@@ -281,6 +422,23 @@ describe('form controller (integration)', () => {
 
     api.setValue('name', 'Sam')
     api.disableAutoSubmit()
+    await new Promise(resolve => setTimeout(resolve, 50))
+
+    expect(submitSpy).not.toHaveBeenCalled()
+    submitSpy.mockRestore()
+  })
+
+  it('autoSubmit(false) cancels a pending debounce', async () => {
+    const submitSpy = vi
+      .spyOn(HTMLFormElement.prototype, 'requestSubmit')
+      .mockImplementation(() => undefined)
+    const api = form('contact-form', {
+      autoValidate: false,
+      autoSubmit: { debounce: 30 }
+    })
+
+    api.setValue('name', 'Sam')
+    api.autoSubmit(false)
     await new Promise(resolve => setTimeout(resolve, 50))
 
     expect(submitSpy).not.toHaveBeenCalled()

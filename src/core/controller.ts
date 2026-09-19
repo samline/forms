@@ -31,6 +31,7 @@ import { createUnwatch } from '../api/unwatch'
 import { createValidate } from '../api/validate'
 import { createWatch } from '../api/watch'
 import { validateFieldValue } from '../core/validation'
+import { parseFormData } from './serialize'
 import {
   applyBooleanAttribute,
   getNamedFields,
@@ -139,10 +140,9 @@ export const createFormController = (
 
   const getFieldsByName = (name: string): FormFieldElement[] => {
     if (!state.element) return []
-    if (!state.fieldCache.has(name)) {
-      state.fieldCache.set(name, queryNamedFields(state.element, name))
-    }
-    return state.fieldCache.get(name) ?? []
+    const fields = queryNamedFields(state.element, name)
+    state.fieldCache.set(name, fields)
+    return fields
   }
 
   const getTrackedFieldNames = (): string[] => {
@@ -201,6 +201,8 @@ export const createFormController = (
       for (const field of fields) {
         applyBooleanAttribute(field, attributes.filled, isFieldFilled(field))
         applyBooleanAttribute(field, attributes.error, hasError)
+        if (hasError) field.setAttribute('aria-invalid', 'true')
+        else field.removeAttribute('aria-invalid')
       }
     }
   }
@@ -313,6 +315,13 @@ export const createFormController = (
     scheduleAutoSubmit()
   }
 
+  const handleExternalDelegatedEvent = (event: Event) => {
+    const target = event.target
+    if (!(target instanceof Element) || !isFieldElement(target)) return
+    if (target.form !== state.element || state.element?.contains(target)) return
+    handleDelegatedEvent(event)
+  }
+
   const handleSubmitEvent = (event: Event) => {
     if (!state.element || state.isDestroyed || !state.api) return
 
@@ -329,9 +338,26 @@ export const createFormController = (
     state.submitCount += 1
     notifySubscribers()
 
-    if (!validation.isValid) return
+    if (!validation.isValid) {
+      for (const name of Object.keys(validation.errors)) {
+        const displayName = resolveDisplayNameForName(state, name)
+        const field = getFieldsByName(displayName).find(candidate => {
+          if (!candidate.isConnected || candidate.disabled || candidate.hidden) return false
+          return !(candidate instanceof HTMLInputElement && candidate.type === 'hidden')
+        })
+        if (field) {
+          field.focus()
+          break
+        }
+      }
+      return
+    }
 
-    const { data, formData } = state.api.getData()
+    const candidate = event as Event & { submitter?: unknown }
+    const submitter = candidate.submitter instanceof HTMLElement
+      ? candidate.submitter
+      : null
+    const { data, formData } = parseFormData(state.element, submitter)
     const snapshot = state.api.getState()
     handlers.forEach(handler =>
       handler.callback(state.element!, data, formData, snapshot)
@@ -400,7 +426,7 @@ export const createFormController = (
 
   if (state.element) {
     addListener(state.element, 'input', handleDelegatedEvent)
-    addListener(state.element, 'change', handleDelegatedEvent)
+    addListener(document, 'input', handleExternalDelegatedEvent)
     addListener(state.element, 'submit', handleSubmitEvent)
     startMutationObserver()
   }

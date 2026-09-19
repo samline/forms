@@ -8,14 +8,19 @@ All types are exported from the package root:
 import type {
   AppendContentOptions,
   AutoSubmitOptions,
+  FieldFormatConfig,
+  FieldFormatConfigMap,
   FieldValidationContext,
   FieldValidationRules,
   FieldValidator,
+  FormatType,
   FormController,
   FormControllerOptions,
+  FormDataPrimitive,
   FormErrors,
   FormFieldElement,
   FormFieldValue,
+  FormFieldWatcher,
   FormsApi,
   FormsAvailable,
   FormStateListener,
@@ -94,7 +99,7 @@ interface FormControllerOptions {
   /**
    * Declarative format configuration. Each entry is applied during
    * `form()` initialization using the same logic as `controller.format(...)`.
-   * The key is just an identifier — the visible field name lives in
+    * The key is just an identifier — the canonical field name lives in
    * `FieldFormatConfig.field`.
    */
   formats?: FieldFormatConfigMap
@@ -262,7 +267,7 @@ type FormFieldWatcher = (
 - `form` — the bound `HTMLFormElement`.
 - `state` — a snapshot of the whole controller state (see [`FormStateSnapshot`](#formstatesnapshot)).
 
-`observe` fires this once immediately with the current value, then on every change. `watch` is a chainable alias and only fires on changes after it is registered.
+`observe` and `watch` fire once immediately with the current value, then on every matching `input` event. `observe` returns an unsubscribe function; `watch` returns the controller.
 
 ---
 
@@ -502,41 +507,16 @@ type FormatType =
   | 'creditCardType'
 
 interface FieldFormatConfig {
-  /** One of the supported `@samline/formatter` `FormatType` values. */
   type: FormatType
-  /**
-   * Canonical name of the formatted field. The value the backend
-   * ultimately receives (the `raw` output of the formatter) is
-   * exposed under this name; the formatter is responsible for
-   * keeping it in sync with the visible input.
-   */
   field: string | string[]
-  /**
-   * Name of the visible input that shows the formatted value to
-   * the user. Defaults to `${fieldName}_displayed`.
-   *
-   * The visible is **renamed** from `field` to `displayField` on
-   * the first `format()` call (idempotent on re-binding). A hidden
-   * `<input type="hidden" name="<field>">` is created next to it
-   * to carry the raw value. Both names are first-class in the
-   * controller's API (`getValue`, `getField`, `setValue`, `watch`,
-   * `getData`) — see [`docs/api/format.md`](api/format.md) for the full contract.
-   */
   displayField?: string
-  /**
-   * Format-specific options forwarded to `@samline/formatter`.
-   * Any key documented for the chosen `type` is accepted (e.g.
-   * `country`, `delimiter`, `numeralDecimalMark`, `datePattern`).
-   */
   options?: Record<string, unknown>
 }
 
-interface FieldFormatConfigMap {
-  [field: string]: Omit<FieldFormatConfig, 'field'>
-}
+type FieldFormatConfigMap = Record<string, FieldFormatConfig>
 ```
 
-The `field` name is the **canonical** name of the formatted pair. `format()` renames the visible from `field` to `displayField` (default `${fieldName}_displayed`) on first run and creates a hidden `<input type="hidden" name="<field>">` that carries the raw value. Both names are first-class in the controller's API — see [The mirror convention](api/format.md#the-mirror-convention) in the format reference. `options` is forwarded to `@samline/formatter` — see its [options reference](https://github.com/samline/formatter/blob/main/docs/options.md).
+The `field` name is the **canonical** name of the formatted pair. A custom `displayField` is valid only for one string field; passing it with a field array logs an error and leaves the form unchanged. Array configurations derive `${fieldName}_displayed` independently for every field. Every map value includes its own `field` because the map key is only an identifier. See [The mirror convention](api/format.md#the-mirror-convention).
 
 ---
 

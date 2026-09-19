@@ -28,7 +28,7 @@ The same [`FormController`](../typescript.md#formcontroller) — chainable.
 
 Because the method delegates to [`setValue`](set-value.md), each prefilled field:
 
-- Receives a synthetic `change` / `input` event, so watchers and subscribers fire.
+- Receives a synthetic `input` event, so watchers and subscribers fire.
 - Triggers validation if it has rules and `autoValidate` is enabled.
 - Triggers autoSubmit if it is enabled.
 - Updates the `css-filled` / `css-error` attributes.

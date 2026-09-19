@@ -15,6 +15,11 @@ import type { FormsApi } from './registry'
 
 const Forms: FormsApi = browser
 
+export const form = Forms.form
+export const newForm = Forms.newForm
+export const destroyForm = Forms.destroyForm
+export const available = Forms.available
+
 declare global {
   interface Window {
     Forms: FormsApi

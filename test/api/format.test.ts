@@ -4,6 +4,7 @@ import { form } from '../../src/api/form'
 import {
   __resetFormatterLoaderForTests,
   __setFormatterModuleForTests,
+  __setFormatterPromiseForTests,
   type FormatterModule
 } from '../../src/core/formatter-loader'
 
@@ -122,6 +123,42 @@ describe('format() integration', () => {
     expect((api.getValue('phone_displayed') as string)).toBe('55 1234 5678')
   })
 
+  it('restores matching visible and canonical defaults on reset', async () => {
+    __setFormatterModuleForTests(phoneFormatter)
+    const source = document.querySelector<HTMLInputElement>('input[name="phone"]')!
+    source.defaultValue = '5512345678'
+    source.value = source.defaultValue
+    const api = form('checkout-form')
+    api.format({ type: 'phone', field: 'phone' })
+    await flush()
+
+    api.setValue('phone_displayed', '9999999999')
+    api.reset()
+
+    expect(api.getValue('phone_displayed')).toBe('55 1234 5678')
+    expect(api.getValue('phone')).toBe('5512345678')
+    expect(api.getData().data.phone).toBe('5512345678')
+  })
+
+  it('does not bind formatter listeners after destroy during loading', async () => {
+    let resolveFormatter!: (formatter: FormatterModule) => void
+    __setFormatterPromiseForTests(
+      new Promise(resolve => {
+        resolveFormatter = resolve
+      })
+    )
+    const api = form('checkout-form')
+    api.format({ type: 'phone', field: 'phone' })
+    api.destroy()
+
+    resolveFormatter(phoneFormatter)
+    await flush()
+
+    const formElement = document.getElementById('checkout-form')!
+    expect(formElement.querySelector('input[name="phone"]')).not.toBeNull()
+    expect(formElement.querySelector('[data-formatter-raw-for="phone"]')).toBeNull()
+  })
+
   it('reuses a pre-authored hidden mirror and never duplicates it on re-bind', async () => {
     __setFormatterModuleForTests(phoneFormatter)
 
@@ -181,6 +218,24 @@ describe('format() integration', () => {
     expect(api.getValue('amount')).toBe('56789')
     expect(api.getValue('card_displayed')).toBe('1,234')
     expect(api.getValue('amount_displayed')).toBe('56,789')
+  })
+
+  it('rejects one displayField shared by multiple fields', async () => {
+    __setFormatterModuleForTests(numeralFormatter)
+    const api = form('checkout-form')
+
+    api.formatAll({
+      type: 'numeral',
+      field: ['card', 'amount'],
+      displayField: 'shared'
+    })
+    await flush()
+
+    expect(errorSpy).toHaveBeenCalledWith(
+      '[samline/forms] `displayField` can only be used when `field` is a string.'
+    )
+    expect(api.getField('card')).toBeInstanceOf(HTMLInputElement)
+    expect(api.getField('shared')).toBeNull()
   })
 
   it('fires watchers on both the canonical and the display name on the same keystroke', async () => {
@@ -307,6 +362,24 @@ describe('format() integration', () => {
     // developer's authored state.
     expect(formElement.querySelector('input[name="phone"]')).not.toBeNull()
     expect(formElement.querySelector('input[name="phone_displayed"]')).toBeNull()
+  })
+
+  it('preserves the authored reset default after destroy()', async () => {
+    __setFormatterModuleForTests(phoneFormatter)
+    const formElement = document.getElementById('checkout-form') as HTMLFormElement
+    const source = formElement.querySelector<HTMLInputElement>('input[name="phone"]')!
+    source.defaultValue = '5512345678'
+    source.value = source.defaultValue
+    const api = form('checkout-form')
+    api.format({ type: 'phone', field: 'phone' })
+    await flush()
+
+    api.destroy()
+    const restored = formElement.querySelector<HTMLInputElement>('input[name="phone"]')!
+    restored.value = 'changed'
+    formElement.reset()
+
+    expect(restored.value).toBe('5512345678')
   })
 
   it('keeps pre-existing raw mirrors untouched on destroy()', async () => {

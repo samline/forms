@@ -15,6 +15,7 @@ Methods that return data (rather than the controller) end in a different return 
 ## Lifecycle
 
 - [`form(target, options?)`](#formtarget-options) — bind a controller to an `HTMLFormElement`. The main entry point.
+- [`createFormController(target, options?)`](#createformcontrollertarget-options) — underlying controller factory.
 - [`element`](#element) — the bound form (`f` is an alias).
 - [`reset()`](#reset) — restore native form values and clear errors.
 - [`destroy()`](#destroy) — tear down listeners, observer, and caches.
@@ -65,7 +66,7 @@ Methods that return data (rather than the controller) end in a different return 
 
 These do not require a controller. They accept plain values or a raw `HTMLFormElement` and return results — safe to tree-shake into any bundle.
 
-- [`parseFormData(formElement)`](#parseformdata) — same serializer used internally, no controller needed.
+- [`parseFormData(formElement, submitter?)`](#parseformdata) — same serializer used internally, no controller needed.
 - [`validateValues(values, schema)`](#validatevalues) — run a schema against a values map.
 - [`validateFieldValue(field, value, rules, values)`](#validatefieldvalue) — run a rule set against a single value.
 - [`regex`](#regex) — named regular expressions and default error messages, exported by the optional peer [`@samline/formatter`](https://github.com/samline/formatter). Install the peer before importing.
@@ -92,7 +93,11 @@ function form(
 - `target` — string id, `HTMLFormElement`, ref-like `{ current }` object, or `null`/`undefined`.
 - `options` — controller configuration. See [Configuration](/forms/reference/configuration/).
 
-On creation the controller wires `input`, `change`, and `submit` listeners at the form level, starts a `MutationObserver` on the form subtree, optionally enables `autoSubmit`, and runs an initial validation pass when `autoValidate` is enabled.
+On creation the controller wires delegated `input` and `submit` listeners, including support for controls associated through `form="id"`, starts a `MutationObserver` on the form subtree, optionally enables `autoSubmit`, and runs an initial validation pass when `autoValidate` is enabled.
+
+#### `createFormController(target, options?)`
+
+The underlying factory used by `form()`. It accepts the same arguments and returns the same `FormController`; use it when the explicit factory name reads better in framework integrations.
 
 #### `element`
 
@@ -124,7 +129,7 @@ onSubmit(
 ): FormController
 ```
 
-The submit pipeline: manual errors cleared (if `clearErrorsOnSubmit`), validation runs, `submitCount` increments, handlers invoked in order. Invalid submissions are always intercepted.
+The submit pipeline clears manual errors when configured, validates, synchronizes `aria-invalid`, increments `submitCount`, and invokes handlers in order. Invalid submissions are intercepted and focus moves to the first focusable invalid field. When the event supplies a successful named submit button, valid handler data includes its contribution.
 
 #### `autoSubmit(options?)`
 
@@ -142,7 +147,7 @@ Turns auto-submit off and cancels any pending debounce timer. Equivalent to `aut
 
 #### `watch(field, callback)`
 
-Chainable fire-and-forget reaction to a field. The callback fires only on changes (not on registration).
+Chainable fire-and-forget reaction to a field. The callback fires immediately and after every change, like `observe()`; `watch()` returns the controller instead of an unsubscribe function.
 
 #### `observe(field, callback)`
 
@@ -180,7 +185,7 @@ Populates the form (or a single field) from the current URL query string. Delega
 
 #### `format(config)`
 
-Apply an `@samline/formatter` pipeline to one or more fields inside the bound form. The first time `format()` runs for a field it renames the visible to `<field>_displayed` (or the value of `config.displayField`) and creates a hidden `<input type="hidden" name="<field>">` that carries the raw value. Both names are first-class in the controller's API — `getValue('phone')` returns the raw, `getValue('phone_displayed')` returns the formatted, `watch('phone', cb)` fires with the raw, and so on. See [The mirror convention](/forms/reference/api/#the-mirror-convention) for the full contract.
+Apply an `@samline/formatter` pipeline to one or more fields. A custom `displayField` works only for a single field; combining it with an array logs an error and leaves the form unchanged. Array configurations derive `<field>_displayed` separately.
 
 :::caution[Optional peer dependency]
 `@samline/formatter` is optional. When it is not installed, `format()` and `formatAll()` log a single `console.error` describing the missing dependency, restore the visible's name to the canonical form, and return the controller unchanged. The form is left exactly as the developer authored it.
@@ -226,13 +231,16 @@ Inserts a DOM node into the bound form. Useful for rendering banners, hints, or 
 
 ### Pure helpers
 
-#### `parseFormData(formElement)`
+#### `parseFormData(formElement, submitter?)`
 
 ```ts
-function parseFormData(formElement: HTMLFormElement): SerializedFormResult
+function parseFormData(
+  formElement: HTMLFormElement,
+  submitter?: HTMLElement | null
+): SerializedFormResult
 ```
 
-Same serializer the controller uses internally. Returns `{ data, formData }`. Does not require a controller.
+Same serializer the controller uses internally. Pass a submit button to include its name/value. Reserved names such as `constructor` and `__proto__` remain ordinary own properties.
 
 #### `validateValues(values, schema)`
 
@@ -293,7 +301,7 @@ browser.destroyForm('contact-form')
 
 #### `browser.available`
 
-Read-only view of the active registry: `{ [id: string]: FormController }`. Iterate it to inspect or invoke methods on every live controller.
+Shared mutable registry: `{ [id: string]: FormController }`. Prefer `newForm()` and `destroyForm()` to manage it.
 
 ```ts
 for (const controller of Object.values(browser.available)) {

@@ -11,10 +11,10 @@ For every other case (modern apps, bundlers, TypeScript projects), use the main 
 ## Script tag
 
 ```html
-<script src="https://unpkg.com/@samline/forms@2.4.0/dist/browser/global.global.js"></script>
+<script src="https://unpkg.com/@samline/forms@2.5.0/dist/browser/global.global.js"></script>
 ```
 
-> Pin the version in production. Replace `2.4.0` with the version you ship.
+> Pin the version in production. Replace `2.5.0` with the version you ship.
 
 The bundle is a single IIFE that registers a global object.
 
@@ -49,7 +49,7 @@ The factory returns a `FormController` with the same signatures, semantics, and 
   <button type="submit">Send</button>
 </form>
 
-<script src="https://unpkg.com/@samline/forms@2.4.0/dist/browser/global.global.js"></script>
+<script src="https://unpkg.com/@samline/forms@2.5.0/dist/browser/global.global.js"></script>
 <script>
   const contactForm = window.Forms.newForm({
     id: 'contact-form',
@@ -81,7 +81,7 @@ The controller returned by `newForm` is the same instance stored under `Forms.av
 | --- | --- |
 | `Forms.newForm({ id, options })` | Build a controller via `Forms.form(id, options)` and store it in `Forms.available[id]`. Logs `Form ID is required` and returns early if `id` is missing. |
 | `Forms.destroyForm(id)` | Look up `Forms.available[id]`, call `destroy()`, and delete the entry. Logs `Form ID is required` if `id` is missing, or `Form with ID <id> not found` if the entry is absent. |
-| `Forms.available` | Read-only view of the active registry: `{ [id: string]: FormController }`. Iterate it to inspect or invoke methods on every live controller. |
+| `Forms.available` | Shared mutable registry: `{ [id: string]: FormController }`. Prefer `newForm()` and `destroyForm()` to manage it. |
 
 Use `Forms.form` directly when you do not want the registry side-effect (for example, transient controllers in tests).
 
@@ -113,37 +113,22 @@ The controller returned by `form` / `newForm` exposes the methods documented und
 
 ## TypeScript users
 
-The browser build does not ship its own types. If you need types for `window.Forms`, declare them once in your project:
+The module entrypoint `@samline/forms/browser` ships types, registers the `Window.Forms` declaration, and exposes the same API as module exports. The direct IIFE subpath does not expose a typed module export.
 
 ```ts
-import type {
-  FormController,
-  FormControllerOptions,
-  FormTarget
-} from '@samline/forms'
+import Forms from '@samline/forms/browser'
 
-declare global {
-  interface Window {
-    Forms: {
-      form: (target: FormTarget, options?: FormControllerOptions) => FormController
-      newForm: (input: {
-        id: string
-        options?: FormControllerOptions
-      }) => FormController | undefined
-      destroyForm: (id: string) => void
-      available: { [id: string]: FormController }
-    }
-  }
-}
+Forms.newForm({ id: 'contact-form' })
+window.Forms.destroyForm('contact-form')
 ```
 
 ---
 
 ## Common pitfalls
 
-- **Pin the version.** The CDN URL above is `2.4.0`. Replace it whenever you upgrade.
+- **Pin the version.** The CDN URL above is `2.5.0`. Replace it whenever you upgrade.
 - **The script must be loaded before any code that uses `window.Forms`.** Place the `<script>` tag in `<head>` with `defer`, or before the user script in `<body>`.
-- **No bundler means no tree-shaking.** The browser bundle includes the full controller (~5 KB gzipped). That is by design — the alternative would defeat the purpose of a no-bundler setup.
+- **No bundler means no tree-shaking.** The global browser bundle includes the controller and formatter peer. Inspect the published artifact when bundle size is a constraint.
 - **CSP:** if your site uses a strict Content Security Policy, allow `unpkg.com` in `script-src` (or self-host the file).
 
 ---

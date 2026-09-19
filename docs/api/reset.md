@@ -18,9 +18,10 @@ When invoked, the controller:
 
 1. Calls `state.element.reset()` (the native form reset).
 2. Clears `state.manualErrors` and `state.validationErrors`.
-3. Removes every `css-filled` and `css-error` attribute from inside the form.
-4. Re-syncs visual state if the form has been validated (`isValidated` is `true`).
-5. Notifies subscribers.
+3. Restores matching visible/raw defaults for formatted fields.
+4. Removes every `css-filled`, `css-error`, and `aria-invalid` attribute from associated fields.
+5. Re-syncs visual state if the form has been validated (`isValidated` is `true`).
+6. Notifies subscribers.
 
 ## Examples
 
@@ -49,7 +50,7 @@ document.querySelector('#cancel')?.addEventListener('click', () => {
 
 ## Edge cases
 
-- **Native `reset()` does not dispatch `input` / `change` events** for fields whose value changes because of the reset. The controller handles visual state explicitly, so `css-filled` / `css-error` are stripped regardless.
+- **Native `reset()` does not dispatch `input` events** for fields whose value changes because of the reset. The controller restores formatted mirrors and visual/ARIA state explicitly.
 - **Submit handlers are not invoked.** `reset()` is purely a UI / state operation.
 - **The `submitCount` from [`getState()`](get-state.md) is not reset.** It tracks the lifetime of the controller, not the lifetime of a single form session.
 
