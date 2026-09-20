@@ -5,3 +5,4 @@
 - HTML controls associated through `form="id"` belong to `form.elements` even when they are outside the form subtree.
 - A single user action must enter the delegated pipeline once; use `input` consistently instead of combining `input` and `change`.
 - Keep browser side-effect entrypoints listed in `package.json#sideEffects`.
+- Validate release lockfiles with an empty package-manager cache; cached tarballs can hide dependencies withdrawn from the registry.
