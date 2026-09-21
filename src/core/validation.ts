@@ -43,6 +43,13 @@ const toPatternTarget = (value: FormFieldValue): string => {
   return ''
 }
 
+const valuesAreEqual = (left: FormFieldValue, right: FormFieldValue): boolean => {
+  if (Array.isArray(left) && Array.isArray(right)) {
+    return left.length === right.length && left.every((entry, index) => entry === right[index])
+  }
+  return left === right
+}
+
 export const validateFieldValue = (
   field: string,
   value: FormFieldValue,
@@ -55,6 +62,7 @@ export const validateFieldValue = (
   const minLength = resolveRule(rules.minLength)
   const maxLength = resolveRule(rules.maxLength)
   const pattern = resolveRule(rules.pattern)
+  const sameAs = resolveRule(rules.sameAs)
 
   if (required.value && !hasValue(value)) {
     errors.push(required.message ?? 'This field is required.')
@@ -71,6 +79,12 @@ export const validateFieldValue = (
     pattern.value.lastIndex = 0
     if (!matches) {
       errors.push(pattern.message ?? 'Value does not match the required pattern.')
+    }
+  }
+  if (sameAs.value !== undefined) {
+    const otherValue = values[sameAs.value]
+    if (hasValue(value) && hasValue(otherValue) && !valuesAreEqual(value, otherValue)) {
+      errors.push(sameAs.message ?? `Value must match ${sameAs.value}.`)
     }
   }
 

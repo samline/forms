@@ -8,7 +8,7 @@ This page explains what `@samline/forms` is, how the controller is wired, and wh
 
 Use the main `@samline/forms` entrypoint for native HTML forms. The package also provides `@samline/forms/browser` as an ESM/CJS browser module and `@samline/forms/browser/global` as the global IIFE distribution.
 
-> Note: the latest version is `2.5.1` — see [Releases](https://github.com/samline/forms/releases) for the changelog.
+> Note: the latest version is `2.6.0` — see [Releases](https://github.com/samline/forms/releases) for the changelog.
 
 If you want a `<script>`-only setup without a bundler, see [docs/browser.md](browser.md).
 

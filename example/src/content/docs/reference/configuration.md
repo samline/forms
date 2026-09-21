@@ -131,9 +131,12 @@ form('signup-form', {
       minLength: { value: 8, message: 'Use at least 8 characters.' },
       maxLength: 64
     },
-    confirm: {
-      validate: ({ value, values }) =>
-        value === values.password ? null : 'Passwords do not match.'
+    password_confirmation: {
+      required: true,
+      sameAs: {
+        value: 'password',
+        message: 'Passwords do not match.'
+      }
     }
   }
 })
@@ -147,11 +150,41 @@ form('signup-form', {
 | `minLength` | `number \| { value: number; message?: string }` | Minimum string length (for checkbox groups, the minimum number of selected items). |
 | `maxLength` | `number \| { value: number; message?: string }` | Maximum string length (for checkbox groups, the maximum number of selected items). |
 | `pattern` | `RegExp \| { value: RegExp; message?: string }` | String must match the regular expression. Skipped when the field is empty. |
+| `sameAs` | `string \| { value: string; message?: string }` | Non-empty value must equal the named field. Changing the named field automatically revalidates this field. |
 | `validate` | [`FieldValidator \| FieldValidator[]`](/forms/reference/typescript/#fieldvalidator) | Custom validators. Return a string to push an error, or `null` / `undefined` / `true` to pass. Return `false` to push a generic `"Validation failed."` message. |
 
-Every rule accepts either a plain value or a `{ value, message }` object. Use the object form when you want a custom error message per rule.
+Built-in rules accept either a plain value or a `{ value, message }` object. Use the object form when you want a custom error message per rule.
 
 All enabled rules run and messages accumulate. `pattern` skips empty values, while length and custom rules still run. Array values use item count for length rules. Validator keys are exact HTML field names; wildcard paths such as `rows[*].name` are not expanded. See [Validation and accessible errors](/forms/guides/validation-and-errors/#built-in-rule-behavior) for the complete behavior table.
+
+### Matching fields with `sameAs`
+
+Declare `sameAs` on the field that owns the error, normally the confirmation field:
+
+```ts
+form('signup-form', {
+  validators: {
+    password: { required: true, minLength: 8 },
+    password_confirmation: {
+      required: true,
+      sameAs: {
+        value: 'password',
+        message: 'Passwords do not match.'
+      }
+    }
+  }
+})
+```
+
+The controller records that `password_confirmation` depends on `password`. Once validation is active, input in either field validates the confirmation, including updates made through `setValue()`. Validation is active immediately with the default `autoValidate: true`; with `autoValidate: false`, it begins after the first `validate()` or `revalidate()` call. You do not need `watch()` or a manual `revalidate()` call for this dependency.
+
+Important behavior:
+
+- `sameAs` is skipped until both fields have non-empty values. Use `required` separately when either field is mandatory.
+- Strings use exact, case-sensitive equality. Arrays use ordered item equality, so `['a', 'b']` does not equal `['b', 'a']`. File entries compare by `File` object identity.
+- The referenced name must be the exact HTML field name. Wildcards and inferred `_confirmation` names are not supported.
+- Put the rule on the confirmation field only in most forms. Putting reciprocal rules on both fields is cycle-safe, but both fields will own and display the same mismatch error.
+- Dependency cycles do not recurse. The controller resolves the affected fields with a visited set and validates each field at most once per input event.
 
 ### Custom validators
 

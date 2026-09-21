@@ -277,7 +277,7 @@ function validateFieldValue(
 ): string[]
 ```
 
-Runs every built-in and custom rule against one value and returns all messages. Pattern checks skip empty values; custom validators still run. See the [rule behavior table](/forms/guides/validation-and-errors/#built-in-rule-behavior).
+Runs every built-in and custom rule against one value and returns all messages. Pattern checks skip empty values; `sameAs` compares two non-empty values; custom validators still run. This pure helper does not track dependencies. See the [rule behavior table](/forms/guides/validation-and-errors/#built-in-rule-behavior).
 
 ### Registry helpers (vanilla)
 

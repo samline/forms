@@ -34,7 +34,8 @@ Runs each rule in order:
 2. `minLength` — string length (or array length) must be ≥ the threshold.
 3. `maxLength` — string length (or array length) must be ≤ the threshold.
 4. `pattern` — the string form of the value must match the regex (skipped when the value is empty).
-5. `validate` — each custom validator runs in registration order. Returning a string pushes an error; returning `false` pushes `"Validation failed."`; returning `null`, `undefined`, or `true` is treated as a pass.
+5. `sameAs` — the value must equal the named value (skipped until both values are non-empty).
+6. `validate` — each custom validator runs in registration order. Returning a string pushes an error; returning `false` pushes `"Validation failed."`; returning `null`, `undefined`, or `true` is treated as a pass.
 
 Default error messages are produced when the rule was configured without an explicit `message`. Custom messages come from the `{ value, message }` form of `RuleConfig`.
 
@@ -58,7 +59,7 @@ const errors = validateFieldValue(
 console.log(errors) // ['Value does not match the required pattern.']
 ```
 
-### Cross-field validation
+### Match two fields
 
 ```ts
 import { validateFieldValue } from '@samline/forms'
@@ -67,8 +68,7 @@ const errors = validateFieldValue(
   'confirm',
   'foo',
   {
-    validate: ({ value, values }) =>
-      value === values.password ? null : 'Passwords do not match.'
+    sameAs: { value: 'password', message: 'Passwords do not match.' }
   },
   { password: 'bar', confirm: 'foo' }
 )
@@ -96,6 +96,8 @@ console.log(errors) // ['Use at least 8 characters.']
 ## Edge cases
 
 - **The pattern rule is skipped for empty values.** This is the standard “required + pattern” pattern: required runs first, then pattern runs only when there is a value.
+- **The `sameAs` rule is skipped until both values are non-empty.** Add `required` to each mandatory field; `sameAs` does not imply requiredness.
+- **Pure validation does not track dependencies.** `validateFieldValue` compares the supplied values once. Automatic dependent revalidation is controller behavior.
 - **`validateFieldValue` does not read from any DOM.** Pass everything in as arguments.
 - **`validate` runs after the built-in rules.** It receives the full context, including the current value and the other field values.
 - **Multiple custom validators** can be passed as an array — they all run, and any error from any of them is collected.

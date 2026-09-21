@@ -6,3 +6,4 @@
 - A single user action must enter the delegated pipeline once; use `input` consistently instead of combining `input` and `change`.
 - Keep browser side-effect entrypoints listed in `package.json#sideEffects`.
 - Validate release lockfiles with an empty package-manager cache; cached tarballs can hide dependencies withdrawn from the registry.
+- Resolve cross-field validation dependencies as an iterative graph traversal with a visited set; do not create reciprocal watchers or recursively dispatch validation events.

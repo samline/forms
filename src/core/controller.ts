@@ -104,6 +104,18 @@ export const createFormController = (
     api: null
   }
 
+  // Reverse `sameAs` references once so a source change can revalidate every
+  // dependent field without installing per-field listeners.
+  const validationDependents = new Map<string, Set<string>>()
+  for (const [field, rules] of Object.entries(state.validators)) {
+    const sameAs = rules.sameAs
+    if (sameAs === undefined) continue
+    const source = typeof sameAs === 'string' ? sameAs : sameAs.value
+    const dependents = validationDependents.get(source) ?? new Set<string>()
+    dependents.add(field)
+    validationDependents.set(source, dependents)
+  }
+
   // ------- Internal helpers (no DOM wiring of their own) -----------------
 
   const notifySubscribers = () => {
@@ -238,6 +250,25 @@ export const createFormController = (
     }
   }
 
+  const getAffectedValidationNames = (name: string): string[] => {
+    const affected: string[] = []
+    const pending = [name]
+    const visited = new Set<string>()
+
+    for (let index = 0; index < pending.length; index += 1) {
+      const current = pending[index]!
+      if (visited.has(current)) continue
+      visited.add(current)
+      affected.push(current)
+
+      for (const dependent of validationDependents.get(current) ?? []) {
+        if (!visited.has(dependent)) pending.push(dependent)
+      }
+    }
+
+    return affected
+  }
+
   const emitFieldWatchers = (name: string) => {
     if (!state.element || !state.api) return
     const callbacks = state.watchedFields.get(name)
@@ -305,8 +336,12 @@ export const createFormController = (
 
     syncVisualState([displayName])
 
-    if (state.isValidated && state.validators[canonical]) {
-      validateNames([canonical])
+    const affectedValidationNames = getAffectedValidationNames(canonical)
+    if (
+      state.isValidated &&
+      affectedValidationNames.some(field => state.validators[field] !== undefined)
+    ) {
+      validateNames(affectedValidationNames)
     }
 
     emitFieldWatchers(canonical)

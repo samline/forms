@@ -52,4 +52,66 @@ describe('validation', () => {
     expect(validateFieldValue('value', 'a', { pattern }, { value: 'a' })).toEqual([])
     expect(pattern.lastIndex).toBe(0)
   })
+
+  it('validates matching fields with sameAs', () => {
+    expect(
+      validateFieldValue(
+        'password_confirmation',
+        'secret123',
+        { sameAs: 'password' },
+        { password: 'secret123', password_confirmation: 'secret123' }
+      )
+    ).toEqual([])
+
+    expect(
+      validateFieldValue(
+        'password_confirmation',
+        'different',
+        {
+          sameAs: { value: 'password', message: 'Passwords do not match.' }
+        },
+        { password: 'secret123', password_confirmation: 'different' }
+      )
+    ).toEqual(['Passwords do not match.'])
+  })
+
+  it('skips sameAs until both fields have values', () => {
+    expect(
+      validateFieldValue(
+        'password_confirmation',
+        '',
+        { required: true, sameAs: 'password' },
+        { password: 'secret123', password_confirmation: '' }
+      )
+    ).toEqual(['This field is required.'])
+
+    expect(
+      validateFieldValue(
+        'password_confirmation',
+        'secret123',
+        { sameAs: 'password' },
+        { password: '', password_confirmation: 'secret123' }
+      )
+    ).toEqual([])
+  })
+
+  it('compares array values by ordered contents', () => {
+    expect(
+      validateFieldValue(
+        'confirmation',
+        ['a', 'b'],
+        { sameAs: 'original' },
+        { original: ['a', 'b'], confirmation: ['a', 'b'] }
+      )
+    ).toEqual([])
+
+    expect(
+      validateFieldValue(
+        'confirmation',
+        ['b', 'a'],
+        { sameAs: 'original' },
+        { original: ['a', 'b'], confirmation: ['b', 'a'] }
+      )
+    ).toEqual(['Value must match original.'])
+  })
 })

@@ -38,7 +38,7 @@ A [`ValidationResult`](../typescript.md#validationresult):
 
 ## Behaviour
 
-For each `[field, rules]` entry in the schema, runs [`validateFieldValue`](validate-field-value.md) against `values[field]`. The other values are passed through to custom validators.
+For each `[field, rules]` entry in the schema, runs [`validateFieldValue`](validate-field-value.md) against `values[field]`. The other values are available to `sameAs` and custom validators.
 
 ## Examples
 
@@ -91,6 +91,7 @@ if (!result.isValid) {
 
 - **`validateValues` does not know which fields are “tracked”.** It validates every entry in the schema, even fields that are not present in `values`. An undefined value fails `required` but passes the rest.
 - **Errors are always a fresh object.** Safe to mutate.
+- **`sameAs` compares the provided snapshot only.** Dependency tracking and automatic revalidation belong to a form controller, not this pure helper.
 - **Custom validators receive the full values map**, so cross-field rules work the same as inside a controller.
 
 ## Related

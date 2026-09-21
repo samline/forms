@@ -145,18 +145,24 @@ The aggregated values map produced by the controller and the helpers.
 type FormValues = Record<string, FormFieldValue>
 ```
 
-Useful when you build custom validators that need to read other fields:
+Useful when you build custom validators that need cross-field logic beyond exact equality (`sameAs` handles equality directly):
 
 ```ts
-form('signup-form', {
+form('booking-form', {
   validators: {
-    confirm: {
+    end_date: {
       validate: ({ value, values }) =>
-        value === values.password ? null : 'Passwords do not match.'
+        typeof value === 'string' &&
+        typeof values.start_date === 'string' &&
+        value >= values.start_date
+          ? null
+          : 'End date must not precede start date.'
     }
   }
 })
 ```
+
+The controller can infer reactive dependencies from `sameAs`, but not from arbitrary reads inside `validate`. If `start_date` changes after `end_date` has been validated, explicitly revalidate `end_date` or watch the source field.
 
 ## `FormErrors`
 
@@ -292,11 +298,14 @@ interface FieldValidationRules {
   minLength?: RuleConfig<number>
   maxLength?: RuleConfig<number>
   pattern?: RuleConfig<RegExp>
+  sameAs?: RuleConfig<string>
   validate?: FieldValidator | FieldValidator[]
 }
 ```
 
-Rules run in the order: `required` → `minLength` → `maxLength` → `pattern` → `validate`. All are optional; an empty rules object contributes nothing.
+Rules run in the order: `required` → `minLength` → `maxLength` → `pattern` → `sameAs` → `validate`. All are optional; an empty rules object contributes nothing.
+
+`sameAs` names another exact field key. It compares non-empty strings exactly and arrays by ordered contents; file entries compare by `File` object identity. In a controller, changing the referenced field automatically revalidates the field that declares `sameAs`. Reciprocal declarations are cycle-safe, but usually duplicate the same error on both controls; prefer declaring the rule only on the confirmation field.
 
 ## `RuleConfig<T>`
 

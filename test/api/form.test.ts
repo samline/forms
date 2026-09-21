@@ -54,6 +54,104 @@ describe('form controller (integration)', () => {
     ).toBe(true)
   })
 
+  it('revalidates a sameAs field when its source changes', () => {
+    const formElement = document.getElementById('contact-form')!
+    formElement.insertAdjacentHTML(
+      'beforeend',
+      '<input type="password" name="password"><input type="password" name="password_confirmation">'
+    )
+    const api = form('contact-form', {
+      validators: {
+        password_confirmation: {
+          sameAs: { value: 'password', message: 'Passwords do not match.' }
+        }
+      }
+    })
+
+    api.setValue('password', 'first-secret')
+    api.setValue('password_confirmation', 'first-secret')
+    expect(api.getState().errors.password_confirmation).toBeUndefined()
+
+    api.setValue('password', 'changed-secret')
+    expect(api.getState().errors.password_confirmation).toEqual([
+      'Passwords do not match.'
+    ])
+
+    api.setValue('password_confirmation', 'changed-secret')
+    expect(api.getState().errors.password_confirmation).toBeUndefined()
+  })
+
+  it('validates circular sameAs dependencies once per field and input event', () => {
+    const formElement = document.getElementById('contact-form')!
+    formElement.insertAdjacentHTML(
+      'beforeend',
+      '<input type="password" name="password"><input type="password" name="password_confirmation">'
+    )
+    const validatePassword = vi.fn(() => undefined)
+    const validateConfirmation = vi.fn(() => undefined)
+    const api = form('contact-form', {
+      validators: {
+        password: {
+          sameAs: 'password_confirmation',
+          validate: validatePassword
+        },
+        password_confirmation: {
+          sameAs: 'password',
+          validate: validateConfirmation
+        }
+      }
+    })
+    validatePassword.mockClear()
+    validateConfirmation.mockClear()
+
+    api.setValue('password', 'secret123')
+
+    expect(validatePassword).toHaveBeenCalledTimes(1)
+    expect(validateConfirmation).toHaveBeenCalledTimes(1)
+
+    validatePassword.mockClear()
+    validateConfirmation.mockClear()
+    api.setValue('password_confirmation', 'different')
+
+    expect(validatePassword).toHaveBeenCalledTimes(1)
+    expect(validateConfirmation).toHaveBeenCalledTimes(1)
+    expect(api.getState().errors.password).toEqual([
+      'Value must match password_confirmation.'
+    ])
+    expect(api.getState().errors.password_confirmation).toEqual([
+      'Value must match password.'
+    ])
+  })
+
+  it('activates transitive sameAs dependencies after manual validation', () => {
+    const formElement = document.getElementById('contact-form')!
+    formElement.insertAdjacentHTML(
+      'beforeend',
+      '<input name="first"><input name="second"><input name="third">'
+    )
+    const validateFirst = vi.fn(() => undefined)
+    const validateSecond = vi.fn(() => undefined)
+    const api = form('contact-form', {
+      autoValidate: false,
+      validators: {
+        first: { sameAs: 'second', validate: validateFirst },
+        second: { sameAs: 'third', validate: validateSecond }
+      }
+    })
+
+    api.setValue('third', 'before-validation')
+    expect(validateFirst).not.toHaveBeenCalled()
+    expect(validateSecond).not.toHaveBeenCalled()
+
+    api.validate()
+    validateFirst.mockClear()
+    validateSecond.mockClear()
+    api.setValue('third', 'after-validation')
+
+    expect(validateFirst).toHaveBeenCalledTimes(1)
+    expect(validateSecond).toHaveBeenCalledTimes(1)
+  })
+
   it('serializes repeated fields and supports prefill', () => {
     window.history.replaceState(
       {},

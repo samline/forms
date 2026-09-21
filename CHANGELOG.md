@@ -4,6 +4,18 @@ All notable changes to `@samline/forms` are documented in this file. The format 
 
 ## [Unreleased]
 
+## [2.6.0] - 2026-09-21
+
+### Added
+
+- Added the declarative `sameAs` validation rule for password confirmations and other fields that must contain equal non-empty values, with custom messages through `RuleConfig<string>`.
+- Added automatic dependent-field revalidation for `sameAs`, including transitive dependencies, cycle-safe deduplication, `setValue()` updates, and activation after manual validation.
+- Added regression coverage for matching strings, ordered arrays, empty values, source-field changes, reciprocal cycles, and transitive dependencies.
+
+### Changed
+
+- Expanded the npm-bundled and Starlight documentation with `sameAs` recipes, exact equality semantics, empty-value behavior, file identity rules, cycle guarantees, and guidance to place mismatch errors on confirmation fields only.
+
 ## [2.5.1] - 2026-09-20
 
 ### Fixed
@@ -199,7 +211,8 @@ All notable changes to `@samline/forms` are documented in this file. The format 
 
 - Initial release of `@samline/forms`. Vanilla JS form controller with framework-specific variants (React, Vue, Svelte) initially included; bundled `.local/` agent docs at the repo root.
 
-[Unreleased]: https://github.com/samline/forms/compare/v2.5.1...HEAD
+[Unreleased]: https://github.com/samline/forms/compare/v2.6.0...HEAD
+[2.6.0]: https://github.com/samline/forms/compare/v2.5.1...v2.6.0
 [2.5.1]: https://github.com/samline/forms/compare/v2.5.0...v2.5.1
 [2.5.0]: https://github.com/samline/forms/compare/v2.4.0...v2.5.0
 [2.4.0]: https://github.com/samline/forms/compare/v2.3.4...v2.4.0

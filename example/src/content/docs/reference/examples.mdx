@@ -40,7 +40,7 @@ These examples are deliberately copy-pasteable. Each one lives in a self-contain
 		  <button type="submit">Send</button>
 		</form>
 
-		<script src="https://unpkg.com/@samline/forms@2.5.1/dist/browser/global.global.js"></script>
+		<script src="https://unpkg.com/@samline/forms@2.6.0/dist/browser/global.global.js"></script>
 		<script>
 		  const contact = window.Forms.newForm({
 		    id: 'contact-form',
@@ -371,6 +371,27 @@ signup.subscribe(state => {
 ```
 
 Use `subscribe` when a single source of truth should drive your UI (button enabled state, live previews, dependent field visibility, etc.).
+
+## Recipe: Confirm a password with `sameAs`
+
+```ts
+import { form } from '@samline/forms'
+
+const signup = form('signup-form', {
+  validators: {
+    password: { required: true, minLength: 8 },
+    password_confirmation: {
+      required: true,
+      sameAs: {
+        value: 'password',
+        message: 'Passwords do not match.'
+      }
+    }
+  }
+})
+```
+
+Declare the rule on the confirmation field so the mismatch has one owner. The controller automatically revalidates it when `password` changes; do not add reciprocal `sameAs` rules or `watch()` calls unless you intentionally want errors on both fields. Empty values are left to `required`.
 
 ## Recipe: Format inputs with `@samline/formatter`
 

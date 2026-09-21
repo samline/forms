@@ -57,6 +57,8 @@ export interface FieldValidationRules {
   minLength?: RuleConfig<number>
   maxLength?: RuleConfig<number>
   pattern?: RuleConfig<RegExp>
+  /** Field name whose non-empty value must equal this field's value. */
+  sameAs?: RuleConfig<string>
   validate?: FieldValidator | FieldValidator[]
 }
 

@@ -52,7 +52,7 @@ Type exports from this subpath are `FormsApi`, `FormsAvailable`, and `NewFormInp
 ## Standalone IIFE
 
 ```html
-<script src="https://unpkg.com/@samline/forms@2.5.1/dist/browser/global.global.js"></script>
+<script src="https://unpkg.com/@samline/forms@2.6.0/dist/browser/global.global.js"></script>
 <script>
   const contact = window.Forms.newForm({ id: 'contact-form' })
 </script>

@@ -110,9 +110,44 @@ import { Steps } from '@astrojs/starlight/components';
 | `minLength` | Runs even when empty. | Uses JavaScript string length. | Uses item count. |
 | `maxLength` | Runs even when empty. | Uses JavaScript string length. | Uses item count. |
 | `pattern` | Skipped. | Tests the string. | Tests a comma-joined string; files contribute their names. |
+| `sameAs` | Skipped until both fields have values. | Exact, case-sensitive equality. | Ordered item equality; files compare by object identity. |
 | `validate` | Always runs. | Receives the normalized value and all form values. | Receives the array unchanged. |
 
 All configured rules run and their messages accumulate. Custom validators still run when a built-in rule failed. Stateful regular expressions are safe because `lastIndex` is reset before and after each test.
+
+## Cross-field equality with `sameAs`
+
+Use `sameAs` for password, email, PIN, or account-number confirmation:
+
+```ts
+const signup = form('signup-form', {
+  validators: {
+    password: { required: true, minLength: 8 },
+    password_confirmation: {
+      required: true,
+      sameAs: {
+        value: 'password',
+        message: 'Passwords do not match.'
+      }
+    }
+  }
+})
+```
+
+The declaration creates a one-way validation dependency: `password_confirmation` owns the error and is automatically revalidated when `password` changes after validation is active. The default `autoValidate: true` activates validation during construction; with `autoValidate: false`, call `validate()` or `revalidate()` once to activate it. Changes made through `setValue()` use the same input pipeline. Do not add a watcher just to call `revalidate()`.
+
+:::tip[Prefer one error owner]
+Declare `sameAs` only on the confirmation field in most interfaces. Reciprocal rules are supported and cycle-safe, but a mismatch then marks both controls invalid and usually displays the same message twice.
+:::
+
+Things to avoid:
+
+- Do not use `sameAs` instead of `required`; equality is skipped while either value is empty.
+- Do not rely on a `_confirmation` naming convention. The `value` must be the exact field name.
+- Do not expect unordered collection equality. Arrays must contain the same entries in the same order.
+- Do not add reciprocal rules to force source-field revalidation. The dependency is already inferred from the confirmation rule.
+
+Circular dependencies cannot recurse indefinitely. The controller collects affected fields iteratively with a visited set, then validates each field at most once for that input event. This avoids event loops and does not install per-field listeners.
 
 ## Exact field names
 

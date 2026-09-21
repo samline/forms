@@ -371,7 +371,30 @@ Use `subscribe` when a single source of truth should drive your UI (button enabl
 
 ---
 
-## 12. Combine `setValue` with custom validation
+## 12. Confirm a password with `sameAs`
+
+```ts
+import { form } from '@samline/forms'
+
+const signup = form('signup-form', {
+  validators: {
+    password: { required: true, minLength: 8 },
+    password_confirmation: {
+      required: true,
+      sameAs: {
+        value: 'password',
+        message: 'Passwords do not match.'
+      }
+    }
+  }
+})
+```
+
+Declare the rule on the confirmation field so the mismatch has one owner. The controller automatically revalidates it when `password` changes; do not add reciprocal `sameAs` rules or `watch()` calls unless you intentionally want errors on both fields. Empty values are left to `required`.
+
+---
+
+## 13. Combine `setValue` with custom validation
 
 ```ts
 import { form } from '@samline/forms'
@@ -398,7 +421,7 @@ Custom validators receive the full values map, so cross-field rules read like pl
 
 ---
 
-## 13. Format inputs with `@samline/formatter`
+## 14. Format inputs with `@samline/formatter`
 
 When you need phone masks, credit-card grouping, numeral delimiters, or any other input formatting, pair `@samline/forms` with `@samline/formatter`. The `format()` and `formatAll()` methods bind a formatter pipeline to one or many fields, manage the hidden raw mirror, and preserve the caret like cleave.js.
 
