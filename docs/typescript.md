@@ -149,7 +149,7 @@ type FormFieldValue = string | string[] | File[] | undefined
 ```
 
 - `string` — for text inputs, textareas, single selects, and single checked checkboxes / radios.
-- `string[]` — for groups of checkboxes / radios where more than one is selected.
+- `string[]` — for checkbox groups, multiple selects, and repeated `name="field[]"` controls. Radio groups remain scalar.
 - `File[]` — for `<input type="file">` (may be empty).
 - `undefined` — when no field with that name exists.
 
@@ -228,7 +228,7 @@ The callback passed to [`subscribe`](api/subscribe.md).
 type FormStateListener = (state: FormStateSnapshot) => void
 ```
 
-Receives the current snapshot immediately on subscription, then on every state mutation.
+Receives the current snapshot immediately, then at controller notification points such as handled input, manual-error changes, reset, submit attempts, auto-submit toggles, and observed DOM mutations. A direct `validate()` call does not independently notify it.
 
 ---
 

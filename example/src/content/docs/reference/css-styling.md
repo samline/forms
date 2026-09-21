@@ -19,12 +19,12 @@ This page shows how the attributes behave, which elements they apply to, and how
 
 The attributes are added and removed on:
 
-- Mount (initial sync).
+- Construction when `autoValidate` is enabled (the default).
 - Every delegated `input` event, including controls associated through `form="id"`.
 - Every explicit call to [`validate`](/forms/reference/api/#validatefields), [`revalidate`](/forms/reference/api/#revalidatefields), [`setErrors`](/forms/reference/api/#seterrorsfields), or [`clearErrors`](/forms/reference/api/#clearerrorsfields).
 - DOM mutations detected by the controller's `MutationObserver` (new fields, changed `name` / `type` attributes).
 
-The attributes are also removed everywhere when you call [`reset`](/forms/reference/api/#reset).
+[`reset()`](/forms/reference/api/#reset) clears all three attributes first. If the controller has already validated, it then recalculates `css-filled` from native default values; error attributes remain absent until rules or manual errors add them again.
 
 ## Default selectors
 
@@ -166,14 +166,16 @@ The controller sets `aria-invalid="true"` while a field has validation or manual
 </label>
 ```
 
-The controller's [`getState()`](/forms/reference/api/#getstate) returns the current errors per field so you can reveal and populate the message from a single source of truth:
+Subscribe to state so the message stays synchronized after input, submit, and manual-error changes:
 
 ```ts
-const state = profileForm.getState()
-
-emailErrorEl.hidden = !state.errors.email
-emailErrorEl.textContent = state.errors.email?.[0] ?? ''
+profileForm.subscribe(state => {
+  emailErrorEl.hidden = !state.errors.email
+  emailErrorEl.textContent = state.errors.email?.[0] ?? ''
+})
 ```
+
+See [Validation and accessible errors](/forms/guides/validation-and-errors/) for labels, summaries, live announcements, and focus behavior in one complete example.
 
 ## Common pitfalls
 

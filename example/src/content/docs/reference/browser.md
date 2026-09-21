@@ -13,11 +13,11 @@ For every other case (modern apps, bundlers, TypeScript projects), use the main 
 ## Script tag
 
 ```html
-<script src="https://unpkg.com/@samline/forms@2.5.0/dist/browser/global.global.js"></script>
+<script src="https://unpkg.com/@samline/forms@2.5.1/dist/browser/global.global.js"></script>
 ```
 
 :::caution[Pin the version in production]
-The CDN URL above uses `@2.5.0`. Replace the version with the one you ship.
+The CDN URL above uses `@2.5.1`. Replace the version with the one you ship.
 :::
 
 The bundle is a single IIFE that registers a global object. Place the `<script>` tag in `<head>` with `defer`, or before the user script in `<body>`.
@@ -49,7 +49,7 @@ The factory returns a `FormController` with the same signatures, semantics, and 
   <button type="submit">Send</button>
 </form>
 
-<script src="https://unpkg.com/@samline/forms@2.5.0/dist/browser/global.global.js"></script>
+<script src="https://unpkg.com/@samline/forms@2.5.1/dist/browser/global.global.js"></script>
 <script>
   const contactForm = window.Forms.newForm({
     id: 'contact-form',
@@ -71,14 +71,14 @@ The factory returns a `FormController` with the same signatures, semantics, and 
 </script>
 ```
 
-The controller returned by `newForm` is the same instance stored under `Forms.available.contact-form`. Use `window.Forms.destroyForm('contact-form')` later to call `destroy()` and remove it from the registry.
+The controller returned by `newForm` is the same instance stored under `Forms.available['contact-form']`. Use `window.Forms.destroyForm('contact-form')` later to call `destroy()` and remove it from the registry.
 
 ## Registry helpers
 
 | Helper | Purpose |
 | --- | --- |
-| `Forms.newForm({ id, options })` | Build a controller via `Forms.form(id, options)` and store it in `Forms.available[id]`. Logs `Form ID is required` and returns early if `id` is missing. |
-| `Forms.destroyForm(id)` | Look up `Forms.available[id]`, call `destroy()`, and delete the entry. Logs `Form ID is required` if `id` is missing, or `Form with ID <id> not found` if the entry is absent. |
+| `Forms.newForm({ id, options })` | Destroy any existing controller under the id, build a replacement via `Forms.form(id, options)`, and store it in `Forms.available[id]`. Logs `Form ID is required` and returns early if `id` is missing. |
+| `Forms.destroyForm(id)` | Look up `Forms.available[id]`, call `destroy()`, and delete the entry. Missing ids log an error; absent entries log a warning. |
 | `Forms.available` | Shared mutable registry: `{ [id: string]: FormController }`. Prefer `newForm()` and `destroyForm()` to manage it. |
 
 Use `Forms.form` directly when you do not want the registry side-effect (for example, transient controllers in tests).
@@ -107,7 +107,7 @@ The controller returned by `form` / `newForm` exposes the methods documented in 
 
 ## TypeScript users
 
-The module entrypoint `@samline/forms/browser` ships types, registers `Window.Forms`, and exposes the same API as module exports. The direct IIFE subpath does not expose a typed module export.
+The module entrypoint `@samline/forms/browser` ships types, installs `globalThis.Forms`, and exposes default plus named registry exports. The direct IIFE subpath does not expose a typed module export.
 
 ```ts
 import Forms from '@samline/forms/browser'
@@ -117,6 +117,8 @@ window.Forms.destroyForm('contact-form')
 ```
 
 See [`FormsApi`](/forms/reference/typescript/#formsapi) for the full shape.
+
+For an ESM/CommonJS/IIFE comparison, see [Entrypoints and module formats](/forms/reference/entrypoints/).
 
 ## Using the same shape from a bundler
 
@@ -146,7 +148,7 @@ Because the registry is shared across spreads, `window.Form.available` and `brow
 
 ## Common pitfalls
 
-- **Pin the version.** The CDN URL above uses `@2.5.0`. Replace it whenever you upgrade.
+- **Pin the version.** The CDN URL above uses `@2.5.1`. Replace it whenever you upgrade.
 - **The script must be loaded before any code that uses `window.Forms`.** Place the `<script>` tag in `<head>` with `defer`, or before the user script in `<body>`.
 - **No bundler means no tree-shaking.** The global browser bundle includes the controller and formatter peer. Inspect the published artifact when bundle size is a constraint.
 - **CSP:** if your site uses a strict Content Security Policy, allow `unpkg.com` in `script-src` (or self-host the file).

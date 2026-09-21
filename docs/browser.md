@@ -11,10 +11,10 @@ For every other case (modern apps, bundlers, TypeScript projects), use the main 
 ## Script tag
 
 ```html
-<script src="https://unpkg.com/@samline/forms@2.5.0/dist/browser/global.global.js"></script>
+<script src="https://unpkg.com/@samline/forms@2.5.1/dist/browser/global.global.js"></script>
 ```
 
-> Pin the version in production. Replace `2.5.0` with the version you ship.
+> Pin the version in production. Replace `2.5.1` with the version you ship.
 
 The bundle is a single IIFE that registers a global object.
 
@@ -49,7 +49,7 @@ The factory returns a `FormController` with the same signatures, semantics, and 
   <button type="submit">Send</button>
 </form>
 
-<script src="https://unpkg.com/@samline/forms@2.5.0/dist/browser/global.global.js"></script>
+<script src="https://unpkg.com/@samline/forms@2.5.1/dist/browser/global.global.js"></script>
 <script>
   const contactForm = window.Forms.newForm({
     id: 'contact-form',
@@ -71,7 +71,7 @@ The factory returns a `FormController` with the same signatures, semantics, and 
 </script>
 ```
 
-The controller returned by `newForm` is the same instance stored under `Forms.available.contact-form`. Use `window.Forms.destroyForm('contact-form')` later to call `destroy()` and remove it from the registry.
+The controller returned by `newForm` is the same instance stored under `Forms.available['contact-form']`. Use `window.Forms.destroyForm('contact-form')` later to call `destroy()` and remove it from the registry.
 
 ---
 
@@ -79,8 +79,8 @@ The controller returned by `newForm` is the same instance stored under `Forms.av
 
 | Helper | Purpose |
 | --- | --- |
-| `Forms.newForm({ id, options })` | Build a controller via `Forms.form(id, options)` and store it in `Forms.available[id]`. Logs `Form ID is required` and returns early if `id` is missing. |
-| `Forms.destroyForm(id)` | Look up `Forms.available[id]`, call `destroy()`, and delete the entry. Logs `Form ID is required` if `id` is missing, or `Form with ID <id> not found` if the entry is absent. |
+| `Forms.newForm({ id, options })` | Destroy any existing controller under the id, build a replacement via `Forms.form(id, options)`, and store it in `Forms.available[id]`. Logs `Form ID is required` and returns early if `id` is missing. |
+| `Forms.destroyForm(id)` | Look up `Forms.available[id]`, call `destroy()`, and delete the entry. Missing ids log an error; absent entries log a warning. |
 | `Forms.available` | Shared mutable registry: `{ [id: string]: FormController }`. Prefer `newForm()` and `destroyForm()` to manage it. |
 
 Use `Forms.form` directly when you do not want the registry side-effect (for example, transient controllers in tests).
@@ -126,7 +126,7 @@ window.Forms.destroyForm('contact-form')
 
 ## Common pitfalls
 
-- **Pin the version.** The CDN URL above is `2.5.0`. Replace it whenever you upgrade.
+- **Pin the version.** The CDN URL above is `2.5.1`. Replace it whenever you upgrade.
 - **The script must be loaded before any code that uses `window.Forms`.** Place the `<script>` tag in `<head>` with `defer`, or before the user script in `<body>`.
 - **No bundler means no tree-shaking.** The global browser bundle includes the controller and formatter peer. Inspect the published artifact when bundle size is a constraint.
 - **CSP:** if your site uses a strict Content Security Policy, allow `unpkg.com` in `script-src` (or self-host the file).
@@ -145,7 +145,7 @@ browser.destroyForm('contact-form')
 browser.available // { 'contact-form': FormController }
 ```
 
-`browser` is a module-level singleton with a shared `available` registry. To run multiple registries in parallel, spread it into separate objects with fresh `available` maps — see [Browser registry helpers](getting-started.md#browser-registry-helpers) in the getting-started guide for the full pattern (including how to attach `regex` from `@samline/formatter`).
+`browser` is a module-level singleton with a shared `available` registry. Spreading it copies references but does not create an independent registry because its methods close over the same `available` object. For isolated registries, call `form()` and keep controllers in your own `Map`. See [Browser registry helpers](getting-started.md#browser-registry-helpers) for the composition pattern, including how to attach `regex` from `@samline/formatter`.
 
 ---
 

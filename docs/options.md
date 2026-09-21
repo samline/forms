@@ -43,8 +43,8 @@ interface FormControllerOptions {
 | Option | Type | Default | Behaviour |
 | --- | --- | --- | --- |
 | `attributes` | `Partial<VisualAttributes>` | `{ filled: 'css-filled', error: 'css-error' }` | Override the names of the visual attributes applied to fields. |
-| `autoValidate` | `boolean` | `true` | Run validation on mount and on every change for fields that have rules. |
-| `autoSubmit` | `boolean \| AutoSubmitOptions` | `false` | Submit the form automatically on every change. Pass `{ debounce: ms }` to delay. |
+| `autoValidate` | `boolean` | `true` | Run validation on construction and on handled `input` events for fields that have rules. |
+| `autoSubmit` | `boolean \| AutoSubmitOptions` | `false` | Submit automatically after handled `input` events. Pass `{ debounce: ms }` to delay. |
 | `clearErrorsOnSubmit` | `boolean` | `true` | Clear all manual errors before submit validation runs. |
 | `clearManualErrorsOnChange` | `boolean` | `true` | Clear the manual error of a field when it changes. Set `false` to keep manual errors until you call [`clearErrors`](api/clear-errors.md). |
 | `validators` | `ValidationSchema` | `{}` | Field → rules map. See [docs/typescript.md](typescript.md#validationschema) and the rule reference below. |
@@ -223,4 +223,4 @@ const checkout = form('checkout', {
 
 The map key is just an identifier — the **canonical** field name lives in `FieldFormatConfig.field`. `format()` renames the visible to `<field>_displayed` (or `config.displayField`) on first run and creates a hidden `<input type="hidden" name="<field>">` that carries the raw value. Both names are first-class in the controller's API. See [`FieldFormatConfigMap`](typescript.md#fieldformatconfig-and-fieldformatconfigmap) for the full type, and the [formatting recipe](recipes.md#13-format-inputs-with-samlineformatter) for an end-to-end example.
 
-`formats` requires `@samline/formatter`. When it is not installed, every entry logs a single `console.error` describing the missing dependency, restores the visible's name to the canonical form, and the controller is created normally — no exceptions are thrown.
+Module builds require `@samline/formatter` for `formats`. When it is missing, the module instance logs one cached `console.error`, asynchronously rolls back affected visible/mirror pairs, and keeps the controller usable. The standalone global IIFE bundles the formatter.

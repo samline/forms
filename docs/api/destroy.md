@@ -22,7 +22,7 @@ When invoked, the controller:
 - Clears `watchedFields`, `subscribers`, `submitHandlers`, and `fieldCache`.
 - Resets manual and validation error maps.
 
-After `destroy()` the controller object still exists and its methods are still callable, but they no longer interact with the DOM.
+After `destroy()` the controller object still exists and its methods remain callable. Direct reads and writes can still inspect or mutate the bound DOM, but the removed controller listeners no longer react to resulting events.
 
 ## Examples
 
@@ -57,7 +57,7 @@ window.addEventListener('beforeunload', () => {
 
 - **`destroy()` does not remove `css-filled` / `css-error` attributes** from fields. If you need that, call [`reset()`](reset.md) before destroy, or strip the attributes yourself.
 - **Subscribers and watchers stop receiving notifications immediately**, but their closures remain until you release them.
-- **Reusing the controller reference after destroy is safe** for reads (`element`, `options`, `getValue`, `getState`, `getData`), but writes do nothing.
+- **Reusing the controller reference after destroy is possible but usually misleading.** Reads still inspect the bound form and methods such as `setValue()` can still write fields, but watchers, subscribers, validation-on-input, and auto-submit no longer run.
 
 ## Related
 

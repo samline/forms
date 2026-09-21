@@ -4,6 +4,20 @@ All notable changes to `@samline/forms` are documented in this file. The format 
 
 ## [Unreleased]
 
+## [2.5.1] - 2026-09-20
+
+### Fixed
+
+- Corrected documentation for exact validator names, radio and collection values, subscriber notification points, destroyed-controller behavior, shared browser registries, formatter mirrors, and optional-peer behavior.
+
+### Added
+
+- Added focused Starlight guides for accessible validation and input formatting, plus references for native control behavior and package entrypoints.
+
+### Changed
+
+- Reorganized the documentation sidebar, expanded the API lifecycle contracts, improved accessible examples, and synchronized the npm-bundled and hosted documentation surfaces.
+
 ## [2.5.0] - 2026-09-19
 
 ### Fixed
@@ -185,7 +199,8 @@ All notable changes to `@samline/forms` are documented in this file. The format 
 
 - Initial release of `@samline/forms`. Vanilla JS form controller with framework-specific variants (React, Vue, Svelte) initially included; bundled `.local/` agent docs at the repo root.
 
-[Unreleased]: https://github.com/samline/forms/compare/v2.5.0...HEAD
+[Unreleased]: https://github.com/samline/forms/compare/v2.5.1...HEAD
+[2.5.1]: https://github.com/samline/forms/compare/v2.5.0...v2.5.1
 [2.5.0]: https://github.com/samline/forms/compare/v2.4.0...v2.5.0
 [2.4.0]: https://github.com/samline/forms/compare/v2.3.4...v2.4.0
 [2.3.4]: https://github.com/samline/forms/compare/v2.3.3...v2.3.4

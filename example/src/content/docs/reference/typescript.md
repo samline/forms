@@ -131,7 +131,7 @@ type FormFieldValue = string | string[] | File[] | undefined
 ```
 
 - `string` — for text inputs, textareas, single selects, and single checked checkboxes / radios.
-- `string[]` — for groups of checkboxes / radios where more than one is selected.
+- `string[]` — for checkbox groups, multiple selects, and repeated `name="field[]"` controls. Radio groups remain scalar.
 - `File[]` — for `<input type="file">` (may be empty).
 - `undefined` — when no field with that name exists.
 
@@ -202,7 +202,7 @@ The callback passed to [`subscribe`](/forms/reference/api/#subscribelistener).
 type FormStateListener = (state: FormStateSnapshot) => void
 ```
 
-Receives the current snapshot immediately on subscription, then on every state mutation.
+Receives the current snapshot immediately, then at controller notification points such as handled input, manual-error changes, reset, submit attempts, auto-submit toggles, and observed DOM mutations. A direct `validate()` call does not independently notify it.
 
 ## `FormSubmitHandler`
 
@@ -241,7 +241,7 @@ type FormFieldWatcher = (
 
 ## `SerializedFormResult`
 
-The shape returned by [`getData()`](/forms/reference/api/#getdata) and [`parseFormData()`](/forms/reference/api/#parseformdataformelement).
+The shape returned by [`getData()`](/forms/reference/api/#getdata) and [`parseFormData()`](/forms/reference/api/#parseformdataformelement-submitter).
 
 ```ts
 interface SerializedFormResult {
@@ -465,7 +465,7 @@ interface FormsApi {
 }
 ```
 
-`form` is the same reference exported from `@samline/forms`. `newForm` and `destroyForm` manage the module-level `available` registry keyed by the form id. Spread `browser` into a new object to derive a fresh registry (with its own `available` map); see the getting-started guide for the pattern.
+`form` is the same reference exported from `@samline/forms`. `newForm` and `destroyForm` manage the module-level `available` registry keyed by form id. Spreading `browser` copies references but does not create an independent registry: the methods close over the same `available` object. Use `form()` plus your own `Map` when isolation is required.
 
 ## `NewFormInput`
 

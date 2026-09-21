@@ -145,7 +145,7 @@ window.Form.newForm({
 })
 ```
 
-The same shape is available from the IIFE bundle under `window.Forms`; the spread pattern works the same way when the project loads `@samline/forms/browser` instead.
+The `/browser` module installs the same registry shape on `globalThis.Forms`, so module consumers can spread it the same way. The standalone IIFE bundles formatter behavior for `format()`, but does not expose `regex`; provide your own patterns or use a module build when you need the peer's `regex` object.
 
 ## Edge cases
 

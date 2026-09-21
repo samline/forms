@@ -1,6 +1,6 @@
 # `subscribe(listener)`
 
-Registers a listener that fires immediately with the current state and on every subsequent state mutation. Returns an unsubscribe function.
+Registers a listener that fires immediately with the current state and at controller notification points. Returns an unsubscribe function.
 
 ## Signature
 
@@ -21,7 +21,7 @@ A function. Calling it removes the listener.
 ## Behaviour
 
 - The listener fires **once synchronously** on registration with the current [`FormStateSnapshot`](../typescript.md#formstatesnapshot).
-- It then fires on every state mutation: changes to values, errors, `autoSubmit` flag, `submitCount`, or any other tracked field.
+- It then fires at explicit controller notification points. This is not a proxy around every internal assignment.
 - Multiple subscribers are supported. They run in registration order.
 
 State mutations that fire subscribers include:
@@ -31,8 +31,10 @@ State mutations that fire subscribers include:
 - [`setErrors`](set-errors.md) and [`clearErrors`](clear-errors.md).
 - [`autoSubmit`](auto-submit.md) and [`disableAutoSubmit`](disable-auto-submit.md).
 - [`reset`](reset.md).
-- [`validate`](validate.md) and [`revalidate`](revalidate.md).
+- Submit attempts, after their validation pass and `submitCount` update.
 - `MutationObserver`-detected DOM changes.
+
+Direct [`validate`](validate.md) and [`revalidate`](revalidate.md) calls update validation state and visual attributes but do not independently notify subscribers. Use their returned result when synchronous rendering is required.
 
 ## Examples
 

@@ -1,0 +1,151 @@
+---
+title: Validation and accessible errors
+description: Build an accessible validation flow with inline messages, an error summary, and predictable focus management.
+template: doc
+---
+
+import { Steps } from '@astrojs/starlight/components';
+
+`@samline/forms` calculates errors, sets `aria-invalid`, and focuses the first invalid field after a failed submit. Your application owns labels, error text, live announcements, and styling.
+
+## Complete accessible example
+
+<Steps>
+
+1. Add labels and persistent message containers
+
+   Use `novalidate` when the controller should own the validation messages. Without it, native constraint validation can stop the `submit` event before the controller runs.
+
+   ```html
+   <form id="signup" novalidate>
+     <div class="field">
+       <label for="signup-email">Email</label>
+       <input
+         id="signup-email"
+         name="email"
+         type="email"
+         autocomplete="email"
+         aria-describedby="signup-email-error"
+       />
+       <p id="signup-email-error" class="field-error"></p>
+     </div>
+
+     <div class="field">
+       <label for="signup-password">Password</label>
+       <input
+         id="signup-password"
+         name="password"
+         type="password"
+         autocomplete="new-password"
+         aria-describedby="signup-password-error"
+       />
+       <p id="signup-password-error" class="field-error"></p>
+     </div>
+
+     <div id="signup-summary" role="alert" aria-live="polite"></div>
+     <button type="submit">Create account</button>
+   </form>
+   ```
+
+2. Configure validation
+
+   ```ts
+   import { form } from '@samline/forms'
+
+   const signup = form('signup', {
+     validators: {
+       email: {
+         required: { value: true, message: 'Enter your email address.' },
+         pattern: {
+           value: /^[^\s@]+@[^\s@]+\.[^\s@]+$/,
+           message: 'Enter a valid email address.'
+         }
+       },
+       password: {
+         required: { value: true, message: 'Choose a password.' },
+         minLength: { value: 8, message: 'Use at least 8 characters.' }
+       }
+     }
+   })
+   ```
+
+3. Render every state update
+
+   `subscribe()` invokes the listener immediately and after controller notification points. It is safer than reading `getState()` once.
+
+   ```ts
+   const errorNodes = {
+     email: document.querySelector<HTMLElement>('#signup-email-error')!,
+     password: document.querySelector<HTMLElement>('#signup-password-error')!
+   }
+   const summary = document.querySelector<HTMLElement>('#signup-summary')!
+
+   signup.subscribe(state => {
+     for (const [name, node] of Object.entries(errorNodes)) {
+       node.textContent = state.errors[name]?.join(' ') ?? ''
+     }
+
+     const messages = Object.values(state.errors).flat()
+     summary.textContent = messages.length > 0
+       ? `Please fix ${messages.length} ${messages.length === 1 ? 'error' : 'errors'}.`
+       : ''
+   })
+
+   signup.onSubmit(async (_form, _data, formData) => {
+     const response = await fetch('/api/signup', { method: 'POST', body: formData })
+     if (response.status === 422) {
+       const body = await response.json() as { fieldErrors: Record<string, string[]> }
+       signup.setErrors(body.fieldErrors)
+     }
+   })
+   ```
+
+</Steps>
+
+## Built-in rule behavior
+
+| Rule | Empty value | Strings | Arrays and files |
+| --- | --- | --- | --- |
+| `required` | Fails when empty. | Trims whitespace before deciding. | Fails when the array is empty. |
+| `minLength` | Runs even when empty. | Uses JavaScript string length. | Uses item count. |
+| `maxLength` | Runs even when empty. | Uses JavaScript string length. | Uses item count. |
+| `pattern` | Skipped. | Tests the string. | Tests a comma-joined string; files contribute their names. |
+| `validate` | Always runs. | Receives the normalized value and all form values. | Receives the array unchanged. |
+
+All configured rules run and their messages accumulate. Custom validators still run when a built-in rule failed. Stateful regular expressions are safe because `lastIndex` is reset before and after each test.
+
+## Exact field names
+
+Validator keys are literal HTML field names. Wildcards and object-path expansion are not supported:
+
+```ts
+form('items', {
+  validators: {
+    'rows[].name': { required: true } // matches name="rows[].name"
+  }
+})
+```
+
+`rows[*].name` does not match `rows[0].name`. For indexed names, create exact rules before constructing the controller or validate a values object with [`validateValues()`](/forms/reference/api/#validatevaluesvalues-schema).
+
+## Manual and validation errors
+
+- Validation errors come from `validators` and are recomputed by `validate()`.
+- Manual errors come from `setErrors()` and remain separate internally.
+- Returned state merges both maps.
+- `clearErrors()` clears only manual errors.
+- `clearErrorsOnSubmit` and `clearManualErrorsOnChange` control when manual errors disappear.
+- A partial `validate(['email'])` preserves existing validation errors for fields not requested.
+
+## State caveats
+
+`getState()` is a pure snapshot; it never runs validation. With the default `autoValidate: true`, `isValidated` starts as `true` because initial validation runs during construction. With `autoValidate: false`, an invalid form can report `isValid: true` until you call `validate()` or submit it.
+
+Direct `validate()` and `revalidate()` calls update validation state and visual attributes but do not independently notify subscribers. Render from their returned result when you need synchronous UI feedback.
+
+## Related
+
+- [Configuration: validators](/forms/reference/configuration/#validators)
+- [Control behavior](/forms/reference/controls/)
+- [CSS and accessibility hooks](/forms/reference/css-styling/#accessibility)
+- [Validation types](/forms/reference/typescript/#validationschema)

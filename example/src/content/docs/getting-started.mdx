@@ -54,9 +54,13 @@ This page walks you through installing `@samline/forms` and running a working ex
 Drop this in any modern bundler or TypeScript project:
 
 ```html title="contact.html"
-<form id="contact-form">
-  <input name="email" type="email" />
-  <input name="message" />
+<form id="contact-form" novalidate>
+  <label for="contact-email">Email</label>
+  <input id="contact-email" name="email" type="email" autocomplete="email" />
+  <p id="contact-email-error" aria-live="polite"></p>
+
+  <label for="contact-message">Message</label>
+  <textarea id="contact-message" name="message"></textarea>
   <button type="submit">Send</button>
 </form>
 ```
@@ -81,7 +85,10 @@ contact.onSubmit(async (_element, _data, formData) => {
   await fetch('/api/contact', { method: 'POST', body: formData })
 })
 
-contact.validate()
+const emailError = document.querySelector<HTMLElement>('#contact-email-error')!
+contact.subscribe(state => {
+  emailError.textContent = state.errors.email?.join(' ') ?? ''
+})
 ```
 
 What this does:
@@ -92,17 +99,20 @@ What this does:
 - Intercepts valid submits (the default for `onSubmit`) and hands a real `FormData` instance to your handler.
 - Invalid submissions are always intercepted — the browser never navigates with bad data.
 
+For a complete error summary, `aria-describedby`, and focus-management example, continue with [Validation and accessible errors](/forms/guides/validation-and-errors/).
+
 ## Browser global (no bundler)
 
 If you do not have a bundler, drop a single `<script>` and use the `window.Forms` global:
 
 ```html title="index.html"
-<form id="contact-form">
-  <input name="email" type="email" />
+<form id="contact-form" novalidate>
+  <label for="contact-email">Email</label>
+  <input id="contact-email" name="email" type="email" autocomplete="email" />
   <button type="submit">Send</button>
 </form>
 
-<script src="https://unpkg.com/@samline/forms@2.5.0/dist/browser/global.global.js"></script>
+<script src="https://unpkg.com/@samline/forms@2.5.1/dist/browser/global.global.js"></script>
 <script>
   const contact = window.Forms.newForm({
     id: 'contact-form',
@@ -120,7 +130,7 @@ If you do not have a bundler, drop a single `<script>` and use the `window.Forms
 ```
 
 :::caution[Pin the version in production]
-The CDN URL above uses `@2.5.0`. Replace the version with the one you ship.
+The CDN URL above uses `@2.5.1`. Replace the version with the one you ship.
 :::
 
 See the [Browser global reference](/forms/reference/browser/) for the full surface, including `Forms.newForm`, `Forms.destroyForm`, and the `Forms.available` registry.

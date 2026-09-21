@@ -6,7 +6,7 @@ sidebar:
   order: 3
 ---
 
-Every public method is listed here, grouped by lifecycle. Most methods are chainable and return the same `FormController`. Click into the per-method pages of the project repository for the full signature, parameter table and runnable example.
+Every public method is listed here, grouped by lifecycle. Most methods are chainable and return the same `FormController`. Focused pages cover [native control behavior](/forms/reference/controls/), [accessible validation](/forms/guides/validation-and-errors/), and [formatting lifecycle](/forms/guides/formatting/) without hiding those contracts outside the site.
 
 :::tip[Reading the signatures]
 Methods that return data (rather than the controller) end in a different return type — for example `getValue()` returns `FormFieldValue`, `subscribe()` returns an unsubscribe function. Chainable methods all return `FormController`.
@@ -17,6 +17,7 @@ Methods that return data (rather than the controller) end in a different return 
 - [`form(target, options?)`](#formtarget-options) — bind a controller to an `HTMLFormElement`. The main entry point.
 - [`createFormController(target, options?)`](#createformcontrollertarget-options) — underlying controller factory.
 - [`element`](#element) — the bound form (`f` is an alias).
+- [`options`](#options) — normalized controller options, including defaults and merged attributes.
 - [`reset()`](#reset) — restore native form values and clear errors.
 - [`destroy()`](#destroy) — tear down listeners, observer, and caches.
 
@@ -29,53 +30,50 @@ Methods that return data (rather than the controller) end in a different return 
 
 ## Submission
 
-- [`onSubmit(callback, preventDefault?)`](#onsubmit) — register a submit handler.
-- [`autoSubmit(options?)`](#autosubmit) — enable submit-on-change with optional debounce.
+- [`onSubmit(callback, preventDefault?)`](#onsubmitcallback-preventdefault) — register a submit handler.
+- [`autoSubmit(options?)`](#autosubmitoptions) — enable submit-on-change with optional debounce.
 - [`disableAutoSubmit()`](#disableautosubmit) — turn auto-submit off and cancel pending debounce.
 
 ## Field observation
 
-- [`watch(field, callback)`](#watch) — chainable fire-and-forget reaction to a field.
-- [`observe(field, callback)`](#observe) — like `watch`, but returns an unsubscribe function and fires immediately.
-- [`unwatch(field?, callback?)`](#unwatch) — remove watched callbacks.
-- [`subscribe(listener)`](#subscribe) — react to the entire form state.
+- [`watch(field, callback)`](#watchfield-callback) — chainable field observation.
+- [`observe(field, callback)`](#observefield-callback) — like `watch`, but returns an unsubscribe function.
+- [`unwatch(field?, callback?)`](#unwatchfield-callback) — remove watched callbacks.
+- [`subscribe(listener)`](#subscribelistener) — react to controller notification points.
 
 ## Field values
 
-- [`setValue(name, value)`](#setvalue) — write a value into a field.
-- [`getValue(name)`](#getvalue) — read the current value of a field.
-- [`getField(name)`](#getfield) — read the underlying DOM element(s).
-- [`prefill(fieldName?)`](#prefill) — populate the form from `window.location.search`.
-- [`format(config)`](#format) — apply `@samline/formatter` to a field. The visible is renamed to `<field>_displayed` and a hidden `<field>` raw mirror is created. Both names are first-class in the controller's API.
-- [`formatAll(config)`](#formatall) — alias of `format()` for `field: string[]` use cases.
+- [`setValue(name, value)`](#setvaluename-value) — write a value into a field.
+- [`getValue(name)`](#getvaluename) — read the current value of a field.
+- [`getField(name)`](#getfieldname) — read the underlying DOM element(s).
+- [`prefill(fieldName?)`](#prefillfieldname) — populate the form from `window.location.search`.
+- [`format(config)`](#formatconfig) — apply `@samline/formatter` to a field.
+- [`formatAll(config)`](#formatallconfig) — alias of `format()` for `field: string[]` use cases.
 
 ## Validation
 
-- [`validate(fields?)`](#validate) — run validation, return the result.
-- [`revalidate(fields?)`](#revalidate) — alias of `validate` with explicit intent.
-- [`setErrors(fields)`](#seterrors) — push manual errors.
-- [`clearErrors(fields?)`](#clearerrors) — clear manual errors.
+- [`validate(fields?)`](#validatefields) — run validation, return the result.
+- [`revalidate(fields?)`](#revalidatefields) — alias of `validate` with explicit intent.
+- [`setErrors(fields)`](#seterrorsfields) — push manual errors.
+- [`clearErrors(fields?)`](#clearerrorsfields) — clear manual errors.
 
 ## State and data
 
 - [`getData()`](#getdata) — return plain object + `FormData` for the form.
 - [`getState()`](#getstate) — return a snapshot of values, errors, and metadata.
-- [`append(options)`](#append) — inject a DOM node into the form.
+- [`append(options)`](#appendoptions) — inject a DOM node into the form.
 
 ## Pure helpers
 
 These do not require a controller. They accept plain values or a raw `HTMLFormElement` and return results — safe to tree-shake into any bundle.
 
-- [`parseFormData(formElement, submitter?)`](#parseformdata) — same serializer used internally, no controller needed.
-- [`validateValues(values, schema)`](#validatevalues) — run a schema against a values map.
-- [`validateFieldValue(field, value, rules, values)`](#validatefieldvalue) — run a rule set against a single value.
-- [`regex`](#regex) — named regular expressions and default error messages, exported by the optional peer [`@samline/formatter`](https://github.com/samline/formatter). Install the peer before importing.
+- [`parseFormData(formElement, submitter?)`](#parseformdataformelement-submitter) — same serializer used internally, no controller needed.
+- [`validateValues(values, schema)`](#validatevaluesvalues-schema) — run a schema against a values map.
+- [`validateFieldValue(field, value, rules, values)`](#validatefieldvaluefield-value-rules-values) — run a rule set against a single value.
 
 ---
 
-## Per-method summaries
-
-Each method below links to the dedicated page in the project repository for the full signature, parameters, return shape, behaviour tables, and runnable examples.
+## Per-method reference
 
 ### Lifecycle
 
@@ -95,6 +93,8 @@ function form(
 
 On creation the controller wires delegated `input` and `submit` listeners, including support for controls associated through `form="id"`, starts a `MutationObserver` on the form subtree, optionally enables `autoSubmit`, and runs an initial validation pass when `autoValidate` is enabled.
 
+An unresolved id, non-form element, `null`, or empty ref still returns an inert controller. Its `element` is `null`, reads return empty/missing values, and chainable writes are no-ops. String ids and ref-like values are resolved only once; create a new controller after the element mounts. Avoid binding multiple controllers to one form because each installs its own listeners.
+
 #### `createFormController(target, options?)`
 
 The underlying factory used by `form()`. It accepts the same arguments and returns the same `FormController`; use it when the explicit factory name reads better in framework integrations.
@@ -108,13 +108,21 @@ readonly element: HTMLFormElement | null
 readonly f: HTMLFormElement | null
 ```
 
+#### `options`
+
+Read-only normalized `FormControllerOptions`. The controller creates a merged options object, and `attributes` always contains both resolved attribute names.
+
+```ts
+readonly options: FormControllerOptions
+```
+
 #### `reset()`
 
-Restores the form to its initial state: native field values reset, manual and validation errors cleared, visual attributes stripped, subscribers notified.
+Restores native and formatted default values, clears manual and validation errors plus `aria-invalid`, then notifies subscribers. It dispatches no `input` events, does not invoke field watchers, does not disable auto-submit, and does not reset `submitCount`. When the controller is already validated, filled attributes are recalculated immediately from default values.
 
 #### `destroy()`
 
-Tears the controller down. Removes all DOM listeners, disconnects the `MutationObserver`, clears caches, drops subscribers and submit handlers, and resets internal state. Idempotent — calling it more than once is safe.
+Removes all controller listeners, disconnects the observer, cancels pending auto-submit, drops callbacks, clears stored errors, and cleans up formatter ownership. Formatted visible names are restored and only controller-created raw mirrors are removed. Existing visual attributes are not stripped. Public methods remain callable, including direct reads and writes, but controller listeners no longer react to resulting events. Calling `destroy()` more than once is safe.
 
 ### Submission
 
@@ -129,11 +137,11 @@ onSubmit(
 ): FormController
 ```
 
-The submit pipeline clears manual errors when configured, validates, synchronizes `aria-invalid`, increments `submitCount`, and invokes handlers in order. Invalid submissions are intercepted and focus moves to the first focusable invalid field. When the event supplies a successful named submit button, valid handler data includes its contribution.
+The submit pipeline clears manual errors when configured, validates, synchronizes `aria-invalid`, increments `submitCount`, and invokes every handler in registration order when valid. Invalid submissions are always intercepted and focus moves to the first focusable invalid field. If any valid-submit handler uses the default `preventDefault: true`, the event is prevented for all handlers. Handler return values and promises are ignored; async work does not delay native navigation when every handler opts out of prevention. There is no per-handler unsubscribe method; `destroy()` clears all handlers. A successful named submit button contributes its name/value to fresh `data` and `formData` values.
 
 #### `autoSubmit(options?)`
 
-Enables native auto-submit. Every change to a tracked field triggers `form.requestSubmit()`. Pass `{ debounce: ms }` to delay.
+Enables native auto-submit. Every handled input schedules `form.requestSubmit()` (or the package's submit fallback). Pass `{ debounce: ms }` to delay. Auto-submit itself does not validate; validation occurs when the resulting submit event enters the normal pipeline. Disabling or destroying cancels pending timers, and re-enabling uses only the newly supplied debounce.
 
 ```ts
 autoSubmit(options?: boolean | AutoSubmitOptions): FormController
@@ -147,11 +155,11 @@ Turns auto-submit off and cancels any pending debounce timer. Equivalent to `aut
 
 #### `watch(field, callback)`
 
-Chainable fire-and-forget reaction to a field. The callback fires immediately and after every change, like `observe()`; `watch()` returns the controller instead of an unsubscribe function.
+Chainable field observer. When a form is bound, the callback fires immediately and after matching handled input events; an inert controller stores the callback without an initial call. DOM mutations alone do not invoke field watchers. `watch()` returns the controller instead of an unsubscribe function.
 
 #### `observe(field, callback)`
 
-Like `watch`, but fires immediately with the current value and returns an unsubscribe function.
+Like `watch`, but returns an idempotent unsubscribe function. The callback receives `(value, field, form, state)` after error clearing, validation, and visual synchronization for the input event, but before whole-form subscribers are notified.
 
 #### `unwatch(field?, callback?)`
 
@@ -159,21 +167,21 @@ Removes watched callbacks. Three overloads: no args (clear all), `field` only (c
 
 #### `subscribe(listener)`
 
-Registers a listener that fires immediately with the current state and on every subsequent state mutation. Returns an unsubscribe function. Useful for driving a view layer from a single source of truth.
+Registers a listener that always fires immediately and returns an unsubscribe function. Notifications occur for handled input, `setValue`, manual-error changes, reset, auto-submit toggles, submit attempts, and observed DOM mutations. Direct `validate()` / `revalidate()` calls update validation state but do not independently notify subscribers.
 
 ### Field values
 
 #### `setValue(name, value)`
 
-Writes a value into a field and dispatches the correct DOM event so watchers, validators, and visual state run as if a user typed. Returns the controller unchanged when the field does not exist.
+Writes a value and dispatches one bubbling `input` event from the first matching field, so the controller pipeline runs once. Returns the controller unchanged when the field does not exist.
 
-When the field name ends in `[]` (the multi-value input convention used by PHP, Rails, Express, etc.), `setValue` distributes the array elements one per input: surplus inputs (more inputs than array elements) are cleared to `''`, and surplus array elements (more elements than inputs) are dropped. Bare names — `name="foo"` with multiple inputs — keep the original broadcast semantics and receive the same value on every matching input.
+Control-specific checkbox, radio, file, multi-select, repeated-name, and `[]` behavior is specified in the [form-control matrix](/forms/reference/controls/#writing-values).
 
 #### `getValue(name)`
 
 Returns the normalized value of a field: `string`, `string[]`, `File[]`, or `undefined`.
 
-When the field name ends in `[]` and there is more than one matching input, `getValue` returns an array of values from all matching inputs (in DOM order). For file inputs, the `FileList` from every input is concatenated. The `[]` suffix is the de facto HTML pattern for array inputs (PHP, Rails, Express, Spring); the controller now treats it as the explicit signal for "collect all values as an array".
+The exact scalar/array behavior differs for radio groups, checkbox groups, multiple selects, files, repeated bare names, and `[]` names. See the [reading values matrix](/forms/reference/controls/#reading-values).
 
 #### `getField(name)`
 
@@ -181,17 +189,17 @@ Returns the underlying DOM field(s) for a given name: a single `FormFieldElement
 
 #### `prefill(fieldName?)`
 
-Populates the form (or a single field) from the current URL query string. Delegates to `setValue`, so each prefilled field triggers the normal event pipeline.
+Populates the form (or one field) from `window.location.search`. Values are strings and each query entry delegates to `setValue`, so normal event effects apply. Repeated query keys are not aggregated; they are written in URL order and later scalar writes can replace earlier state. In non-DOM environments it is a no-op.
 
 #### `format(config)`
 
-Apply an `@samline/formatter` pipeline to one or more fields. A custom `displayField` works only for a single field; combining it with an array logs an error and leaves the form unchanged. Array configurations derive `<field>_displayed` separately.
+Apply an `@samline/formatter` pipeline to one or more input/textarea fields. The method synchronously creates the canonical/display pair, returns the controller immediately, then asynchronously loads and binds the peer. A custom `displayField` works only for one field; arrays derive `<field>_displayed` separately. Selects and hidden visible targets are unsupported. Read the complete [formatting lifecycle and mirror contract](/forms/guides/formatting/).
 
 :::caution[Optional peer dependency]
-`@samline/formatter` is optional. When it is not installed, `format()` and `formatAll()` log a single `console.error` describing the missing dependency, restore the visible's name to the canonical form, and return the controller unchanged. The form is left exactly as the developer authored it.
+Module builds treat `@samline/formatter` as optional. A missing peer logs one cached `console.error` and asynchronously rolls back fields from that call. The global IIFE bundles the formatter and does not require a separate install.
 :::
 
-**Server pre-fill (e.g. Blade `old()`)**. When the visible field already carries a value at the moment `format()` first runs — typically a server-rendered `value="{{ old('birthday') }}"` carrying the canonical raw — the controller runs that value through the formatter once before any user interaction. The initial pass overrides `interpretInputAs` to `'auto'` so a raw Ymd like `"19901212"` is correctly converted to the display form (`"12/12/1990"`); live keystrokes on the visible keep the formatter's default (`'auto'` since `@samline/formatter@2.0.0`) because what the user types is in display order. The same override applies to input events whose source is the hidden mirror (e.g. a `setValue('field', raw)` that wrote the canonical raw). An explicit `interpretInputAs` in `config.options` is always respected, never overridden — pass `'display'` if you pre-render the visible in display order from the server, or `'raw'` for the legacy pre-1.2.0 round-trip. See [`format`](/forms/reference/api/#formatconfig) for the full contract.
+Initial server-rendered values are normalized after the peer loads with automatic raw/display interpretation unless `interpretInputAs` is explicitly configured. See [server-prefilled values](/forms/guides/formatting/#server-prefilled-values).
 
 #### `formatAll(config)`
 
@@ -201,7 +209,7 @@ Alias of `format()` for readability when `field` is `string[]`.
 
 #### `validate(fields?)`
 
-Runs validation against the configured `validators`. Returns `{ isValid, errors }` and marks the form as validated.
+Runs configured rules and returns merged validation plus manual errors. With a field list, existing validation errors for other fields remain. Names without rules have their prior validation errors removed. The method marks the form as validated and synchronizes visual attributes, but does not independently notify subscribers. See [validation semantics](/forms/guides/validation-and-errors/#built-in-rule-behavior).
 
 #### `revalidate(fields?)`
 
@@ -219,15 +227,20 @@ Removes manual errors. Validation errors from rules are not touched. Visual attr
 
 #### `getData()`
 
-Returns `{ data, formData }` for the form. `data` is a plain object mirror (repeated names become arrays), `formData` is a fresh `FormData` instance. Empty file inputs are filtered out.
+Returns fresh `{ data, formData }` values. Native successful-control rules apply, repeated names become arrays in `data`, and empty file placeholders are removed. Files remain `File` objects. See [serialization differences](/forms/reference/controls/#serialization-differs-from-field-reads).
 
 #### `getState()`
 
-Returns a fresh snapshot of the controller state: `{ values, errors, filledFields, isValid, isValidated, autoSubmit, submitCount }`. Pure read — does not notify subscribers.
+Returns a fresh snapshot: `{ values, errors, filledFields, isValid, isValidated, autoSubmit, submitCount }`. It is a pure read and does not validate or notify. `isValid` only means the currently stored merged error map is empty, so an unvalidated form may appear valid.
 
 #### `append(options)`
 
-Inserts a DOM node into the bound form. Useful for rendering banners, hints, or summary blocks that should live inside the `<form>` element. Returns the created `HTMLElement`, or `null` when the controller has no bound form.
+Creates a node and assigns `content` to `innerHTML`; sanitize untrusted content. When `class` is present, the first existing descendant matching its first class token is removed. The method clears the field cache but does not validate, notify subscribers, or schedule auto-submit. Appended nodes survive `reset()` and `destroy()`. Returns the node or `null` for an inert controller.
+
+```ts
+const banner = controller.append({ tag: 'p', content: '', class: 'status' })
+if (banner) banner.textContent = untrustedMessage // safe text-only alternative
+```
 
 ### Pure helpers
 
@@ -240,7 +253,7 @@ function parseFormData(
 ): SerializedFormResult
 ```
 
-Same serializer the controller uses internally. Pass a submit button to include its name/value. Reserved names such as `constructor` and `__proto__` remain ordinary own properties.
+Same serializer the controller uses internally. Pass the successful submit button to include its name/value. Repeated names become arrays, empty file placeholders are filtered, and reserved names such as `constructor` and `__proto__` remain ordinary own properties. This helper has no validation or controller side effects.
 
 #### `validateValues(values, schema)`
 
@@ -251,7 +264,7 @@ function validateValues(
 ): ValidationResult
 ```
 
-Runs every field in the schema against a values map. Returns `{ isValid, errors }`.
+Runs every exact schema key against a values map. Returns `{ isValid, errors }` without DOM or controller side effects. Wildcard schema keys are not expanded.
 
 #### `validateFieldValue(field, value, rules, values)`
 
@@ -264,7 +277,7 @@ function validateFieldValue(
 ): string[]
 ```
 
-Runs the rule set against a single value. Returns an array of error messages (empty when the field is valid).
+Runs every built-in and custom rule against one value and returns all messages. Pattern checks skip empty values; custom validators still run. See the [rule behavior table](/forms/guides/validation-and-errors/#built-in-rule-behavior).
 
 ### Registry helpers (vanilla)
 
@@ -280,7 +293,7 @@ Module-level singleton. Exposes `form`, `newForm`, `destroyForm`, and `available
 
 #### `browser.newForm`
 
-Build a controller via `browser.form(id, options)` and store it in `browser.available[id]`. Accepts `{ id, options }`. Logs `Form ID is required` to `console.error` and returns `undefined` if `id` is missing. Returns the same `FormController` stored under `available[id]`.
+Build a controller via `browser.form(id, options)` and store it in `browser.available[id]`. An existing controller under the id is destroyed before replacement. A missing id logs `Form ID is required` and returns `undefined`.
 
 ```ts
 const contact = browser.newForm({
@@ -293,7 +306,7 @@ const contact = browser.newForm({
 
 #### `browser.destroyForm`
 
-Look up `browser.available[id]`, call `destroy()`, and delete the entry. Logs `Form ID is required` if `id` is missing, or `Form with ID <id> not found` if the entry is absent.
+Look up `browser.available[id]`, call `destroy()`, and delete the entry. A missing id logs an error; an absent entry logs a warning.
 
 ```ts
 browser.destroyForm('contact-form')
@@ -311,9 +324,9 @@ for (const controller of Object.values(browser.available)) {
 
 For an equivalent surface in a no-bundler setup, see the [Browser global reference](/forms/reference/browser/).
 
-### Peer helpers
+### External integration
 
-#### `regex`
+#### `regex` from `@samline/formatter`
 
 :::caution[Optional peer dependency]
 Exported by [`@samline/formatter`](https://github.com/samline/formatter), not by `@samline/forms`. Install the peer before importing.

@@ -1,6 +1,6 @@
 {
   "name": "@samline/forms",
-  "version": "2.5.0",
+  "version": "2.5.1",
   "description": "TypeScript-first, framework-free form controller with validation, reactive state, serialization, auto-submit, and input formatting.",
   "keywords": [
     "forms",

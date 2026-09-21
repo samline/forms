@@ -42,8 +42,8 @@ interface FormControllerOptions {
 | Option | Type | Default | Behaviour |
 | --- | --- | --- | --- |
 | `attributes` | `Partial<VisualAttributes>` | `{ filled: 'css-filled', error: 'css-error' }` | Override the names of the visual attributes applied to fields. |
-| `autoValidate` | `boolean` | `true` | Run validation on mount and on every change for fields that have rules. |
-| `autoSubmit` | `boolean \| AutoSubmitOptions` | `false` | Submit the form automatically on every change. Pass `{ debounce: ms }` to delay. |
+| `autoValidate` | `boolean` | `true` | Run validation on construction and on handled `input` events for fields that have rules. |
+| `autoSubmit` | `boolean \| AutoSubmitOptions` | `false` | Submit the form automatically after handled `input` events. Pass `{ debounce: ms }` to delay. |
 | `clearErrorsOnSubmit` | `boolean` | `true` | Clear all manual errors before submit validation runs. |
 | `clearManualErrorsOnChange` | `boolean` | `true` | Clear the manual error of a field when it changes. Set `false` to keep manual errors until you call [`clearErrors`](/forms/reference/api/#clearerrorsfields). |
 | `validators` | `ValidationSchema` | `{}` | Field → rules map. See [`ValidationSchema`](/forms/reference/typescript/#validationschema) and the rule reference below. |
@@ -76,7 +76,7 @@ form('wizard-form', { autoValidate: false }).validate(['step-1'])
 
 ## `autoSubmit`
 
-When `true`, the controller schedules a native submit (`form.requestSubmit()`) on every change. Pass an `AutoSubmitOptions` object to add a debounce:
+When `true`, the controller schedules a native submit (`form.requestSubmit()`, with a submit-event fallback) after each handled `input` event. Pass an `AutoSubmitOptions` object to add a debounce:
 
 ```ts
 form('search-form', {
@@ -84,8 +84,8 @@ form('search-form', {
 })
 ```
 
-- `autoSubmit: true` — submit immediately on every change.
-- `autoSubmit: { debounce: 300 }` — submit 300ms after the last change.
+- `autoSubmit: true` — submit immediately after each handled input.
+- `autoSubmit: { debounce: 300 }` — submit 300ms after the last handled input.
 - `autoSubmit: false` — disabled at mount; enable later with [`autoSubmit()`](/forms/reference/api/#autosubmitoptions).
 
 Disable at any time with [`disableAutoSubmit()`](/forms/reference/api/#disableautosubmit).
@@ -151,6 +151,8 @@ form('signup-form', {
 
 Every rule accepts either a plain value or a `{ value, message }` object. Use the object form when you want a custom error message per rule.
 
+All enabled rules run and messages accumulate. `pattern` skips empty values, while length and custom rules still run. Array values use item count for length rules. Validator keys are exact HTML field names; wildcard paths such as `rows[*].name` are not expanded. See [Validation and accessible errors](/forms/guides/validation-and-errors/#built-in-rule-behavior) for the complete behavior table.
+
 ### Custom validators
 
 ```ts
@@ -207,5 +209,5 @@ const checkout = form('checkout', {
 The map key is just an identifier — the **canonical** field name lives in `FieldFormatConfig.field`. `displayField` works only when `field` is a single string; combining it with an array logs an error and leaves the form unchanged. Array configurations derive one `<field>_displayed` name per field.
 
 :::caution[Optional peer dependency]
-`formats` requires `@samline/formatter`. When it is not installed, every entry logs a single `console.error` describing the missing dependency, restores the visible's name to the canonical form, and the controller is created normally — no exceptions are thrown.
+Module builds require `@samline/formatter` for `formats`. When it is missing, the module instance logs one cached `console.error`, asynchronously rolls back each affected visible/mirror pair, and keeps the controller usable. The standalone global IIFE already bundles the formatter. See [Formatting inputs](/forms/guides/formatting/).
 :::

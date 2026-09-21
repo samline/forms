@@ -48,6 +48,9 @@ const siteConfig = defineSiteConfig({
 			label: 'Guide',
 			items: [
 				{ slug: 'getting-started' },
+				{ slug: 'guides/validation-and-errors' },
+				{ slug: 'guides/formatting' },
+				{ slug: 'reference/examples' },
 			],
 		},
 		{
@@ -56,11 +59,12 @@ const siteConfig = defineSiteConfig({
 				{ slug: 'reference' },
 				{ slug: 'reference/configuration' },
 				{ slug: 'reference/api' },
+				{ slug: 'reference/controls' },
 				{ slug: 'reference/typescript' },
+				{ slug: 'reference/entrypoints' },
 				{ slug: 'reference/regex' },
 				{ slug: 'reference/browser' },
 				{ slug: 'reference/css-styling' },
-				{ slug: 'reference/examples' },
 			],
 		},
 	],

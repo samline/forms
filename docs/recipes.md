@@ -196,25 +196,30 @@ import { form } from '@samline/forms'
 
 const builder = form('builder', {
   validators: {
-    'rows[*].name': { required: true }
+    'rows[].name': {
+      required: true,
+      validate: ({ value }) => {
+        const names = Array.isArray(value) ? value : [value]
+        return names.every(name => typeof name === 'string' && name.trim() !== '')
+          ? null
+          : 'Every row needs a name.'
+      }
+    }
   }
 })
 
 document.querySelector('#add')?.addEventListener('click', () => {
   const rows = document.querySelector('#rows')!
-  const index = rows.childElementCount
   const row = document.createElement('div')
   row.innerHTML = `
-    <input name="rows[${index}].name" />
-    <input name="rows[${index}].value" />
+    <label>Name <input name="rows[].name" /></label>
+    <label>Value <input name="rows[].value" /></label>
   `
   rows.appendChild(row)
 })
 ```
 
-The controller’s `MutationObserver` watches the form subtree for new fields and `name` / `type` attribute changes. It clears the field cache, re-syncs visual state, and re-runs validation — so dynamic rows are validated automatically without any extra wiring.
-
-> Validator keys with `[index]` syntax are treated as literal field names. To validate dynamic rows, prefer a `validate` callback that knows how to read the rows from `values`.
+Validator keys match literal HTML names, not wildcard paths. Reusing `rows[].name` gives the validator an array once multiple rows exist. The form-subtree `MutationObserver` clears field lookups and, because the default controller is already validated, re-runs validation when each row is appended.
 
 ---
 
@@ -432,12 +437,12 @@ checkout.onSubmit((_form, _data, formData) => {
 
 Things to know:
 
-- You write the HTML with the **canonical** name only (e.g. `<input name="phone" />`). `format()` renames the visible to `phone_displayed` on first run and creates a hidden sibling `<input type="hidden" name="phone">` that holds the raw value. The hidden carries `data-formatter-raw-for="phone"` so the controller can identify it as owned and remove it on `destroy()`. The hidden is appended to the form root — outside any label wrapper. The controller never writes the visual attributes (`css-filled` / `css-error`) to the hidden; it always targets the visible, so the `:has()` recipe in [CSS styling](css-styling.md) keeps working for formatted fields.
+- You write the HTML with the **canonical** name only (e.g. `<input name="phone" />`). `format()` renames the visible to `phone_displayed` on first run and appends a hidden `<input type="hidden" name="phone">` that holds the raw value. The hidden carries `data-formatter-raw-for="phone"` so the controller can identify it as owned and remove it on `destroy()`. The hidden is appended to the form root — outside any label wrapper. The controller never writes the visual attributes (`css-filled` / `css-error`) to the hidden; it always targets the visible, so the `:has()` recipe in [CSS styling](css-styling.md) keeps working for formatted fields.
 - Both names are first-class in the controller's API. `getValue('phone')` returns the raw, `getValue('phone_displayed')` returns the formatted, `watch('phone', cb)` fires with the raw, and so on. See the [full mirror contract in `format.md`](api/format.md#the-mirror-convention).
 - If you authored your own `<input type="hidden" name="<field>">` (or `<input data-formatter-raw-for="<field>">`) before wiring the controller, `format()` reuses it instead of duplicating it. Pre-existing mirrors survive `destroy()`; mirrors created by `format()` are removed.
 - If you prefer to pre-author the visible with the display name (e.g. `<input name="phone_displayed" />`) instead of letting `format()` rename it, `format()` picks that up and skips the rename. Both authoring styles end up with the same DOM.
 - Use `formatAll({ type, field: ['a', 'b', 'c'], options })` to bind the same configuration to several fields in one call. Each field gets its own pair (`a` + `a_displayed`, `b` + `b_displayed`, `c` + `c_displayed`).
-- `@samline/formatter` is an **optional peer dependency**. When it is not installed, `format()` and `formatAll()` log a single `console.error` and return the controller unchanged so the rest of the form keeps working. No exceptions are thrown. The visible's name is restored to its original form so the DOM is left exactly as you authored it.
+- `@samline/formatter` is an **optional peer dependency** for module builds. When it is missing, the module instance logs one cached `console.error` and asynchronously restores affected fields so the rest of the form keeps working. The standalone global IIFE bundles formatter behavior.
 
 ---
 

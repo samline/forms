@@ -13,7 +13,7 @@ A formatted field is exposed as a pair of inputs:
 | **Canonical** (the one the backend reads) | `<field>` | `hidden` | The raw value |
 | **Display** (what the user types) | `<field>_displayed` | `text` / `tel` / `…` | The formatted value |
 
-You write the HTML with the canonical name only — `<input name="phone" />`. The first time `format()` runs for that field it renames the visible from `phone` to `phone_displayed` and creates a hidden sibling with `name="phone"` that carries the raw value. The rename is idempotent and the hidden is reused (not duplicated) on re-binding.
+You write the HTML with the canonical name only — `<input name="phone" />`. The first time `format()` runs for that field it renames the visible from `phone` to `phone_displayed` and appends a hidden input with `name="phone"` that carries the raw value. The rename is idempotent and the hidden is reused (not duplicated) on re-binding.
 
 After the rename both names are first-class in the controller's API:
 
@@ -32,7 +32,7 @@ After the rename both names are first-class in the controller's API:
 
 This is the orthogonal model: every name is a real, queryable slot. You never need to know which is the "real" one — each method returns the value of the name you asked for.
 
-> **Optional peer dependency.** `@samline/formatter` is listed as an optional peer. If it is not installed in the consumer project, the methods log a single `console.error` describing the missing dependency and return the controller unchanged. The rest of the form keeps working.
+> **Optional peer dependency.** ESM, CJS, and browser-module builds require the optional `@samline/formatter` peer. If it is missing, the module instance logs one cached `console.error` and asynchronously rolls back affected field pairs; the controller remains usable. The standalone global IIFE bundles the formatter.
 
 ---
 
