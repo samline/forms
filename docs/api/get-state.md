@@ -16,6 +16,7 @@ interface FormStateSnapshot {
   isValid: boolean
   isValidated: boolean
   autoSubmit: boolean
+  isSubmitting: boolean
   submitCount: number
 }
 ```
@@ -36,8 +37,9 @@ A [`FormStateSnapshot`](../typescript.md#formstatesnapshot). Every call returns 
 | `errors` | Merged validation errors (from rules) and manual errors (from [`setErrors`](set-errors.md)). |
 | `filledFields` | Names of fields that have a non-empty value. |
 | `isValid` | `true` when `errors` has no entries. |
-| `isValidated` | `true` after [`validate`](validate.md) has run at least once. |
+| `isValidated` | `true` after the initial auto-validation pass or once [`validate`](validate.md) has run. |
 | `autoSubmit` | `true` while auto-submit is enabled. |
+| `isSubmitting` | `true` while at least one valid submission has asynchronous `onSubmit` work that has not settled. |
 | `submitCount` | Number of submit attempts (valid or invalid). |
 
 ## Examples
@@ -54,6 +56,7 @@ const state = profile.getState()
 console.log(state.values.email)
 console.log(state.errors)
 console.log(state.isValid)
+console.log(state.isSubmitting)
 ```
 
 ### Drive an accessible error message
@@ -82,12 +85,25 @@ profile.onSubmit((_form, _data, _formData, state) => {
 })
 ```
 
+### Disable a button during async submissions
+
+```ts
+profile.subscribe(state => {
+  submitButton.disabled = state.isSubmitting
+})
+
+profile.onSubmit(async (_form, _data, formData) => {
+  await fetch('/profile', { method: 'POST', body: formData })
+})
+```
+
 ## Edge cases
 
 - **`getState()` does not notify subscribers.** If you need a notification-driven view, use [`subscribe`](subscribe.md).
 - **`errors` is the merged map** (validation + manual). Use [`validate`](validate.md) if you need just the validation errors.
 - **`filledFields` reflects the value snapshot at the time of the call** — it is not stored between calls.
 - **`submitCount` increments on every submit**, valid or invalid. It does not reset on [`reset`](reset.md); it tracks the lifetime of the controller.
+- **`isSubmitting` tracks overlapping work.** It remains `true` until every currently pending async submission batch settles, including rejected promises. Synchronous handlers do not toggle it.
 
 ## Related
 

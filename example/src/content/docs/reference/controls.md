@@ -73,6 +73,27 @@ The form's `MutationObserver` watches only the form subtree. Adding an external 
 - A multiple select returns an array and follows the same array rules.
 - File arrays pass `required` when at least one file exists.
 - Pattern validation converts arrays to a comma-joined string; file entries use filenames.
+- `numeric`, `min`, and `max` validate non-empty scalar signed decimal strings; bounds are inclusive.
+
+### Per-control validation with `each`
+
+Repeated controls can share one exact name and still receive independent rules:
+
+```ts
+form('signers', {
+  validators: {
+    'signer_email[]': {
+      minLength: 1,
+      each: {
+        required: true,
+        pattern: /^[^\s@]+@[^\s@]+\.[^\s@]+$/
+      }
+    }
+  }
+})
+```
+
+Group rules such as the outer `minLength` use the aggregate value. Rules inside `each` use each concrete field value. On controller validation, only the members that fail `each` receive `css-error` and `aria-invalid`; group-level and manual errors still mark every control in the named group. Public errors stay flat as `FormErrors[name]: string[]`, with member messages appended in DOM order.
 
 ## Related
 

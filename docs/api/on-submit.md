@@ -28,12 +28,13 @@ The submit pipeline runs in this order:
 
 1. If `clearErrorsOnSubmit` is `true` (default), manual errors are cleared.
 2. Validation runs for every field with rules. `isValidated` becomes `true`.
-3. If validation fails, the browser’s native submit is prevented, submit handlers are **not** invoked, `aria-invalid="true"` is synchronized, the first connected, enabled, non-hidden invalid field receives focus, `submitCount` is incremented, and subscribers are notified.
+3. If validation fails, the browser’s native submit is prevented, submit handlers are **not** invoked, `aria-invalid="true"` is synchronized, the first connected, enabled, non-hidden invalid control receives focus (including the first failing `each` member), `submitCount` is incremented, and subscribers are notified.
 4. If validation passes:
    - `submitCount` is incremented.
    - Subscribers are notified.
    - If at least one handler was registered with `preventDefault: true`, the native submit is prevented. Otherwise (all handlers `preventDefault: false`), the native submit proceeds.
-    - Every registered handler is invoked in registration order. When the event supplies a successful named submit button, its name/value is included in `data` and `formData`.
+   - Every registered handler is invoked in registration order. When the event supplies a successful named submit button, its name/value is included in `data` and `formData`.
+   - Promise-returning handlers are tracked concurrently. Subscribers receive `isSubmitting: true` while the batch is pending and another update when all promises in it have fulfilled or rejected.
 
 ## Examples
 
@@ -81,7 +82,10 @@ profile
 - **`data` is a plain object mirror of `FormData`.** Repeated names become arrays (e.g. `interests: ['design', 'code']`).
 - **Handlers do not receive errors as an argument.** If you need to inspect the validation result, read [`getState()`](get-state.md) or call [`validate()`](validate.md) from inside the handler.
 - **`onSubmit` cannot be removed** — there is no `offSubmit` API. If you need conditional submission, guard inside the handler or recreate the controller.
-- **The handler is invoked synchronously after the submit event.** If your handler returns a promise, the native submit is already prevented (when applicable) — the promise’s resolution does not gate the browser.
+- **Handlers may return `void` or `Promise<void>`.** Invocation still starts synchronously and native submit prevention is decided before promises settle; async resolution does not gate the browser.
+- **Handlers in one submission run concurrently.** The controller invokes them in registration order without awaiting between calls, then tracks all returned promises together.
+- **Rejected promises settle submission state.** They do not become form errors and are consumed by the controller's all-settled tracking, so `isSubmitting` returns to `false` when no other submission work remains.
+- **Overlapping submissions are tracked independently.** `isSubmitting` remains `true` until every pending submission batch has settled.
 
 ## Related
 

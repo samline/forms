@@ -33,7 +33,8 @@ A [`ValidationResult`](../typescript.md#validationresult):
 
 - Marks the form as validated (`state.isValidated = true`). This means future field changes will run validation again, even when the controller was created with `autoValidate: false`.
 - Re-syncs visual attributes (`css-filled` / `css-error`) for the affected fields.
-- After the form is validated, an input event also revalidates fields whose `sameAs` rule references the changed field. Cycles are deduplicated and each affected field runs once.
+- After the form is validated, an input event also revalidates fields whose `sameAs` or `dependsOn` metadata references the changed field. Transitive chains and cycles are deduplicated and each affected field runs once.
+- `each` validates every collection member independently. Item-only failures apply `css-error` and `aria-invalid="true"` only to the failing DOM controls, while the public `errors[field]` remains a flat `string[]`.
 - Subscribers are not notified — this method is a pure read of the rule engine. To run validation and notify subscribers, use [`subscribe`](subscribe.md) and read [`getState()`](get-state.md).
 
 ## Examples
@@ -88,8 +89,9 @@ function nextStep(step: 1 | 2) {
 
 - **`validate` ignores manual errors** during computation, but the returned `errors` includes them (merged with validation errors). The `isValid` flag reflects the merged map.
 - **Validation rules must be configured** via `options.validators`. Fields without rules are always considered valid.
-- **An explicit partial call validates exactly the requested fields.** `validate(['password'])` does not expand `sameAs` dependencies; dependency expansion happens for input events, including those dispatched by `setValue()`.
-- **Custom validators receive `{ field, value, values }`** — see [`FieldValidationContext`](../typescript.md#fieldvalidationcontext).
+- **An explicit partial call validates exactly the requested fields.** `validate(['password'])` does not expand `sameAs` / `dependsOn` relationships; dependency expansion happens for input events, including those dispatched by `setValue()`.
+- **Custom validators receive `{ field, value, values }`.** During `each`, the context also includes the concrete `element` and zero-based `index` — see [`FieldValidationContext`](../typescript.md#fieldvalidationcontext).
+- **Numeric rules are strict and bounds are inclusive.** Empty values skip `numeric`, `min`, and `max`; add `required` when needed.
 - **A custom validator that returns `false` pushes the generic message `"Validation failed."`.**
 - **`validate()` is the same as calling [`revalidate()`](revalidate.md)`** — they are aliases for readability.
 

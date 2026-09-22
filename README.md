@@ -42,10 +42,10 @@ Requires Node 20+ when bundling. Runtime target is ES2020.
 Use the browser build when you do not have a bundler and need to run the package directly in HTML, Shopify, WordPress, or any traditional template.
 
 ```html
-<script src="https://unpkg.com/@samline/forms@2.6.0/dist/browser/global.global.js"></script>
+<script src="https://unpkg.com/@samline/forms@2.7.0/dist/browser/global.global.js"></script>
 ```
 
-> Pin the version in production. Replace `2.6.0` with the version you ship.
+> Pin the version in production. Replace `2.7.0` with the version you ship.
 
 The browser bundle exposes a single global: `window.Forms`.
 
@@ -55,7 +55,7 @@ The browser bundle exposes a single global: `window.Forms`.
   <button type="submit">Send</button>
 </form>
 
-<script src="https://unpkg.com/@samline/forms@2.6.0/dist/browser/global.global.js"></script>
+<script src="https://unpkg.com/@samline/forms@2.7.0/dist/browser/global.global.js"></script>
 <script>
   const contactForm = window.Forms.newForm({ id: 'contact-form' })
 
@@ -134,7 +134,7 @@ The controller is built around one factory and a small set of focused methods. M
 
 | Group | Methods |
 | --- | --- |
-| Lifecycle | [`form`](docs/api/form.md) · [`destroy`](docs/api/destroy.md) · [`reset`](docs/api/reset.md) |
+| Lifecycle | [`form`](docs/api/form.md) · [`addCleanup`](docs/api/add-cleanup.md) · [`destroy`](docs/api/destroy.md) · [`reset`](docs/api/reset.md) |
 | Registry (vanilla) | [`browser`](docs/getting-started.md#browser-registry-helpers) — bundler-friendly `{ form, newForm, destroyForm, available }` singleton. |
 | Properties | [`element`](docs/api/element.md) · [`options`](docs/options.md) |
 | Submission | [`onSubmit`](docs/api/on-submit.md) · [`autoSubmit`](docs/api/auto-submit.md) · [`disableAutoSubmit`](docs/api/disable-auto-submit.md) |
@@ -143,6 +143,8 @@ The controller is built around one factory and a small set of focused methods. M
 | Validation | [`validate`](docs/api/validate.md) · [`revalidate`](docs/api/revalidate.md) · [`setErrors`](docs/api/set-errors.md) · [`clearErrors`](docs/api/clear-errors.md) |
 | State and data | [`getData`](docs/api/get-data.md) · [`getState`](docs/api/get-state.md) · [`append`](docs/api/append.md) |
 | Pure helpers | [`parseFormData`](docs/api/parse-form-data.md) · [`validateValues`](docs/api/validate-values.md) · [`validateFieldValue`](docs/api/validate-field-value.md) |
+
+Validation supports explicit cross-field dependencies with `dependsOn`, per-member collection rules with `each`, and strict decimal `numeric` / inclusive `min` / `max` rules. Async `onSubmit` handlers are reflected by `getState().isSubmitting`, while `addCleanup()` lets integrations register controller-owned teardown work.
 
 See the full per-method reference in [`docs/api/`](docs/api/index.md).
 

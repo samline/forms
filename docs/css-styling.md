@@ -20,7 +20,9 @@ The attributes are added and removed on:
 - Every explicit call to [`validate`](api/validate.md), [`revalidate`](api/revalidate.md), [`setErrors`](api/set-errors.md), or [`clearErrors`](api/clear-errors.md).
 - DOM mutations detected by the controller’s `MutationObserver` (new fields, changed `name` / `type` attributes).
 
-The attributes are also removed everywhere when you call [`reset`](api/reset.md).
+[`reset`](api/reset.md) clears both attributes, then re-synchronizes visual state from native default values. As a result, reset controls with non-empty defaults regain `css-filled`, while `css-error` and `aria-invalid` remain cleared.
+
+Initial `css-filled` synchronization is independent of validation. With `autoValidate: false`, prefilled controls are styled on mount without running rules, setting `css-error`, or marking the form as validated.
 
 ---
 
@@ -176,6 +178,8 @@ const state = profileForm.getState()
 emailErrorEl.hidden = !state.errors.email
 emailErrorEl.textContent = state.errors.email?.[0] ?? ''
 ```
+
+For fields validated with `each`, item-only failures add `css-error` and `aria-invalid="true"` only to the failing controls. Aggregate field rules and manual errors still mark every control with that name. The public error map remains field-based (`errors[field]: string[]`), so use the optional `element` / `index` in an `each` custom validator when an integration needs item identity.
 
 ---
 

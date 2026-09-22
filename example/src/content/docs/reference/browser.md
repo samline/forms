@@ -13,11 +13,11 @@ For every other case (modern apps, bundlers, TypeScript projects), use the main 
 ## Script tag
 
 ```html
-<script src="https://unpkg.com/@samline/forms@2.6.0/dist/browser/global.global.js"></script>
+<script src="https://unpkg.com/@samline/forms@2.7.0/dist/browser/global.global.js"></script>
 ```
 
 :::caution[Pin the version in production]
-The CDN URL above uses `@2.6.0`. Replace the version with the one you ship.
+The CDN URL above uses `@2.7.0`. Replace the version with the one you ship.
 :::
 
 The bundle is a single IIFE that registers a global object. Place the `<script>` tag in `<head>` with `defer`, or before the user script in `<body>`.
@@ -49,7 +49,7 @@ The factory returns a `FormController` with the same signatures, semantics, and 
   <button type="submit">Send</button>
 </form>
 
-<script src="https://unpkg.com/@samline/forms@2.6.0/dist/browser/global.global.js"></script>
+<script src="https://unpkg.com/@samline/forms@2.7.0/dist/browser/global.global.js"></script>
 <script>
   const contactForm = window.Forms.newForm({
     id: 'contact-form',
@@ -98,7 +98,7 @@ The browser bundle ships only the registry helpers plus the `form` factory. Ever
 
 The controller returned by `form` / `newForm` exposes the methods documented in [API reference](/forms/reference/api/):
 
-- Lifecycle: [`element`](/forms/reference/api/#element), [`reset`](/forms/reference/api/#reset), [`destroy`](/forms/reference/api/#destroy).
+- Lifecycle: [`element`](/forms/reference/api/#element), [`reset`](/forms/reference/api/#reset), [`addCleanup`](/forms/reference/api/#addcleanupcleanup), [`destroy`](/forms/reference/api/#destroy).
 - Submission: [`onSubmit`](/forms/reference/api/#onsubmitcallback-preventdefault), [`autoSubmit`](/forms/reference/api/#autosubmitoptions), [`disableAutoSubmit`](/forms/reference/api/#disableautosubmit).
 - Field observation: [`watch`](/forms/reference/api/#watchfield-callback), [`observe`](/forms/reference/api/#observefield-callback), [`unwatch`](/forms/reference/api/#unwatchfield-callback), [`subscribe`](/forms/reference/api/#subscribelistener).
 - Field values: [`setValue`](/forms/reference/api/#setvaluename-value), [`getValue`](/forms/reference/api/#getvaluename), [`getField`](/forms/reference/api/#getfieldname), [`prefill`](/forms/reference/api/#prefillfieldname), [`format`](/forms/reference/api/#formatconfig), [`formatAll`](/forms/reference/api/#formatallconfig).
@@ -148,7 +148,7 @@ Because the registry is shared across spreads, `window.Form.available` and `brow
 
 ## Common pitfalls
 
-- **Pin the version.** The CDN URL above uses `@2.6.0`. Replace it whenever you upgrade.
+- **Pin the version.** The CDN URL above uses `@2.7.0`. Replace it whenever you upgrade.
 - **The script must be loaded before any code that uses `window.Forms`.** Place the `<script>` tag in `<head>` with `defer`, or before the user script in `<body>`.
 - **No bundler means no tree-shaking.** The global browser bundle includes the controller and formatter peer. Inspect the published artifact when bundle size is a constraint.
 - **CSP:** if your site uses a strict Content Security Policy, allow `unpkg.com` in `script-src` (or self-host the file).

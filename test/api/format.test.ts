@@ -933,6 +933,29 @@ describe('format() integration', () => {
     expect(hidden.hasAttribute('css-error')).toBe(false)
   })
 
+  it('routes each validation errors from a formatted mirror to the visible field', async () => {
+    __setFormatterModuleForTests(phoneFormatter)
+    const api = form('checkout-form', {
+      validators: {
+        phone: { each: { pattern: /^\d{10}$/ } }
+      }
+    })
+    api.format({ type: 'phone', field: 'phone' })
+    await flush()
+
+    api.setValue('phone', '123')
+
+    const formElement = document.getElementById('checkout-form') as HTMLFormElement
+    const visible = formElement.querySelector<HTMLInputElement>(
+      'input[name="phone_displayed"]'
+    )!
+    const hidden = formElement.querySelector<HTMLInputElement>(
+      'input[type="hidden"][name="phone"]'
+    )!
+    expect(visible.hasAttribute('css-error')).toBe(true)
+    expect(hidden.hasAttribute('css-error')).toBe(false)
+  })
+
   // === Regression: server pre-fill of a raw value corrupts the display ===
   // Bug report: easytrip's Blade re-render after a validation error
   // shipped `value="{{ old('birthday') }}"` carrying the canonical

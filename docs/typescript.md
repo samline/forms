@@ -16,6 +16,7 @@ import type {
   FormatType,
   FormController,
   FormControllerOptions,
+  FormCleanup,
   FormDataPrimitive,
   FormErrors,
   FormFieldElement,
@@ -34,6 +35,7 @@ import type {
   SerializedFormValue,
   ValidationResult,
   ValidationSchema,
+  ValueValidationRules,
   VisualAttributes
 } from '@samline/forms'
 ```
@@ -50,6 +52,7 @@ interface FormController {
   readonly f: HTMLFormElement | null
   readonly options: FormControllerOptions
   onSubmit: (callback: FormSubmitHandler, preventDefault?: boolean) => FormController
+  addCleanup: (cleanup: FormCleanup) => () => void
   watch: (field: string, callback: FormFieldWatcher) => FormController
   observe: (field: string, callback: FormFieldWatcher) => () => void
   unwatch: (field?: string, callback?: FormFieldWatcher) => FormController
@@ -182,7 +185,7 @@ form('booking-form', {
 })
 ```
 
-The controller can infer reactive dependencies from `sameAs`, but not from arbitrary reads inside `validate`. If `start_date` changes after `end_date` has been validated, explicitly revalidate `end_date` or watch the source field.
+The controller infers reactive dependencies from `sameAs`, but not from arbitrary reads inside `validate`. Add `dependsOn: 'start_date'` to the `end_date` rules when changes to the source should automatically revalidate the custom rule.
 
 ---
 
@@ -210,6 +213,7 @@ interface FormStateSnapshot {
   isValid: boolean
   isValidated: boolean
   autoSubmit: boolean
+  isSubmitting: boolean
   submitCount: number
 }
 ```
@@ -220,8 +224,9 @@ interface FormStateSnapshot {
 | `errors` | Merged validation and manual errors. |
 | `filledFields` | Names of fields that have a non-empty value. |
 | `isValid` | `true` when `errors` has no entries. |
-| `isValidated` | `true` once [`validate`](api/validate.md) has run at least once. |
+| `isValidated` | `true` after the initial auto-validation pass or once [`validate`](api/validate.md) has run. |
 | `autoSubmit` | `true` while auto-submit is enabled. |
+| `isSubmitting` | `true` while one or more valid submissions have asynchronous handlers that have not settled. |
 | `submitCount` | Number of submit attempts (valid or invalid). |
 
 ---
@@ -234,7 +239,7 @@ The callback passed to [`subscribe`](api/subscribe.md).
 type FormStateListener = (state: FormStateSnapshot) => void
 ```
 
-Receives the current snapshot immediately, then at controller notification points such as handled input, manual-error changes, reset, submit attempts, auto-submit toggles, and observed DOM mutations. A direct `validate()` call does not independently notify it.
+Receives the current snapshot immediately, then at controller notification points such as handled input, manual-error changes, reset, submit attempts, async-submit state transitions, auto-submit toggles, and observed DOM mutations. A direct `validate()` call does not independently notify it.
 
 ---
 
@@ -248,10 +253,10 @@ type FormSubmitHandler = (
   data: Record<string, SerializedFormValue>,
   formData: FormData,
   state: FormStateSnapshot
-) => void
+) => void | Promise<void>
 ```
 
-Only invoked when the form is valid. `data` and `formData` are produced fresh on each invocation.
+Only invoked when the form is valid. `data` and `formData` are produced fresh on each invocation. Returned promises are tracked by `FormStateSnapshot.isSubmitting`; fulfillment or rejection settles the tracked work.
 
 ---
 
@@ -345,19 +350,37 @@ form('signup-form', {
 The rule set for a single field.
 
 ```ts
-interface FieldValidationRules {
+interface FieldValidationRules extends ValueValidationRules {
+  sameAs?: RuleConfig<string>
+  dependsOn?: string | string[]
+  each?: ValueValidationRules
+}
+
+interface ValueValidationRules {
   required?: RuleConfig<boolean>
   minLength?: RuleConfig<number>
   maxLength?: RuleConfig<number>
   pattern?: RuleConfig<RegExp>
-  sameAs?: RuleConfig<string>
+  numeric?: RuleConfig<boolean>
+  min?: RuleConfig<number>
+  max?: RuleConfig<number>
   validate?: FieldValidator | FieldValidator[]
 }
 ```
 
-Rules run in the order: `required` → `minLength` → `maxLength` → `pattern` → `sameAs` → `validate`. All are optional; an empty rules object contributes nothing.
+Value rules run in the order: `required` → `minLength` → `maxLength` → `pattern` → numeric bounds → `validate`. Field-level `sameAs` and member-level `each` are then evaluated. All are optional; an empty rules object contributes nothing.
 
 `sameAs` names another exact field key. It compares non-empty strings exactly and arrays by ordered contents; file entries compare by `File` object identity. In a controller, changing the referenced field automatically revalidates the field that declares `sameAs`. Reciprocal declarations are cycle-safe, but usually duplicate the same error on both controls; prefer declaring the rule only on the confirmation field.
+
+`dependsOn` declares one or more exact source field names for controller revalidation. It is intended for custom validators that read `values`; it does not add an error or affect the pure helpers by itself. Dependency chains and cycles are traversed once per input event.
+
+`each` applies a `ValueValidationRules` object to every collection member independently. Controller validation can therefore mark only the failing DOM controls, while [`FormErrors`](#formerrors) remains a flat `Record<string, string[]>` with item messages collected under the field name.
+
+## `ValueValidationRules`
+
+The exported subset of rules that can validate one value, including each member of a collection. It excludes field-level `sameAs`, `dependsOn`, and nested `each`.
+
+`numeric`, `min`, and `max` skip empty values. Non-empty input must be a finite ordinary signed decimal: decimal integers and fractions are accepted, while exponent notation, hexadecimal, `Infinity`, `NaN`, and formatted separators are rejected. `min` and `max` are inclusive and imply numeric parsing even when `numeric` is omitted.
 
 ---
 
@@ -395,8 +418,12 @@ interface FieldValidationContext {
   field: string
   value: FormFieldValue
   values: FormValues
+  element?: FormFieldElement
+  index?: number
 }
 ```
+
+`element` and `index` are populated while a bound controller evaluates an `each` member. `index` is zero-based. Pure helper validation has no DOM element, so `element` remains undefined; `index` is still provided for array members.
 
 Use it to write cross-field validators:
 
@@ -447,6 +474,18 @@ form('order-form', {
   }
 })
 ```
+
+---
+
+## `FormCleanup`
+
+The callback accepted by [`addCleanup()`](api/add-cleanup.md).
+
+```ts
+type FormCleanup = () => void
+```
+
+Cleanups are synchronous and run once in reverse registration order during `destroy()`, unless their returned unregister function removes them first.
 
 ---
 

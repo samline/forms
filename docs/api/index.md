@@ -8,6 +8,7 @@ Every public method and helper gets its own page. Use this index to navigate to 
 - [`createFormController(target, options?)`](form.md#createformcontroller) — underlying controller factory.
 - [`browser`](../browser.md) — registry-oriented browser API and global build.
 - [`element`](element.md) — the bound form (`f` is an alias).
+- [`addCleanup(cleanup)`](add-cleanup.md) — register controller-owned teardown work.
 - [`destroy()`](destroy.md) — tear down listeners, observer, and caches.
 - [`reset()`](reset.md) — restore native form values and clear errors.
 

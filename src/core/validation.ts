@@ -7,6 +7,7 @@ import type {
   FormFieldValue,
   FormValues,
   RuleConfig,
+  ValueValidationRules,
   ValidationResult,
   ValidationSchema
 } from './types'
@@ -50,19 +51,51 @@ const valuesAreEqual = (left: FormFieldValue, right: FormFieldValue): boolean =>
   return left === right
 }
 
-export const validateFieldValue = (
+const DECIMAL_PATTERN = /^[+-]?(?:\d+(?:\.\d*)?|\.\d+)$/
+
+const parseStrictNumber = (value: FormFieldValue): number | undefined => {
+  if (typeof value !== 'string') return undefined
+  const candidate = value.trim()
+  if (!DECIMAL_PATTERN.test(candidate)) return undefined
+  const number = Number(candidate)
+  return Number.isFinite(number) ? number : undefined
+}
+
+export interface FieldValidationItem {
+  value: FormFieldValue
+  element?: import('./types').FormFieldElement
+}
+
+export interface DetailedValidationResult {
+  groupErrors: string[]
+  itemErrors: Array<{
+    index: number
+    element?: import('./types').FormFieldElement
+    messages: string[]
+  }>
+}
+
+const validateValue = (
   field: string,
   value: FormFieldValue,
-  rules: FieldValidationRules,
-  values: FormValues
+  rules: ValueValidationRules,
+  values: FormValues,
+  contextOverrides: Partial<Pick<FieldValidationContext, 'element' | 'index'>> = {}
 ): string[] => {
   const errors: string[] = []
-  const context: FieldValidationContext = { field, value, values }
+  const context: FieldValidationContext = {
+    field,
+    value,
+    values,
+    ...contextOverrides
+  }
   const required = resolveRule(rules.required)
   const minLength = resolveRule(rules.minLength)
   const maxLength = resolveRule(rules.maxLength)
   const pattern = resolveRule(rules.pattern)
-  const sameAs = resolveRule(rules.sameAs)
+  const numeric = resolveRule(rules.numeric)
+  const min = resolveRule(rules.min)
+  const max = resolveRule(rules.max)
 
   if (required.value && !hasValue(value)) {
     errors.push(required.message ?? 'This field is required.')
@@ -81,10 +114,18 @@ export const validateFieldValue = (
       errors.push(pattern.message ?? 'Value does not match the required pattern.')
     }
   }
-  if (sameAs.value !== undefined) {
-    const otherValue = values[sameAs.value]
-    if (hasValue(value) && hasValue(otherValue) && !valuesAreEqual(value, otherValue)) {
-      errors.push(sameAs.message ?? `Value must match ${sameAs.value}.`)
+
+  if (hasValue(value) && (numeric.value || min.value !== undefined || max.value !== undefined)) {
+    const number = parseStrictNumber(value)
+    if (number === undefined) {
+      errors.push(numeric.message ?? 'Value must be a number.')
+    } else {
+      if (min.value !== undefined && number < min.value) {
+        errors.push(min.message ?? `Minimum value is ${min.value}.`)
+      }
+      if (max.value !== undefined && number > max.value) {
+        errors.push(max.message ?? `Maximum value is ${max.value}.`)
+      }
     }
   }
 
@@ -101,6 +142,62 @@ export const validateFieldValue = (
   }
 
   return errors
+}
+
+export const validateFieldValueDetailed = (
+  field: string,
+  value: FormFieldValue,
+  rules: FieldValidationRules,
+  values: FormValues,
+  items?: FieldValidationItem[]
+): DetailedValidationResult => {
+  const groupErrors = validateValue(field, value, rules, values)
+  const sameAs = resolveRule(rules.sameAs)
+
+  if (sameAs.value !== undefined) {
+    const otherValue = values[sameAs.value]
+    if (hasValue(value) && hasValue(otherValue) && !valuesAreEqual(value, otherValue)) {
+      groupErrors.push(sameAs.message ?? `Value must match ${sameAs.value}.`)
+    }
+  }
+
+  const itemErrors: DetailedValidationResult['itemErrors'] = []
+  if (rules.each) {
+    const sourceItems: FieldValidationItem[] =
+      items ??
+      (Array.isArray(value)
+        ? value.map(entry => ({
+            value: typeof entry === 'string' ? entry : ([entry] as File[])
+          }))
+        : [{ value }])
+
+    sourceItems.forEach((item, index) => {
+      const overrides: Partial<Pick<FieldValidationContext, 'element' | 'index'>> = {
+        index
+      }
+      if (item.element) overrides.element = item.element
+      const messages = validateValue(field, item.value, rules.each!, values, overrides)
+      if (messages.length === 0) return
+      const error: DetailedValidationResult['itemErrors'][number] = {
+        index,
+        messages
+      }
+      if (item.element) error.element = item.element
+      itemErrors.push(error)
+    })
+  }
+
+  return { groupErrors, itemErrors }
+}
+
+export const validateFieldValue = (
+  field: string,
+  value: FormFieldValue,
+  rules: FieldValidationRules,
+  values: FormValues
+): string[] => {
+  const result = validateFieldValueDetailed(field, value, rules, values)
+  return [...result.groupErrors, ...result.itemErrors.flatMap(item => item.messages)]
 }
 
 export const validateValues = (

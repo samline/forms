@@ -247,4 +247,59 @@ describe('form controller — name="foo[]" multi-value inputs', () => {
     expect(observed.some(value => Array.isArray(value))).toBe(true)
     expect(api.getState().errors['docusign_email[]']).toBeUndefined()
   })
+
+  it('marks only the invalid repeated input when using each rules', () => {
+    document.body.innerHTML = `
+      <form id="array-form">
+        <input type="email" name="docusign_email[]" />
+        <input type="email" name="docusign_email[]" />
+      </form>
+    `
+
+    const api = form('array-form', {
+      validators: {
+        'docusign_email[]': {
+          each: {
+            pattern: {
+              value: /^[^\s@]+@[^\s@]+\.[^\s@]+$/,
+              message: 'Invalid email.'
+            }
+          }
+        }
+      }
+    })
+    const inputs = Array.from(
+      document.querySelectorAll<HTMLInputElement>('input[name="docusign_email[]"]')
+    )
+
+    api.setValue('docusign_email[]', ['invalid', 'valid@example.com'])
+
+    expect(api.getState().errors['docusign_email[]']).toEqual(['Invalid email.'])
+    expect(inputs[0]?.getAttribute('css-error')).toBe('')
+    expect(inputs[0]?.getAttribute('aria-invalid')).toBe('true')
+    expect(inputs[1]?.hasAttribute('css-error')).toBe(false)
+    expect(inputs[1]?.hasAttribute('aria-invalid')).toBe(false)
+
+    api.setValue('docusign_email[]', ['fixed@example.com', 'valid@example.com'])
+    expect(api.getState().errors['docusign_email[]']).toBeUndefined()
+    expect(inputs.every(input => !input.hasAttribute('css-error'))).toBe(true)
+  })
+
+  it('keeps whole-field errors group-wide for repeated inputs', () => {
+    document.body.innerHTML = `
+      <form id="array-form">
+        <input name="tags[]" />
+        <input name="tags[]" />
+      </form>
+    `
+
+    const api = form('array-form', {
+      validators: {
+        'tags[]': { validate: () => 'Group error.' }
+      }
+    })
+
+    const inputs = Array.from(document.querySelectorAll<HTMLInputElement>('input[name="tags[]"]'))
+    expect(inputs.every(input => input.hasAttribute('css-error'))).toBe(true)
+  })
 })

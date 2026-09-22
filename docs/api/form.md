@@ -69,8 +69,8 @@ On creation the controller:
 3. Wires delegated `input` and `submit` listeners, including controls associated through `form="id"`.
 4. Starts a `MutationObserver` on the form subtree to track dynamic fields.
 5. Optionally enables [`autoSubmit`](../api/auto-submit.md) when `options.autoSubmit` is truthy.
-6. Runs an initial validation pass if `autoValidate` is enabled.
-7. Notifies subscribers with the initial state.
+6. Synchronizes initial `css-filled` state for every tracked control, including when `autoValidate` is disabled.
+7. Runs an initial validation pass only if `autoValidate` is enabled.
 
 ## Examples
 
@@ -134,6 +134,7 @@ form(profileRef)
 - **The id is resolved once.** If the DOM element with that id is replaced, the controller keeps listening to the original element. Recreate the controller if you re-render the form.
 - **`null` / `undefined` targets** are accepted and produce an inert controller. The chainable methods still return the controller, so they are safe to call as no-ops.
 - **Reusing a target across multiple controllers** is supported but they each install their own listeners — call [`destroy()`](destroy.md) on the previous one to avoid duplicate work.
+- **`autoValidate: false` disables the initial rule pass, not visual initialization.** Prefilled fields still receive `css-filled`; no validation errors are produced and `isValidated` remains `false`.
 - **`createFormController` is also exported** as the lower-level factory; prefer `form` for ergonomic imports.
 
 ## `createFormController`
@@ -151,4 +152,5 @@ This is the factory used by `form()` and accepts the same arguments. It is expor
 
 - [`FormController`](../typescript.md#formcontroller) — the returned controller type.
 - [`destroy`](destroy.md) — tear the controller down.
+- [`addCleanup`](add-cleanup.md) — attach integration cleanup to the controller lifecycle.
 - [docs/options.md](../options.md) — every option in detail.

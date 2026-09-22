@@ -40,7 +40,7 @@ These examples are deliberately copy-pasteable. Each one lives in a self-contain
 		  <button type="submit">Send</button>
 		</form>
 
-		<script src="https://unpkg.com/@samline/forms@2.6.0/dist/browser/global.global.js"></script>
+		<script src="https://unpkg.com/@samline/forms@2.7.0/dist/browser/global.global.js"></script>
 		<script>
 		  const contact = window.Forms.newForm({
 		    id: 'contact-form',
@@ -247,12 +247,9 @@ import { form } from '@samline/forms'
 const builder = form('builder', {
   validators: {
     'rows[].name': {
-      required: true,
-      validate: ({ value }) => {
-        const names = Array.isArray(value) ? value : [value]
-        return names.every(name => typeof name === 'string' && name.trim() !== '')
-          ? null
-          : 'Every row needs a name.'
+      minLength: 1,
+      each: {
+        required: { value: true, message: 'Every row needs a name.' }
       }
     }
   }
@@ -277,6 +274,32 @@ document.querySelector('#add')?.addEventListener('click', () => {
 ```
 
 Validator keys match literal HTML names, not wildcard paths. Reusing `rows[].name` gives the validator an array once multiple rows exist. The form-subtree `MutationObserver` clears field lookups and, because the default controller is already validated, re-runs validation when each row is appended.
+
+`each` validates every repeated input independently, so only an empty row receives `css-error` and `aria-invalid`. Public messages remain a flat `string[]` at `state.errors['rows[].name']`.
+
+## Recipe: Numeric ranges and dependent totals
+
+```ts
+const invoice = form('invoice', {
+  validators: {
+    amount: {
+      required: true,
+      numeric: true,
+      min: { value: 0, message: 'Amount cannot be negative.' },
+      max: 100000
+    },
+    total: {
+      dependsOn: ['amount', 'tax'],
+      validate: ({ value, values }) =>
+        Number(value) === Number(values.amount) + Number(values.tax)
+          ? null
+          : 'Total must equal amount plus tax.'
+    }
+  }
+})
+```
+
+Numeric rules skip empty values, accept only strict finite signed decimals, and include both bounds. `dependsOn` makes custom cross-field validation reactive after validation is active without adding an error itself.
 
 ## Recipe: Manual-only validation
 
@@ -341,7 +364,10 @@ import { form } from '@samline/forms'
 const controllers = new Map<string, ReturnType<typeof form>>()
 
 router.on('/profile', element => {
-  controllers.set('profile', form(element, { validators: { email: { required: true } } }))
+  const controller = form(element, { validators: { email: { required: true } } })
+  const adapter = mountAddressPicker(controller.getField('address'))
+  controller.addCleanup(() => adapter.destroy())
+  controllers.set('profile', controller)
 })
 
 router.off('/profile', () => {
@@ -350,7 +376,7 @@ router.off('/profile', () => {
 })
 ```
 
-`destroy()` is idempotent — calling it more than once is safe.
+`destroy()` is idempotent. Registered cleanups run once in reverse registration order; the function returned by `addCleanup()` unregisters a cleanup without running it.
 
 ## Recipe: Sync state into a view layer
 
@@ -366,11 +392,14 @@ const signup = form('signup-form', {
 
 signup.subscribe(state => {
   const submit = signup.element?.querySelector<HTMLButtonElement>('button[type="submit"]')
-  if (submit) submit.disabled = !state.isValid
+  if (submit) {
+    submit.disabled = !state.isValid || state.isSubmitting
+    submit.textContent = state.isSubmitting ? 'Creating account...' : 'Create account'
+  }
 })
 ```
 
-Use `subscribe` when a single source of truth should drive your UI (button enabled state, live previews, dependent field visibility, etc.).
+Use `subscribe` when a single source of truth should drive your UI. `isSubmitting` remains true while promise-returning handlers from any overlapping valid submissions are pending, and returns to false whether they fulfill or reject.
 
 ## Recipe: Confirm a password with `sameAs`
 

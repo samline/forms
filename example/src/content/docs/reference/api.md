@@ -9,7 +9,7 @@ sidebar:
 Every public method is listed here, grouped by lifecycle. Most methods are chainable and return the same `FormController`. Focused pages cover [native control behavior](/forms/reference/controls/), [accessible validation](/forms/guides/validation-and-errors/), and [formatting lifecycle](/forms/guides/formatting/) without hiding those contracts outside the site.
 
 :::tip[Reading the signatures]
-Methods that return data (rather than the controller) end in a different return type — for example `getValue()` returns `FormFieldValue`, `subscribe()` returns an unsubscribe function. Chainable methods all return `FormController`.
+Methods that return data (rather than the controller) end in a different return type — for example `getValue()` returns `FormFieldValue`, while `subscribe()` and `addCleanup()` return unsubscribe functions. Chainable methods all return `FormController`.
 :::
 
 ## Lifecycle
@@ -19,6 +19,7 @@ Methods that return data (rather than the controller) end in a different return 
 - [`element`](#element) — the bound form (`f` is an alias).
 - [`options`](#options) — normalized controller options, including defaults and merged attributes.
 - [`reset()`](#reset) — restore native form values and clear errors.
+- [`addCleanup(cleanup)`](#addcleanupcleanup) — register teardown work and receive an unregister function.
 - [`destroy()`](#destroy) — tear down listeners, observer, and caches.
 
 ## Registry helpers (vanilla)
@@ -91,7 +92,7 @@ function form(
 - `target` — string id, `HTMLFormElement`, ref-like `{ current }` object, or `null`/`undefined`.
 - `options` — controller configuration. See [Configuration](/forms/reference/configuration/).
 
-On creation the controller wires delegated `input` and `submit` listeners, including support for controls associated through `form="id"`, starts a `MutationObserver` on the form subtree, optionally enables `autoSubmit`, and runs an initial validation pass when `autoValidate` is enabled.
+On creation the controller wires delegated `input` and `submit` listeners, including support for controls associated through `form="id"`, starts a `MutationObserver` on the form subtree, optionally enables `autoSubmit`, and synchronizes initial `css-filled` state. Initial visual synchronization is independent of `autoValidate`; only the initial validation pass is conditional on that option.
 
 An unresolved id, non-form element, `null`, or empty ref still returns an inert controller. Its `element` is `null`, reads return empty/missing values, and chainable writes are no-ops. String ids and ref-like values are resolved only once; create a new controller after the element mounts. Avoid binding multiple controllers to one form because each installs its own listeners.
 
@@ -120,9 +121,20 @@ readonly options: FormControllerOptions
 
 Restores native and formatted default values, clears manual and validation errors plus `aria-invalid`, then notifies subscribers. It dispatches no `input` events, does not invoke field watchers, does not disable auto-submit, and does not reset `submitCount`. When the controller is already validated, filled attributes are recalculated immediately from default values.
 
+#### `addCleanup(cleanup)`
+
+Registers controller-owned teardown work and returns an idempotent unregister function. Unregistering removes the callback without invoking it. Remaining callbacks run once in reverse registration order during `destroy()`; exceptions are reported and do not stop later cleanup. Registering after destruction invokes the cleanup immediately.
+
+```ts
+addCleanup(cleanup: FormCleanup): () => void
+
+const unregister = controller.addCleanup(() => adapter.destroy())
+unregister() // optional: remove without running
+```
+
 #### `destroy()`
 
-Removes all controller listeners, disconnects the observer, cancels pending auto-submit, drops callbacks, clears stored errors, and cleans up formatter ownership. Formatted visible names are restored and only controller-created raw mirrors are removed. Existing visual attributes are not stripped. Public methods remain callable, including direct reads and writes, but controller listeners no longer react to resulting events. Calling `destroy()` more than once is safe.
+Removes all controller listeners, disconnects the observer, cancels pending auto-submit, runs registered cleanups in reverse order, drops callbacks, clears stored errors and submit tracking, and cleans up formatter ownership. Formatted visible names are restored and only controller-created raw mirrors are removed. Existing visual attributes are not stripped. Public methods remain callable, including direct reads and writes, but controller listeners no longer react to resulting events. Calling `destroy()` more than once is safe.
 
 ### Submission
 
@@ -137,7 +149,7 @@ onSubmit(
 ): FormController
 ```
 
-The submit pipeline clears manual errors when configured, validates, synchronizes `aria-invalid`, increments `submitCount`, and invokes every handler in registration order when valid. Invalid submissions are always intercepted and focus moves to the first focusable invalid field. If any valid-submit handler uses the default `preventDefault: true`, the event is prevented for all handlers. Handler return values and promises are ignored; async work does not delay native navigation when every handler opts out of prevention. There is no per-handler unsubscribe method; `destroy()` clears all handlers. A successful named submit button contributes its name/value to fresh `data` and `formData` values.
+The submit pipeline clears manual errors when configured, validates, synchronizes `aria-invalid`, increments `submitCount`, and invokes every handler in registration order when valid. Invalid submissions are always intercepted and focus moves to the first focusable invalid field. If any valid-submit handler uses the default `preventDefault: true`, the event is prevented for all handlers. Handlers may return `Promise<void>`; `getState().isSubmitting` remains `true` while async handlers from any concurrent submission are pending. Fulfilled and rejected promises both settle through `Promise.allSettled`, so rejection does not strand submitting state. Promise settlement does not delay native navigation when every handler opts out of prevention. There is no per-handler unsubscribe method; `destroy()` clears all handlers. A successful named submit button contributes its name/value to fresh `data` and `formData` values.
 
 #### `autoSubmit(options?)`
 
@@ -231,7 +243,7 @@ Returns fresh `{ data, formData }` values. Native successful-control rules apply
 
 #### `getState()`
 
-Returns a fresh snapshot: `{ values, errors, filledFields, isValid, isValidated, autoSubmit, submitCount }`. It is a pure read and does not validate or notify. `isValid` only means the currently stored merged error map is empty, so an unvalidated form may appear valid.
+Returns a fresh snapshot: `{ values, errors, filledFields, isValid, isValidated, autoSubmit, isSubmitting, submitCount }`. It is a pure read and does not validate or notify. `isValid` only means the currently stored merged error map is empty, so an unvalidated form may appear valid. `isSubmitting` tracks pending async submit-handler groups, including overlapping valid submissions.
 
 #### `append(options)`
 
@@ -277,7 +289,7 @@ function validateFieldValue(
 ): string[]
 ```
 
-Runs every built-in and custom rule against one value and returns all messages. Pattern checks skip empty values; `sameAs` compares two non-empty values; custom validators still run. This pure helper does not track dependencies. See the [rule behavior table](/forms/guides/validation-and-errors/#built-in-rule-behavior).
+Runs every built-in and custom rule against one value and returns all messages. Pattern and numeric/range checks skip empty values; bounds are inclusive; `sameAs` compares two non-empty values; custom validators still run. `each` validates array members and flattens their messages into the returned `string[]`, but this DOM-free helper cannot provide `context.element`. This pure helper does not react to `dependsOn`. See the [rule behavior table](/forms/guides/validation-and-errors/#built-in-rule-behavior).
 
 ### Registry helpers (vanilla)
 

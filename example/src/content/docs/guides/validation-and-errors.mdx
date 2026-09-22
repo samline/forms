@@ -110,10 +110,15 @@ import { Steps } from '@astrojs/starlight/components';
 | `minLength` | Runs even when empty. | Uses JavaScript string length. | Uses item count. |
 | `maxLength` | Runs even when empty. | Uses JavaScript string length. | Uses item count. |
 | `pattern` | Skipped. | Tests the string. | Tests a comma-joined string; files contribute their names. |
+| `numeric` | Skipped. | Requires a finite signed decimal string. | Fails because collections are not decimal strings. |
+| `min` | Skipped. | Requires a numeric value greater than or equal to the bound. | Fails numeric parsing before comparison. |
+| `max` | Skipped. | Requires a numeric value less than or equal to the bound. | Fails numeric parsing before comparison. |
 | `sameAs` | Skipped until both fields have values. | Exact, case-sensitive equality. | Ordered item equality; files compare by object identity. |
 | `validate` | Always runs. | Receives the normalized value and all form values. | Receives the array unchanged. |
 
 All configured rules run and their messages accumulate. Custom validators still run when a built-in rule failed. Stateful regular expressions are safe because `lastIndex` is reset before and after each test.
+
+Numeric validation is intentionally strict. After trimming surrounding whitespace it accepts signed decimal forms such as `-12`, `+3.5`, `4.`, and `.75`. It rejects exponent notation (`1e3`), hexadecimal (`0x10`), `Infinity`, separators, and partial numbers. `min` and `max` imply numeric parsing, use inclusive comparisons, and report a numeric error for a non-empty non-number before checking the bound.
 
 ## Cross-field equality with `sameAs`
 
@@ -149,6 +154,50 @@ Things to avoid:
 
 Circular dependencies cannot recurse indefinitely. The controller collects affected fields iteratively with a visited set, then validates each field at most once for that input event. This avoids event loops and does not install per-field listeners.
 
+## Custom dependencies with `dependsOn`
+
+Custom validators can read any value, but the controller needs explicit metadata to know which source changes should trigger them:
+
+```ts
+form('booking', {
+  validators: {
+    end_date: {
+      dependsOn: ['start_date', 'timezone'],
+      validate: ({ value, values }) =>
+        isValidRange(values.start_date, value, values.timezone)
+          ? null
+          : 'Choose an end date after the start date.'
+    }
+  }
+})
+```
+
+`dependsOn` accepts exact field names, adds no message itself, and uses the same cycle-safe transitive traversal as `sameAs`. With `autoValidate: false`, reactive validation starts after the first `validate()` or `revalidate()` call.
+
+## Validate repeated members with `each`
+
+Use group rules for the collection and `each` for each concrete control:
+
+```ts
+form('signers', {
+  validators: {
+    'signer_email[]': {
+      minLength: { value: 2, message: 'Add at least two signers.' },
+      each: {
+        required: true,
+        pattern: /^[^\s@]+@[^\s@]+\.[^\s@]+$/,
+        validate: ({ element, index }) =>
+          element?.disabled
+            ? `Signer ${index! + 1} must be enabled.`
+            : null
+      }
+    }
+  }
+})
+```
+
+Rules inside `each` receive one member as `value`, the concrete `element` when a controller validates DOM fields, and its zero-based `index`. Group rules still receive the aggregate field value. `FormErrors` deliberately remains `Record<string, string[]>`: member messages are flattened under the field name in member order. Internally, the controller retains element ownership so `css-error` and `aria-invalid` appear only on failing members; a group-level or manual error still marks the whole group.
+
 ## Exact field names
 
 Validator keys are literal HTML field names. Wildcards and object-path expansion are not supported:
@@ -174,7 +223,7 @@ form('items', {
 
 ## State caveats
 
-`getState()` is a pure snapshot; it never runs validation. With the default `autoValidate: true`, `isValidated` starts as `true` because initial validation runs during construction. With `autoValidate: false`, an invalid form can report `isValid: true` until you call `validate()` or submit it.
+`getState()` is a pure snapshot; it never runs validation. With the default `autoValidate: true`, `isValidated` starts as `true` because initial validation runs during construction. With `autoValidate: false`, an invalid form can report `isValid: true` until you call `validate()` or submit it. Initial `css-filled` synchronization still runs in either mode and is not validation.
 
 Direct `validate()` and `revalidate()` calls update validation state and visual attributes but do not independently notify subscribers. Render from their returned result when you need synchronous UI feedback.
 

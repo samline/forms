@@ -21,6 +21,8 @@ Same as [`validate`](validate.md) — a [`ValidationResult`](../typescript.md#va
 
 Identical to [`validate`](validate.md). The two methods share the same internal implementation.
 
+This includes strict decimal `numeric` / inclusive `min` / `max` rules, per-member `each` validation and element-level error styling. Explicit field lists are not expanded through `sameAs` or `dependsOn`; those relationships drive revalidation after input events.
+
 ## When to use which
 
 Use `validate` when you are running validation as part of an initial check. Use `revalidate` when you are explicitly asking the controller to recompute validation after a state change (e.g. after `setErrors`, after async data loads, after resetting partial form state).

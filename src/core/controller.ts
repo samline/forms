@@ -5,6 +5,7 @@
 // lives in `../api/<method>.ts` as an isolated factory.
 
 import { createAppend } from '../api/append'
+import { createAddCleanup } from '../api/add-cleanup'
 import { createAutoSubmit } from '../api/auto-submit'
 import { createClearErrors } from '../api/clear-errors'
 import { createDestroy } from '../api/destroy'
@@ -30,7 +31,7 @@ import { createSubscribe } from '../api/subscribe'
 import { createUnwatch } from '../api/unwatch'
 import { createValidate } from '../api/validate'
 import { createWatch } from '../api/watch'
-import { validateFieldValue } from '../core/validation'
+import { validateFieldValueDetailed } from '../core/validation'
 import { parseFormData } from './serialize'
 import {
   applyBooleanAttribute,
@@ -92,28 +93,39 @@ export const createFormController = (
     fieldCache: new Map(),
     manualErrors: {},
     validationErrors: {},
+    validationGroupErrors: {},
+    validationElementErrors: new Map(),
     isValidated: Boolean(normalizedOptions.autoValidate),
     autoSubmitEnabled: false,
     autoSubmitDebounce: 0,
     submitCount: 0,
+    pendingSubmitCount: 0,
     autoSubmitTimer: null,
     isDestroyed: false,
     listeners: [],
     mutationObserver: null,
+    cleanups: new Set(),
     formattedFields: new Map(),
     api: null
   }
 
-  // Reverse `sameAs` references once so a source change can revalidate every
-  // dependent field without installing per-field listeners.
+  // Reverse cross-field references once so source changes can revalidate
+  // dependent fields without installing per-field listeners.
   const validationDependents = new Map<string, Set<string>>()
   for (const [field, rules] of Object.entries(state.validators)) {
+    const sources = new Set<string>()
     const sameAs = rules.sameAs
-    if (sameAs === undefined) continue
-    const source = typeof sameAs === 'string' ? sameAs : sameAs.value
-    const dependents = validationDependents.get(source) ?? new Set<string>()
-    dependents.add(field)
-    validationDependents.set(source, dependents)
+    if (sameAs !== undefined) {
+      sources.add(typeof sameAs === 'string' ? sameAs : sameAs.value)
+    }
+    if (typeof rules.dependsOn === 'string') sources.add(rules.dependsOn)
+    else rules.dependsOn?.forEach(source => sources.add(source))
+
+    for (const source of sources) {
+      const dependents = validationDependents.get(source) ?? new Set<string>()
+      dependents.add(field)
+      validationDependents.set(source, dependents)
+    }
   }
 
   // ------- Internal helpers (no DOM wiring of their own) -----------------
@@ -204,18 +216,21 @@ export const createFormController = (
     // view of the field); reverse-resolve so the lookup works
     // whether the caller passed canonical, display, or both.
     const sourceNames = names ?? getTrackedFieldNames()
-    const errors = getMergedErrors()
     for (const name of sourceNames) {
       const displayName = resolveDisplayNameForName(state, name)
       const canonical = resolveCanonicalForName(state, name) ?? name
       const fields = getFieldsByName(displayName)
-      const hasError = Boolean(errors[canonical]?.length)
-      for (const field of fields) {
+      const hasGroupError = Boolean(
+        state.validationGroupErrors[canonical]?.length || state.manualErrors[canonical]?.length
+      )
+      const elementErrors = state.validationElementErrors.get(canonical)
+      fields.forEach(field => {
+        const hasError = hasGroupError || Boolean(elementErrors?.get(field)?.length)
         applyBooleanAttribute(field, attributes.filled, isFieldFilled(field))
         applyBooleanAttribute(field, attributes.error, hasError)
         if (hasError) field.setAttribute('aria-invalid', 'true')
         else field.removeAttribute('aria-invalid')
-      }
+      })
     }
   }
 
@@ -229,19 +244,44 @@ export const createFormController = (
     const targetNames = names ?? Object.keys(state.validators)
     const values = getValues()
     const nextValidationErrors = names ? cloneErrors(state.validationErrors) : {}
+    const nextGroupErrors = names ? cloneErrors(state.validationGroupErrors) : {}
+    const nextElementErrors = names
+      ? new Map(state.validationElementErrors)
+      : new Map<string, Map<FormFieldElement, string[]>>()
 
     for (const name of targetNames) {
       const rules = state.validators[name]
       if (!rules) {
         delete nextValidationErrors[name]
+        delete nextGroupErrors[name]
+        nextElementErrors.delete(name)
         continue
       }
-      const messages = validateFieldValue(name, values[name], rules, values)
+      const fields = getFieldsByName(name)
+      const displayFields = getFieldsByName(resolveDisplayNameForName(state, name))
+      const items = fields.map((field, index) => ({
+        value: readFieldValue([field]),
+        element: displayFields[index] ?? field
+      }))
+      const result = validateFieldValueDetailed(name, values[name], rules, values, items)
+      const messages = [...result.groupErrors, ...result.itemErrors.flatMap(item => item.messages)]
       if (messages.length > 0) nextValidationErrors[name] = messages
       else delete nextValidationErrors[name]
+
+      if (result.groupErrors.length > 0) nextGroupErrors[name] = result.groupErrors
+      else delete nextGroupErrors[name]
+
+      const perElement = new Map<FormFieldElement, string[]>()
+      result.itemErrors.forEach(item => {
+        if (item.element) perElement.set(item.element, item.messages)
+      })
+      if (perElement.size > 0) nextElementErrors.set(name, perElement)
+      else nextElementErrors.delete(name)
     }
 
     state.validationErrors = nextValidationErrors
+    state.validationGroupErrors = nextGroupErrors
+    state.validationElementErrors = nextElementErrors
     syncVisualState(names)
 
     return {
@@ -376,10 +416,18 @@ export const createFormController = (
     if (!validation.isValid) {
       for (const name of Object.keys(validation.errors)) {
         const displayName = resolveDisplayNameForName(state, name)
-        const field = getFieldsByName(displayName).find(candidate => {
-          if (!candidate.isConnected || candidate.disabled || candidate.hidden) return false
-          return !(candidate instanceof HTMLInputElement && candidate.type === 'hidden')
-        })
+        const fields = getFieldsByName(displayName)
+        const elementErrors = state.validationElementErrors.get(name)
+        const field =
+          fields.find(candidate => {
+            if (!candidate.isConnected || candidate.disabled || candidate.hidden) return false
+            if (candidate instanceof HTMLInputElement && candidate.type === 'hidden') return false
+            return elementErrors?.has(candidate)
+          }) ??
+          fields.find(candidate => {
+            if (!candidate.isConnected || candidate.disabled || candidate.hidden) return false
+            return !(candidate instanceof HTMLInputElement && candidate.type === 'hidden')
+          })
         if (field) {
           field.focus()
           break
@@ -394,9 +442,29 @@ export const createFormController = (
       : null
     const { data, formData } = parseFormData(state.element, submitter)
     const snapshot = state.api.getState()
-    handlers.forEach(handler =>
-      handler.callback(state.element!, data, formData, snapshot)
-    )
+    const pending: Promise<void>[] = []
+    let synchronousError: unknown
+    let hasSynchronousError = false
+    try {
+      for (const handler of handlers) {
+        const result = handler.callback(state.element!, data, formData, snapshot)
+        if (result && typeof result.then === 'function') pending.push(Promise.resolve(result))
+      }
+    } catch (error) {
+      synchronousError = error
+      hasSynchronousError = true
+    }
+
+    if (pending.length > 0) {
+      state.pendingSubmitCount += 1
+      notifySubscribers()
+      void Promise.allSettled(pending).then(() => {
+        state.pendingSubmitCount = Math.max(0, state.pendingSubmitCount - 1)
+        if (!state.isDestroyed) notifySubscribers()
+      })
+    }
+
+    if (hasSynchronousError) throw synchronousError
   }
 
   const startMutationObserver = () => {
@@ -405,9 +473,8 @@ export const createFormController = (
     state.mutationObserver = new MutationObserver(() => {
       clearFieldCache()
       if (state.isValidated) {
-        syncVisualState()
         validateNames()
-      }
+      } else syncVisualState()
       notifySubscribers()
     })
 
@@ -432,6 +499,7 @@ export const createFormController = (
       return state.options
     },
     onSubmit: createOnSubmit(state, helpers),
+    addCleanup: createAddCleanup(state, helpers),
     watch: createWatch(state, helpers),
     observe: createObserve(state, helpers),
     unwatch: createUnwatch(state, helpers),
@@ -476,10 +544,8 @@ export const createFormController = (
     }
   }
 
-  if (state.isValidated) {
-    syncVisualState()
-    validateNames()
-  }
+  if (state.isValidated) validateNames()
+  else syncVisualState()
 
   return api
 }

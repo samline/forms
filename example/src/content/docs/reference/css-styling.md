@@ -19,12 +19,14 @@ This page shows how the attributes behave, which elements they apply to, and how
 
 The attributes are added and removed on:
 
-- Construction when `autoValidate` is enabled (the default).
+- Construction for `css-filled`, regardless of `autoValidate`. Initial `css-error` requires validation and therefore follows `autoValidate`.
 - Every delegated `input` event, including controls associated through `form="id"`.
 - Every explicit call to [`validate`](/forms/reference/api/#validatefields), [`revalidate`](/forms/reference/api/#revalidatefields), [`setErrors`](/forms/reference/api/#seterrorsfields), or [`clearErrors`](/forms/reference/api/#clearerrorsfields).
 - DOM mutations detected by the controller's `MutationObserver` (new fields, changed `name` / `type` attributes).
 
-[`reset()`](/forms/reference/api/#reset) clears all three attributes first. If the controller has already validated, it then recalculates `css-filled` from native default values; error attributes remain absent until rules or manual errors add them again.
+[`reset()`](/forms/reference/api/#reset) clears the visual and accessibility attributes first. If the controller has already validated, it then recalculates `css-filled` from native default values; error attributes remain absent until rules or manual errors add them again.
+
+Initial filled-state synchronization is a visual concern, not validation. A server-rendered or browser-restored value therefore has `css-filled` immediately even with `autoValidate: false`; `isValidated` remains `false` and no validation error is created.
 
 ## Default selectors
 
@@ -176,6 +178,8 @@ profileForm.subscribe(state => {
 ```
 
 See [Validation and accessible errors](/forms/guides/validation-and-errors/) for labels, summaries, live announcements, and focus behavior in one complete example.
+
+For repeated controls validated with `each`, `css-error` and `aria-invalid` are applied only to the concrete members that fail. Group-level rules and manual errors apply to every concrete control for that field name. The public `FormErrors` entry remains a flat `string[]`, so render item-specific text using your own index-aware markup when needed.
 
 ## Common pitfalls
 

@@ -1,6 +1,7 @@
 import { beforeEach, describe, expect, it, vi } from 'vitest'
 
 import { form } from '../../src/api/form'
+import type { FieldValidationContext } from '../../src/core/types'
 
 const buildFixture = () => {
   document.body.innerHTML = `
@@ -150,6 +151,23 @@ describe('form controller (integration)', () => {
 
     expect(validateFirst).toHaveBeenCalledTimes(1)
     expect(validateSecond).toHaveBeenCalledTimes(1)
+  })
+
+  it('revalidates custom validators through explicit dependsOn metadata', () => {
+    const validateEmail = vi.fn(({ values }: FieldValidationContext) =>
+      values.name === 'blocked' ? 'Email is unavailable.' : undefined
+    )
+    const api = form('contact-form', {
+      validators: {
+        email: { dependsOn: 'name', validate: validateEmail }
+      }
+    })
+    validateEmail.mockClear()
+
+    api.setValue('name', 'blocked')
+
+    expect(validateEmail).toHaveBeenCalledTimes(1)
+    expect(api.getState().errors.email).toEqual(['Email is unavailable.'])
   })
 
   it('serializes repeated fields and supports prefill', () => {
@@ -468,6 +486,88 @@ describe('form controller (integration)', () => {
     const callsBefore = listener.mock.calls.length
     api.setValue('name', 'Other')
     expect(listener.mock.calls.length).toBe(callsBefore)
+  })
+
+  it('syncs initial filled state without enabling validation', () => {
+    const name = document.querySelector<HTMLInputElement>('input[name="name"]')!
+    name.value = 'Prefilled'
+    const validateName = vi.fn(() => 'Should not run.')
+
+    const api = form('contact-form', {
+      autoValidate: false,
+      validators: { name: { validate: validateName } }
+    })
+
+    expect(name.hasAttribute('css-filled')).toBe(true)
+    expect(validateName).not.toHaveBeenCalled()
+    expect(api.getState().isValidated).toBe(false)
+    expect(api.getState().errors).toEqual({})
+  })
+
+  it('tracks promise-aware submit state until every handler settles', async () => {
+    let resolveSubmit!: () => void
+    const pending = new Promise<void>(resolve => {
+      resolveSubmit = resolve
+    })
+    const api = form('contact-form')
+    api.onSubmit(() => pending)
+
+    api.element!.dispatchEvent(new Event('submit', { bubbles: true, cancelable: true }))
+
+    expect(api.getState().isSubmitting).toBe(true)
+    resolveSubmit()
+    await flush()
+    expect(api.getState().isSubmitting).toBe(false)
+  })
+
+  it('keeps submitting state across overlapping fulfilled and rejected submits', async () => {
+    let settleFirst!: () => void
+    let rejectSecond!: (reason?: unknown) => void
+    const first = new Promise<void>(resolve => {
+      settleFirst = resolve
+    })
+    const second = new Promise<void>((_resolve, reject) => {
+      rejectSecond = reject
+    })
+    const pending = [first, second]
+    const api = form('contact-form')
+    api.onSubmit(() => pending.shift()!)
+
+    api.element!.dispatchEvent(new Event('submit', { bubbles: true, cancelable: true }))
+    api.element!.dispatchEvent(new Event('submit', { bubbles: true, cancelable: true }))
+    expect(api.getState().isSubmitting).toBe(true)
+
+    settleFirst()
+    await flush()
+    expect(api.getState().isSubmitting).toBe(true)
+
+    rejectSecond(new Error('expected rejection'))
+    await flush()
+    expect(api.getState().isSubmitting).toBe(false)
+  })
+
+  it('runs registered cleanup callbacks once in reverse order', () => {
+    const api = form('contact-form')
+    const calls: string[] = []
+    api.addCleanup(() => calls.push('first'))
+    api.addCleanup(() => calls.push('second'))
+
+    api.destroy()
+    api.destroy()
+
+    expect(calls).toEqual(['second', 'first'])
+  })
+
+  it('keeps duplicate cleanup registrations independent', () => {
+    const api = form('contact-form')
+    const cleanup = vi.fn()
+    const unregisterFirst = api.addCleanup(cleanup)
+    api.addCleanup(cleanup)
+
+    unregisterFirst()
+    api.destroy()
+
+    expect(cleanup).toHaveBeenCalledTimes(1)
   })
 
   it('reset clears errors, attributes and values', () => {

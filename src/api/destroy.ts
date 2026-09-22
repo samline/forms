@@ -31,12 +31,26 @@ export const createDestroy =
 
     state.mutationObserver?.disconnect()
     state.mutationObserver = null
+
+    const cleanups = Array.from(state.cleanups).reverse()
+    state.cleanups.clear()
+    for (const cleanup of cleanups) {
+      try {
+        cleanup()
+      } catch (error) {
+        console.error('[forms] cleanup failed', error)
+      }
+    }
+
     state.watchedFields.clear()
     state.subscribers.clear()
     state.submitHandlers.clear()
     state.fieldCache.clear()
     state.manualErrors = {}
     state.validationErrors = {}
+    state.validationGroupErrors = {}
+    state.validationElementErrors.clear()
+    state.pendingSubmitCount = 0
 
     // Detach format listeners and drop the hidden raw mirrors that
     // `format()` created for this controller. Mirrors that pre-existed

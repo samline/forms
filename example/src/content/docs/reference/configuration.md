@@ -150,12 +150,17 @@ form('signup-form', {
 | `minLength` | `number \| { value: number; message?: string }` | Minimum string length (for checkbox groups, the minimum number of selected items). |
 | `maxLength` | `number \| { value: number; message?: string }` | Maximum string length (for checkbox groups, the maximum number of selected items). |
 | `pattern` | `RegExp \| { value: RegExp; message?: string }` | String must match the regular expression. Skipped when the field is empty. |
+| `numeric` | `boolean \| { value: boolean; message?: string }` | Non-empty value must be a strict signed decimal. |
+| `min` | `number \| { value: number; message?: string }` | Non-empty numeric value must be greater than or equal to the inclusive minimum. |
+| `max` | `number \| { value: number; message?: string }` | Non-empty numeric value must be less than or equal to the inclusive maximum. |
 | `sameAs` | `string \| { value: string; message?: string }` | Non-empty value must equal the named field. Changing the named field automatically revalidates this field. |
+| `dependsOn` | `string \| string[]` | Revalidate this field when any named source field changes after validation is active. Adds no error itself. |
+| `each` | [`ValueValidationRules`](/forms/reference/typescript/#valuevalidationrules) | Apply value rules independently to every member of a repeated field or collection. |
 | `validate` | [`FieldValidator \| FieldValidator[]`](/forms/reference/typescript/#fieldvalidator) | Custom validators. Return a string to push an error, or `null` / `undefined` / `true` to pass. Return `false` to push a generic `"Validation failed."` message. |
 
 Built-in rules accept either a plain value or a `{ value, message }` object. Use the object form when you want a custom error message per rule.
 
-All enabled rules run and messages accumulate. `pattern` skips empty values, while length and custom rules still run. Array values use item count for length rules. Validator keys are exact HTML field names; wildcard paths such as `rows[*].name` are not expanded. See [Validation and accessible errors](/forms/guides/validation-and-errors/#built-in-rule-behavior) for the complete behavior table.
+All enabled rules run and messages accumulate. `pattern`, `numeric`, `min`, and `max` skip empty values, while length and custom rules still run. Array values use item count for length rules. Numeric parsing accepts trimmed finite signed decimals such as `-12`, `+3.5`, `4.`, and `.75`; it rejects exponent notation, hexadecimal, `Infinity`, and partial numbers. Validator keys are exact HTML field names; wildcard paths such as `rows[*].name` are not expanded. See [Validation and accessible errors](/forms/guides/validation-and-errors/#built-in-rule-behavior) for the complete behavior table.
 
 ### Matching fields with `sameAs`
 
@@ -186,6 +191,51 @@ Important behavior:
 - Put the rule on the confirmation field only in most forms. Putting reciprocal rules on both fields is cycle-safe, but both fields will own and display the same mismatch error.
 - Dependency cycles do not recurse. The controller resolves the affected fields with a visited set and validates each field at most once per input event.
 
+### Custom cross-field dependencies
+
+Use `dependsOn` when a custom validator reads other values. It provides the same reactive dependency behavior as `sameAs` without adding a validation rule of its own:
+
+```ts
+form('booking-form', {
+  validators: {
+    end_date: {
+      dependsOn: 'start_date',
+      validate: ({ value, values }) =>
+        typeof value === 'string' &&
+        typeof values.start_date === 'string' &&
+        value >= values.start_date
+          ? null
+          : 'End date must not precede start date.'
+    }
+  }
+})
+```
+
+`dependsOn` accepts one exact field name or an array. Transitive dependencies and cycles are resolved safely, and revalidation starts only after validation is active.
+
+### Per-member rules with `each`
+
+Use `each` for repeated controls such as `name="signer_email[]"`:
+
+```ts
+form('signers', {
+  validators: {
+    'signer_email[]': {
+      minLength: 1,
+      each: {
+        required: true,
+        pattern: {
+          value: /^[^\s@]+@[^\s@]+\.[^\s@]+$/,
+          message: 'Enter a valid signer email.'
+        }
+      }
+    }
+  }
+})
+```
+
+Group-level rules still validate the aggregated value. Rules inside `each` validate every concrete member and receive `element` and zero-based `index` in custom-validator context. Public errors remain `Record<string, string[]>`; item messages are flattened under the field name, while only failing concrete controls receive `css-error` and `aria-invalid`.
+
 ### Custom validators
 
 ```ts
@@ -204,7 +254,7 @@ form('checkout-form', {
 })
 ```
 
-The custom validator receives `{ field, value, values }` and runs after the built-in rules. See [`FieldValidationContext`](/forms/reference/typescript/#fieldvalidationcontext).
+The custom validator receives `{ field, value, values }` and runs after the built-in rules. Validators inside `each` additionally receive the concrete `element` and zero-based `index`. See [`FieldValidationContext`](/forms/reference/typescript/#fieldvalidationcontext).
 
 ## Defaults at a glance
 

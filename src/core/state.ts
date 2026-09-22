@@ -5,6 +5,7 @@ import type {
   FieldFormatConfig,
   FormController,
   FormControllerOptions,
+  FormCleanup,
   FormErrors,
   FormFieldElement,
   FormFieldWatcher,
@@ -30,10 +31,13 @@ export interface FormControllerState {
   fieldCache: Map<string, FormFieldElement[]>
   manualErrors: FormErrors
   validationErrors: FormErrors
+  validationGroupErrors: FormErrors
+  validationElementErrors: Map<string, Map<FormFieldElement, string[]>>
   isValidated: boolean
   autoSubmitEnabled: boolean
   autoSubmitDebounce: number
   submitCount: number
+  pendingSubmitCount: number
   autoSubmitTimer: ReturnType<typeof setTimeout> | null
   isDestroyed: boolean
   listeners: Array<{
@@ -48,6 +52,7 @@ export interface FormControllerState {
     capture?: boolean
   }>
   mutationObserver: MutationObserver | null
+  cleanups: Set<FormCleanup>
   // Tracks every field that `format()` is currently formatting, so
   // re-bindings are idempotent and `destroy()` can clean up the
   // associated listeners + hidden raw mirror. Keyed by the canonical
@@ -90,6 +95,7 @@ export const createEmptyFormState = (): FormStateSnapshot => ({
   isValid: true,
   isValidated: false,
   autoSubmit: false,
+  isSubmitting: false,
   submitCount: 0
 })
 

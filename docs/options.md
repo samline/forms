@@ -43,7 +43,7 @@ interface FormControllerOptions {
 | Option | Type | Default | Behaviour |
 | --- | --- | --- | --- |
 | `attributes` | `Partial<VisualAttributes>` | `{ filled: 'css-filled', error: 'css-error' }` | Override the names of the visual attributes applied to fields. |
-| `autoValidate` | `boolean` | `true` | Run validation on construction and on handled `input` events for fields that have rules. |
+| `autoValidate` | `boolean` | `true` | Run validation on construction and on handled `input` events for fields that have rules. Initial `css-filled` synchronization still runs when this is `false`. |
 | `autoSubmit` | `boolean \| AutoSubmitOptions` | `false` | Submit automatically after handled `input` events. Pass `{ debounce: ms }` to delay. |
 | `clearErrorsOnSubmit` | `boolean` | `true` | Clear all manual errors before submit validation runs. |
 | `clearManualErrorsOnChange` | `boolean` | `true` | Clear the manual error of a field when it changes. Set `false` to keep manual errors until you call [`clearErrors`](api/clear-errors.md). |
@@ -78,6 +78,8 @@ Set this to `false` if you want to validate manually (e.g. only on submit, or on
 ```ts
 form('wizard-form', { autoValidate: false }).validate(['step-1'])
 ```
+
+The initial visual-state pass is independent of validation. Prefilled controls receive `css-filled` on mount even when `autoValidate` is `false`, but no rules run and `isValidated` remains `false` until validation is requested.
 
 ---
 
@@ -150,6 +152,18 @@ form('signup-form', {
         value: 'password',
         message: 'Passwords do not match.'
       }
+    },
+    amount: {
+      required: true,
+      numeric: true,
+      min: 0,
+      max: 10000
+    },
+    'attendees[].email': {
+      each: {
+        required: true,
+        pattern: /^[^\s@]+@[^\s@]+\.[^\s@]+$/
+      }
     }
   }
 })
@@ -163,10 +177,19 @@ form('signup-form', {
 | `minLength` | `number \| { value: number; message?: string }` | Minimum string length (for checkbox groups, the minimum number of selected items). |
 | `maxLength` | `number \| { value: number; message?: string }` | Maximum string length (for checkbox groups, the maximum number of selected items). |
 | `pattern` | `RegExp \| { value: RegExp; message?: string }` | String must match the regular expression. Skipped when the field is empty. |
+| `numeric` | `boolean \| { value: boolean; message?: string }` | Non-empty value must be an ordinary signed decimal. |
+| `min` | `number \| { value: number; message?: string }` | Non-empty numeric value must be greater than or equal to the inclusive bound. |
+| `max` | `number \| { value: number; message?: string }` | Non-empty numeric value must be less than or equal to the inclusive bound. |
 | `sameAs` | `string \| { value: string; message?: string }` | Non-empty value must equal the named field. Changing the named field automatically revalidates this field. |
+| `dependsOn` | `string \| string[]` | Names fields whose changes should revalidate this field. Useful for custom cross-field validators; it does not itself add a validation error. |
+| `each` | `ValueValidationRules` | Applies value-level rules independently to every member/control in a collection. |
 | `validate` | `FieldValidator \| FieldValidator[]` | Custom validators. Return a string to push an error, or `null` / `undefined` / `true` to pass. Return `false` to push a generic `"Validation failed."` message. |
 
 Built-in rules accept either a plain value or a `{ value, message }` object. Use the object form when you want a custom error message per rule.
+
+`numeric`, `min`, and `max` trim surrounding whitespace and accept only ordinary signed decimal syntax, such as `12`, `-3.5`, `+4`, `.75`, or `10.`. They reject exponent notation, hexadecimal, `Infinity`, `NaN`, and formatted values containing separators. Empty values skip all three rules; add `required` when emptiness should fail. `min` and `max` are inclusive and also reject a non-numeric value even when `numeric` is omitted.
+
+Their default messages are `"Value must be a number."`, `"Minimum value is N."`, and `"Maximum value is N."` respectively.
 
 ### Matching fields with `sameAs`
 
@@ -197,6 +220,50 @@ Important behavior:
 - Put the rule on the confirmation field only in most forms. Putting reciprocal rules on both fields is cycle-safe, but both fields will own and display the same mismatch error.
 - Dependency cycles do not recurse. The controller resolves the affected fields with a visited set and validates each field at most once per input event.
 
+### Custom cross-field dependencies with `dependsOn`
+
+Custom validators can read any value, but the controller cannot infer those reads. Declare each source with `dependsOn` so changing it revalidates the field that owns the custom validator:
+
+```ts
+form('shipping-form', {
+  validators: {
+    method: { required: true },
+    country: {
+      dependsOn: 'method',
+      validate: ({ value, values }) =>
+        values.method === 'domestic' && value !== 'US'
+          ? 'Domestic shipping requires a US address.'
+          : null
+    }
+  }
+})
+```
+
+Names are exact HTML field names. A string array declares multiple sources. Like `sameAs`, dependencies become reactive once validation is active, and transitive chains and cycles are deduplicated so each affected field runs at most once per input event. `dependsOn` is controller metadata only: the pure validation helpers evaluate the supplied snapshot without tracking changes.
+
+### Validate every collection member with `each`
+
+Use `each` for repeated controls, checkbox groups, or other fields whose value is a collection:
+
+```ts
+form('attendees-form', {
+  validators: {
+    'attendees[].email': {
+      minLength: { value: 1, message: 'Add at least one attendee.' },
+      each: {
+        required: true,
+        pattern: {
+          value: /^[^\s@]+@[^\s@]+\.[^\s@]+$/,
+          message: 'Enter a valid attendee email.'
+        }
+      }
+    }
+  }
+})
+```
+
+Rules outside `each` validate the aggregate value. Rules inside `each` validate members independently. In a bound controller, `css-error` and `aria-invalid="true"` are applied only to the controls whose `each` rules fail; an aggregate or manual field error still marks every control in the field. Public errors remain `Record<string, string[]>`: item messages are flattened under the field name in member order rather than exposing a nested error shape.
+
 ### Custom validators
 
 ```ts
@@ -215,7 +282,7 @@ form('checkout-form', {
 })
 ```
 
-The custom validator receives `{ field, value, values }` and runs after the built-in rules. See [`FieldValidationContext`](typescript.md#fieldvalidationcontext).
+The custom validator receives `{ field, value, values }` and runs after the built-in rules. During `each`, it also receives the optional concrete `element` and zero-based `index`. See [`FieldValidationContext`](typescript.md#fieldvalidationcontext).
 
 ---
 

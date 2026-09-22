@@ -88,6 +88,8 @@ contact.onSubmit(async (_element, _data, formData) => {
 const emailError = document.querySelector<HTMLElement>('#contact-email-error')!
 contact.subscribe(state => {
   emailError.textContent = state.errors.email?.join(' ') ?? ''
+  const button = contact.element?.querySelector<HTMLButtonElement>('button[type="submit"]')
+  if (button) button.disabled = state.isSubmitting
 })
 ```
 
@@ -97,6 +99,7 @@ What this does:
 - Adds `css-filled` and `css-error` attributes on fields so you can style them with CSS — see [CSS styling](/forms/reference/css-styling/).
 - Validates `email` and `message` on every change and on submit.
 - Intercepts valid submits (the default for `onSubmit`) and hands a real `FormData` instance to your handler.
+- Tracks the async handler through `state.isSubmitting` until its promise settles.
 - Invalid submissions are always intercepted — the browser never navigates with bad data.
 
 For a complete error summary, `aria-describedby`, and focus-management example, continue with [Validation and accessible errors](/forms/guides/validation-and-errors/).
@@ -112,7 +115,7 @@ If you do not have a bundler, drop a single `<script>` and use the `window.Forms
   <button type="submit">Send</button>
 </form>
 
-<script src="https://unpkg.com/@samline/forms@2.6.0/dist/browser/global.global.js"></script>
+<script src="https://unpkg.com/@samline/forms@2.7.0/dist/browser/global.global.js"></script>
 <script>
   const contact = window.Forms.newForm({
     id: 'contact-form',
@@ -130,7 +133,7 @@ If you do not have a bundler, drop a single `<script>` and use the `window.Forms
 ```
 
 :::caution[Pin the version in production]
-The CDN URL above uses `@2.6.0`. Replace the version with the one you ship.
+The CDN URL above uses `@2.7.0`. Replace the version with the one you ship.
 :::
 
 See the [Browser global reference](/forms/reference/browser/) for the full surface, including `Forms.newForm`, `Forms.destroyForm`, and the `Forms.available` registry.

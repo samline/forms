@@ -21,6 +21,7 @@ export type {
   FormatType,
   FormController,
   FormControllerOptions,
+  FormCleanup,
   FormDataPrimitive,
   FormErrors,
   FormFieldElement,
@@ -36,6 +37,7 @@ export type {
   SerializedFormValue,
   ValidationResult,
   ValidationSchema,
+  ValueValidationRules,
   VisualAttributes
 } from './core/types'
 

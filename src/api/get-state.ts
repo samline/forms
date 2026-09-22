@@ -26,6 +26,7 @@ export const createGetState =
       isValid: Object.keys(errors).length === 0,
       isValidated: state.isValidated,
       autoSubmit: state.autoSubmitEnabled,
+      isSubmitting: state.pendingSubmitCount > 0,
       submitCount: state.submitCount
     }
   }

@@ -32,6 +32,7 @@ State mutations that fire subscribers include:
 - [`autoSubmit`](auto-submit.md) and [`disableAutoSubmit`](disable-auto-submit.md).
 - [`reset`](reset.md).
 - Submit attempts, after their validation pass and `submitCount` update.
+- Async submit state transitions: once when promise-returning handlers make `isSubmitting` true, and again after their submission batch settles. Overlapping batches keep it true until all settle.
 - `MutationObserver`-detected DOM changes.
 
 Direct [`validate`](validate.md) and [`revalidate`](revalidate.md) calls update validation state and visual attributes but do not independently notify subscribers. Use their returned result when synchronous rendering is required.
@@ -75,6 +76,21 @@ profile.subscribe(state => {
   if (state.submitCount > 0 && !state.isValid) {
     console.warn('submit attempt failed:', state.submitCount)
   }
+})
+```
+
+### Track asynchronous submission
+
+```ts
+const profile = form('profile-form')
+
+profile.subscribe(state => {
+  submitButton.disabled = state.isSubmitting
+  submitButton.textContent = state.isSubmitting ? 'Saving...' : 'Save'
+})
+
+profile.onSubmit(async (_form, _data, formData) => {
+  await fetch('/profile', { method: 'POST', body: formData })
 })
 ```
 

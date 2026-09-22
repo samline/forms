@@ -1,6 +1,6 @@
 # `reset()`
 
-Restores the form to its initial state: native field values reset, manual and validation errors cleared, visual attributes stripped, subscribers notified.
+Restores the form to its initial state: native field values reset, manual and validation errors cleared, visual attributes synchronized, subscribers notified.
 
 ## Signature
 
@@ -20,7 +20,7 @@ When invoked, the controller:
 2. Clears `state.manualErrors` and `state.validationErrors`.
 3. Restores matching visible/raw defaults for formatted fields.
 4. Removes every `css-filled`, `css-error`, and `aria-invalid` attribute from associated fields.
-5. Re-syncs visual state if the form has been validated (`isValidated` is `true`).
+5. Re-syncs visual state. Controls whose native default value is non-empty regain `css-filled`, even when `autoValidate` is `false`; errors and `aria-invalid` stay cleared.
 6. Notifies subscribers.
 
 ## Examples
@@ -53,6 +53,7 @@ document.querySelector('#cancel')?.addEventListener('click', () => {
 - **Native `reset()` does not dispatch `input` events** for fields whose value changes because of the reset. The controller restores formatted mirrors and visual/ARIA state explicitly.
 - **Submit handlers are not invoked.** `reset()` is purely a UI / state operation.
 - **The `submitCount` from [`getState()`](get-state.md) is not reset.** It tracks the lifetime of the controller, not the lifetime of a single form session.
+- **Pending async submit work is not cancelled.** `isSubmitting` remains true until the outstanding `onSubmit` promises settle.
 
 ## Related
 

@@ -11,10 +11,10 @@ For every other case (modern apps, bundlers, TypeScript projects), use the main 
 ## Script tag
 
 ```html
-<script src="https://unpkg.com/@samline/forms@2.6.0/dist/browser/global.global.js"></script>
+<script src="https://unpkg.com/@samline/forms@2.7.0/dist/browser/global.global.js"></script>
 ```
 
-> Pin the version in production. Replace `2.6.0` with the version you ship.
+> Pin the version in production. Replace `2.7.0` with the version you ship.
 
 The bundle is a single IIFE that registers a global object.
 
@@ -49,7 +49,7 @@ The factory returns a `FormController` with the same signatures, semantics, and 
   <button type="submit">Send</button>
 </form>
 
-<script src="https://unpkg.com/@samline/forms@2.6.0/dist/browser/global.global.js"></script>
+<script src="https://unpkg.com/@samline/forms@2.7.0/dist/browser/global.global.js"></script>
 <script>
   const contactForm = window.Forms.newForm({
     id: 'contact-form',
@@ -102,7 +102,7 @@ The browser bundle ships only the registry helpers plus the `form` factory. Ever
 
 The controller returned by `form` / `newForm` exposes the methods documented under [docs/api/](api/index.md):
 
-- Lifecycle: [`element`](api/element.md), [`reset`](api/reset.md), [`destroy`](api/destroy.md).
+- Lifecycle: [`element`](api/element.md), [`addCleanup`](api/add-cleanup.md), [`reset`](api/reset.md), [`destroy`](api/destroy.md).
 - Submission: [`onSubmit`](api/on-submit.md), [`autoSubmit`](api/auto-submit.md), [`disableAutoSubmit`](api/disable-auto-submit.md).
 - Field observation: [`watch`](api/watch.md), [`observe`](api/observe.md), [`unwatch`](api/unwatch.md), [`subscribe`](api/subscribe.md).
 - Field values: [`setValue`](api/set-value.md), [`getValue`](api/get-value.md), [`getField`](api/get-field.md), [`prefill`](api/prefill.md).
@@ -126,7 +126,7 @@ window.Forms.destroyForm('contact-form')
 
 ## Common pitfalls
 
-- **Pin the version.** The CDN URL above is `2.6.0`. Replace it whenever you upgrade.
+- **Pin the version.** The CDN URL above is `2.7.0`. Replace it whenever you upgrade.
 - **The script must be loaded before any code that uses `window.Forms`.** Place the `<script>` tag in `<head>` with `defer`, or before the user script in `<body>`.
 - **No bundler means no tree-shaking.** The global browser bundle includes the controller and formatter peer. Inspect the published artifact when bundle size is a constraint.
 - **CSP:** if your site uses a strict Content Security Policy, allow `unpkg.com` in `script-src` (or self-host the file).

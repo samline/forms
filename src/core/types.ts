@@ -46,20 +46,34 @@ export interface FieldValidationContext {
   field: string
   value: FormFieldValue
   values: FormValues
+  /** Concrete control while validating one member through `each`. */
+  element?: FormFieldElement
+  /** Zero-based member position while validating through `each`. */
+  index?: number
 }
 
 export type FieldValidator = (
   context: FieldValidationContext
 ) => string | undefined | null | false | true
 
-export interface FieldValidationRules {
+export interface ValueValidationRules {
   required?: RuleConfig<boolean>
   minLength?: RuleConfig<number>
   maxLength?: RuleConfig<number>
   pattern?: RuleConfig<RegExp>
+  numeric?: RuleConfig<boolean>
+  min?: RuleConfig<number>
+  max?: RuleConfig<number>
+  validate?: FieldValidator | FieldValidator[]
+}
+
+export interface FieldValidationRules extends ValueValidationRules {
   /** Field name whose non-empty value must equal this field's value. */
   sameAs?: RuleConfig<string>
-  validate?: FieldValidator | FieldValidator[]
+  /** Fields whose changes should revalidate this field. */
+  dependsOn?: string | string[]
+  /** Rules applied independently to each collection member. */
+  each?: ValueValidationRules
 }
 
 export type ValidationSchema = Record<string, FieldValidationRules>
@@ -106,6 +120,7 @@ export interface FormStateSnapshot {
   isValid: boolean
   isValidated: boolean
   autoSubmit: boolean
+  isSubmitting: boolean
   submitCount: number
 }
 
@@ -142,13 +157,16 @@ export type FormSubmitHandler = (
   data: Record<string, SerializedFormValue>,
   formData: FormData,
   state: FormStateSnapshot
-) => void
+) => void | Promise<void>
+
+export type FormCleanup = () => void
 
 export interface FormController {
   readonly element: HTMLFormElement | null
   readonly f: HTMLFormElement | null
   readonly options: FormControllerOptions
   onSubmit: (callback: FormSubmitHandler, preventDefault?: boolean) => FormController
+  addCleanup: (cleanup: FormCleanup) => () => void
   watch: (field: string, callback: FormFieldWatcher) => FormController
   observe: (field: string, callback: FormFieldWatcher) => () => void
   unwatch: (field?: string, callback?: FormFieldWatcher) => FormController

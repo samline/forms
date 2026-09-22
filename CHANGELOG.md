@@ -4,6 +4,26 @@ All notable changes to `@samline/forms` are documented in this file. The format 
 
 ## [Unreleased]
 
+## [2.7.0] - 2026-09-22
+
+### Added
+
+- Added explicit `dependsOn` metadata for reactive custom cross-field validation with transitive, cycle-safe dependency traversal.
+- Added per-member `each` validation with element-specific `css-error` and `aria-invalid` state for repeated controls while preserving the public `FormErrors` string-array shape.
+- Added strict decimal `numeric`, inclusive `min`, and inclusive `max` validation rules.
+- Added promise-aware submit tracking through `FormStateSnapshot.isSubmitting`, including concurrent and rejected handler promises.
+- Added `addCleanup()` for controller-owned integration teardown.
+
+### Fixed
+
+- Synchronized initial and reset `css-filled` state independently from `autoValidate`, without activating validation.
+- Resolved per-input visual validation state for repeated `name="foo[]"` controls ([#1](https://github.com/samline/forms/issues/1)).
+
+### Changed
+
+- Updated GitHub Actions, Astro, Starlight, and documentation tooling to their reviewed supported releases, including the Node and Astro compatibility floors required by those updates.
+- Synchronized the npm-bundled and Starlight documentation with every new public type, rule, method, and state transition.
+
 ## [2.6.0] - 2026-09-21
 
 ### Added
@@ -211,7 +231,8 @@ All notable changes to `@samline/forms` are documented in this file. The format 
 
 - Initial release of `@samline/forms`. Vanilla JS form controller with framework-specific variants (React, Vue, Svelte) initially included; bundled `.local/` agent docs at the repo root.
 
-[Unreleased]: https://github.com/samline/forms/compare/v2.6.0...HEAD
+[Unreleased]: https://github.com/samline/forms/compare/v2.7.0...HEAD
+[2.7.0]: https://github.com/samline/forms/compare/v2.6.0...v2.7.0
 [2.6.0]: https://github.com/samline/forms/compare/v2.5.1...v2.6.0
 [2.5.1]: https://github.com/samline/forms/compare/v2.5.0...v2.5.1
 [2.5.0]: https://github.com/samline/forms/compare/v2.4.0...v2.5.0

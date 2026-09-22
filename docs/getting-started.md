@@ -8,7 +8,7 @@ This page explains what `@samline/forms` is, how the controller is wired, and wh
 
 Use the main `@samline/forms` entrypoint for native HTML forms. The package also provides `@samline/forms/browser` as an ESM/CJS browser module and `@samline/forms/browser/global` as the global IIFE distribution.
 
-> Note: the latest version is `2.6.0` — see [Releases](https://github.com/samline/forms/releases) for the changelog.
+> Note: the latest version is `2.7.0` — see [Releases](https://github.com/samline/forms/releases) for the changelog.
 
 If you want a `<script>`-only setup without a bundler, see [docs/browser.md](browser.md).
 
@@ -34,7 +34,7 @@ const contact = form('contact-form')
   .setErrors({ email: ['Already in use'] })
 ```
 
-Methods that return data instead of the controller: [`getValue`](api/get-value.md), [`getField`](api/get-field.md), [`getData`](api/get-data.md), [`getState`](api/get-state.md), [`validate`](api/validate.md), [`revalidate`](api/revalidate.md). Methods that return an unsubscribe function: [`observe`](api/observe.md), [`subscribe`](api/subscribe.md).
+Methods that return data instead of the controller: [`getValue`](api/get-value.md), [`getField`](api/get-field.md), [`getData`](api/get-data.md), [`getState`](api/get-state.md), [`validate`](api/validate.md), [`revalidate`](api/revalidate.md). Methods that return an unsubscribe or unregister function: [`observe`](api/observe.md), [`subscribe`](api/subscribe.md), [`addCleanup`](api/add-cleanup.md).
 
 ---
 
@@ -43,10 +43,12 @@ Methods that return data instead of the controller: [`getValue`](api/get-value.m
 Once a controller is created, you can rely on the following behaviour:
 
 - **`css-filled` attribute** is added to a field when it has a non-empty value, and removed when it becomes empty. Override the attribute name with `options.attributes.filled`.
+- **Initial filled state is always synchronized.** Prefilled controls receive `css-filled` on mount even with `autoValidate: false`; this does not run validation or set `isValidated`.
 - **`css-error` attribute** is added to a field when it has at least one error (validation or manual), and removed when it has none. Override with `options.attributes.error`.
 - **Validation runs on every change** for any field that has rules configured under `options.validators` (gated by `autoValidate`, default `true`).
 - **Manual errors from [`setErrors`](api/set-errors.md) are cleared by default when the affected field changes.** Set `clearManualErrorsOnChange: false` to keep them.
 - **Submit handlers receive a real `FormData` instance** built from the live form, plus a plain-object mirror. Invalid submissions never reach your handler.
+- **Async submit handlers are tracked.** `getState().isSubmitting` stays true while any promise-returning `onSubmit` work is pending, including overlapping submissions, and returns to false after fulfillment or rejection.
 - **Dynamic fields are auto-discovered.** A `MutationObserver` watches the form subtree for `name` / `type` attribute changes or new fields, re-caches the field registry, and re-runs visual state and validation.
 
 ---
@@ -59,8 +61,8 @@ The recommended flow:
 2. **React** — register [`watch`](api/watch.md) / [`observe`](api/observe.md) callbacks for field-level reactions, and [`subscribe`](api/subscribe.md) for whole-form reactions.
 3. **Validate** — built-in validation runs automatically. Use [`validate`](api/validate.md) (or the alias [`revalidate`](api/revalidate.md)) to run it on demand.
 4. **Submit** — register [`onSubmit`](api/on-submit.md) handlers. Valid submissions are intercepted (default) or allowed to continue natively (`preventDefault: false`).
-5. **Reset** — call [`reset`](api/reset.md) to restore the native form, clear errors, and strip visual attributes.
-6. **Destroy** — call [`destroy`](api/destroy.md) to remove listeners, disconnect the `MutationObserver`, clear caches, and drop all subscribers.
+5. **Reset** — call [`reset`](api/reset.md) to restore native defaults, clear errors, and re-synchronize visual attributes.
+6. **Destroy** — register integration teardown with [`addCleanup`](api/add-cleanup.md), then call [`destroy`](api/destroy.md) to remove listeners, disconnect the `MutationObserver`, run cleanups in reverse registration order, clear caches, and drop all subscribers.
 
 ---
 
@@ -79,16 +81,17 @@ Use this as a quick lookup when you need to know what a method will touch.
 | [`revalidate`](api/revalidate.md) | same as [`validate`](api/validate.md) | no | no | no | re-synced |
 | [`setErrors`](api/set-errors.md) | re-syncs visual attributes for the targeted fields | no | yes | no | re-synced |
 | [`clearErrors`](api/clear-errors.md) | re-syncs visual attributes (all or for the listed fields) | no | yes | no | re-synced |
-| [`reset`](api/reset.md) | calls native `form.reset()`; strips attributes | no | yes | no | cleared |
+| [`reset`](api/reset.md) | calls native `form.reset()`; clears errors and re-syncs attributes from default values | no | yes | no | re-synced |
 | [`onSubmit`](api/on-submit.md) | none directly; submit handler is invoked on submit | n/a | n/a | n/a | n/a |
 | [`autoSubmit`](api/auto-submit.md) | schedules `form.requestSubmit()` (with optional debounce) | native submit | yes (config change) | enables the behaviour | unchanged |
 | [`disableAutoSubmit`](api/disable-auto-submit.md) | cancels any pending debounce timer | no | yes | disables | unchanged |
 | [`watch`](api/watch.md) / [`observe`](api/observe.md) | none directly; callback fires on changes | n/a | n/a | n/a | unchanged |
 | [`unwatch`](api/unwatch.md) | none | no | no | no | unchanged |
 | [`subscribe`](api/subscribe.md) | none; fires immediately with the current snapshot | no | n/a | n/a | unchanged |
+| [`addCleanup`](api/add-cleanup.md) | none until its callback runs during destroy | no | no | no | unchanged |
 | [`getData`](api/get-data.md) | no | no | no | no | unchanged |
 | [`getState`](api/get-state.md) | no | no | no | no | unchanged |
-| [`destroy`](api/destroy.md) | removes `css-filled` / `css-error` indirectly via listener teardown | no | no longer fires | disabled | unchanged |
+| [`destroy`](api/destroy.md) | removes listeners and runs registered cleanups; does not remove visual attributes itself | no | no longer fires | disabled | unchanged |
 
 > Native field `input` events are delegated. Controls outside the form that use `form="id"` are handled through a document-level delegated listener.
 
@@ -98,6 +101,7 @@ Use this as a quick lookup when you need to know what a method will touch.
 
 - Use [`watch`](api/watch.md) when you want a chainable, fire-and-forget reaction to a field. Use [`observe`](api/observe.md) when you need to clean up later — it returns an unsubscribe function.
 - Use [`subscribe`](api/subscribe.md) when a higher-level component (router, store, view layer) needs to react to the whole form state.
+- Use [`addCleanup`](api/add-cleanup.md) when third-party listeners, observers, subscriptions, or abort controllers should be released with the form controller.
 - Use [`getData()`](api/get-data.md) when you need both a plain object and a `FormData` instance.
 - Use [`setErrors`](api/set-errors.md) and [`clearErrors`](api/clear-errors.md) to drive visual feedback from server responses.
 - Pass `clearManualErrorsOnChange: false` only when manual errors should persist after the user edits a field.
@@ -184,11 +188,12 @@ profile.onSubmit(async (_element, _data, formData) => {
     method: 'POST',
     body: formData
   })
-  return response
+
+  if (!response.ok) throw new Error('Profile update failed')
 })
 ```
 
-When `preventDefault` is omitted, valid submissions are intercepted — the browser will not navigate. Invalid submissions are always intercepted, regardless of the flag.
+When `preventDefault` is omitted, valid submissions are intercepted — the browser will not navigate. Invalid submissions are always intercepted, regardless of the flag. Promise-returning handlers run concurrently and are reflected by `isSubmitting`; rejection settles that state but is not converted into a form error.
 
 ### Let the browser submit natively
 

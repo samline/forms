@@ -22,6 +22,7 @@ import type {
   FormatType,
   FormController,
   FormControllerOptions,
+  FormCleanup,
   FormDataPrimitive,
   FormErrors,
   FormFieldElement,
@@ -40,6 +41,7 @@ import type {
   SerializedFormValue,
   ValidationResult,
   ValidationSchema,
+  ValueValidationRules,
   VisualAttributes
 } from '@samline/forms'
 ```
@@ -54,6 +56,7 @@ interface FormController {
   readonly f: HTMLFormElement | null
   readonly options: FormControllerOptions
   onSubmit: (callback: FormSubmitHandler, preventDefault?: boolean) => FormController
+  addCleanup: (cleanup: FormCleanup) => () => void
   watch: (field: string, callback: FormFieldWatcher) => FormController
   observe: (field: string, callback: FormFieldWatcher) => () => void
   unwatch: (field?: string, callback?: FormFieldWatcher) => FormController
@@ -151,6 +154,7 @@ Useful when you build custom validators that need cross-field logic beyond exact
 form('booking-form', {
   validators: {
     end_date: {
+      dependsOn: 'start_date',
       validate: ({ value, values }) =>
         typeof value === 'string' &&
         typeof values.start_date === 'string' &&
@@ -162,7 +166,7 @@ form('booking-form', {
 })
 ```
 
-The controller can infer reactive dependencies from `sameAs`, but not from arbitrary reads inside `validate`. If `start_date` changes after `end_date` has been validated, explicitly revalidate `end_date` or watch the source field.
+The controller infers reactive dependencies from `sameAs`; use `dependsOn` for arbitrary reads inside `validate`. Here a change to `start_date` revalidates `end_date` once validation is active.
 
 ## `FormErrors`
 
@@ -186,6 +190,7 @@ interface FormStateSnapshot {
   isValid: boolean
   isValidated: boolean
   autoSubmit: boolean
+  isSubmitting: boolean
   submitCount: number
 }
 ```
@@ -198,6 +203,7 @@ interface FormStateSnapshot {
 | `isValid` | `true` when `errors` has no entries. |
 | `isValidated` | `true` once [`validate`](/forms/reference/api/#validatefields) has run at least once. |
 | `autoSubmit` | `true` while auto-submit is enabled. |
+| `isSubmitting` | `true` while at least one valid submission has pending async handlers. Overlapping submissions remain tracked until all their handlers settle. |
 | `submitCount` | Number of submit attempts (valid or invalid). |
 
 ## `FormStateListener`
@@ -220,10 +226,20 @@ type FormSubmitHandler = (
   data: Record<string, SerializedFormValue>,
   formData: FormData,
   state: FormStateSnapshot
-) => void
+) => void | Promise<void>
 ```
 
-Only invoked when the form is valid. `data` and `formData` are produced fresh on each invocation.
+Only invoked when the form is valid. `data` and `formData` are produced fresh on each invocation. Promise-returning handlers contribute to `isSubmitting`; fulfillment and rejection both settle tracking.
+
+## `FormCleanup`
+
+The callback accepted by [`addCleanup()`](/forms/reference/api/#addcleanupcleanup).
+
+```ts
+type FormCleanup = () => void
+```
+
+Cleanups run in reverse registration order during `destroy()`. `addCleanup()` returns an idempotent function that unregisters the callback without running it.
 
 ## `FormFieldWatcher`
 
@@ -293,19 +309,35 @@ type ValidationSchema = Record<string, FieldValidationRules>
 The rule set for a single field.
 
 ```ts
-interface FieldValidationRules {
+interface FieldValidationRules extends ValueValidationRules {
+  sameAs?: RuleConfig<string>
+  dependsOn?: string | string[]
+  each?: ValueValidationRules
+}
+```
+
+Value rules run in the order: `required` → `minLength` → `maxLength` → `pattern` → numeric/range checks → `validate`. `sameAs` then runs at field level, and `each` applies its value rules to every member. All are optional; an empty rules object contributes nothing. `dependsOn` only declares reactive sources and does not produce an error.
+
+`sameAs` names another exact field key. It compares non-empty strings exactly and arrays by ordered contents; file entries compare by `File` object identity. In a controller, changing the referenced field automatically revalidates the field that declares `sameAs`. Reciprocal declarations are cycle-safe, but usually duplicate the same error on both controls; prefer declaring the rule only on the confirmation field.
+
+## `ValueValidationRules`
+
+The exported subset used for whole values and inside `FieldValidationRules.each`.
+
+```ts
+interface ValueValidationRules {
   required?: RuleConfig<boolean>
   minLength?: RuleConfig<number>
   maxLength?: RuleConfig<number>
   pattern?: RuleConfig<RegExp>
-  sameAs?: RuleConfig<string>
+  numeric?: RuleConfig<boolean>
+  min?: RuleConfig<number>
+  max?: RuleConfig<number>
   validate?: FieldValidator | FieldValidator[]
 }
 ```
 
-Rules run in the order: `required` → `minLength` → `maxLength` → `pattern` → `sameAs` → `validate`. All are optional; an empty rules object contributes nothing.
-
-`sameAs` names another exact field key. It compares non-empty strings exactly and arrays by ordered contents; file entries compare by `File` object identity. In a controller, changing the referenced field automatically revalidates the field that declares `sameAs`. Reciprocal declarations are cycle-safe, but usually duplicate the same error on both controls; prefer declaring the rule only on the confirmation field.
+`numeric`, `min`, and `max` skip empty values. Non-empty values must be finite signed decimal strings; bounds are inclusive. `sameAs`, `dependsOn`, and nested `each` are field-level concerns and are intentionally absent.
 
 ## `RuleConfig<T>`
 
@@ -339,10 +371,12 @@ interface FieldValidationContext {
   field: string
   value: FormFieldValue
   values: FormValues
+  element?: FormFieldElement
+  index?: number
 }
 ```
 
-Use it to write cross-field validators:
+`element` and zero-based `index` are present while a validator runs through `each`; they are omitted for group-level validation. Use `dependsOn` to declare fields read by cross-field validators:
 
 ```ts
 form('checkout-form', {

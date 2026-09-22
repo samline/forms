@@ -38,7 +38,7 @@ A [`ValidationResult`](../typescript.md#validationresult):
 
 ## Behaviour
 
-For each `[field, rules]` entry in the schema, runs [`validateFieldValue`](validate-field-value.md) against `values[field]`. The other values are available to `sameAs` and custom validators.
+For each `[field, rules]` entry in the schema, runs [`validateFieldValue`](validate-field-value.md) against `values[field]`. The other values are available to `sameAs` and custom validators. Aggregate rules and `each` member rules are collected into the same `string[]` for that field.
 
 ## Examples
 
@@ -92,6 +92,9 @@ if (!result.isValid) {
 - **`validateValues` does not know which fields are “tracked”.** It validates every entry in the schema, even fields that are not present in `values`. An undefined value fails `required` but passes the rest.
 - **Errors are always a fresh object.** Safe to mutate.
 - **`sameAs` compares the provided snapshot only.** Dependency tracking and automatic revalidation belong to a form controller, not this pure helper.
+- **`dependsOn` has no effect in this helper.** It describes controller revalidation triggers, not a validation rule.
+- **`each` errors stay flat.** Member messages are appended under the field's existing `FormErrors` key in member order; no nested error shape is introduced.
+- **Numeric rules use strict decimal syntax and inclusive bounds.** Empty values skip `numeric`, `min`, and `max`; use `required` to reject emptiness.
 - **Custom validators receive the full values map**, so cross-field rules work the same as inside a controller.
 
 ## Related

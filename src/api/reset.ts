@@ -15,13 +15,15 @@ export const createReset =
     resetFormattedFields(state)
     state.manualErrors = {}
     state.validationErrors = {}
+    state.validationGroupErrors = {}
+    state.validationElementErrors.clear()
     clearAttributes(state.element, [
       state.attributes.error,
       state.attributes.filled,
       'aria-invalid'
     ])
 
-    if (state.isValidated) helpers.syncVisualState()
+    helpers.syncVisualState()
     helpers.notifySubscribers()
     return state.api!
   }

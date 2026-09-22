@@ -20,6 +20,6 @@
 }
 
 /* "Built with Starlight" pill colour */
-starlight-menu-button + a {
+.sl-menu-button + a {
 	font-weight: 600;
 }

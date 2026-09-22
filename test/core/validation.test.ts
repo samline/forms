@@ -114,4 +114,43 @@ describe('validation', () => {
       )
     ).toEqual(['Value must match original.'])
   })
+
+  it('validates strict numeric values and inclusive ranges', () => {
+    for (const value of ['12', '-12.5', '+12', '.5', '12.']) {
+      expect(validateFieldValue('amount', value, { numeric: true }, { amount: value })).toEqual([])
+    }
+
+    for (const value of ['12px', '1e3', '0x10', '1,000', 'Infinity', 'NaN']) {
+      expect(validateFieldValue('amount', value, { numeric: true }, { amount: value })).toEqual([
+        'Value must be a number.'
+      ])
+    }
+
+    expect(validateFieldValue('amount', '10', { min: 10, max: 20 }, { amount: '10' })).toEqual([])
+    expect(validateFieldValue('amount', '21', { min: 10, max: 20 }, { amount: '21' })).toEqual([
+      'Maximum value is 20.'
+    ])
+    expect(validateFieldValue('amount', '', { numeric: true, min: 10 }, { amount: '' })).toEqual([])
+  })
+
+  it('applies each rules to collection members with their indexes', () => {
+    const indexes: number[] = []
+    const result = validateValues(
+      { emails: ['valid@example.com', 'invalid'] },
+      {
+        emails: {
+          each: {
+            pattern: /^[^\s@]+@[^\s@]+\.[^\s@]+$/,
+            validate: ({ index }) => {
+              indexes.push(index!)
+              return undefined
+            }
+          }
+        }
+      }
+    )
+
+    expect(indexes).toEqual([0, 1])
+    expect(result.errors.emails).toEqual(['Value does not match the required pattern.'])
+  })
 })

@@ -197,12 +197,8 @@ import { form } from '@samline/forms'
 const builder = form('builder', {
   validators: {
     'rows[].name': {
-      required: true,
-      validate: ({ value }) => {
-        const names = Array.isArray(value) ? value : [value]
-        return names.every(name => typeof name === 'string' && name.trim() !== '')
-          ? null
-          : 'Every row needs a name.'
+      each: {
+        required: { value: true, message: 'Every row needs a name.' }
       }
     }
   }
@@ -219,7 +215,7 @@ document.querySelector('#add')?.addEventListener('click', () => {
 })
 ```
 
-Validator keys match literal HTML names, not wildcard paths. Reusing `rows[].name` gives the validator an array once multiple rows exist. The form-subtree `MutationObserver` clears field lookups and, because the default controller is already validated, re-runs validation when each row is appended.
+Validator keys match literal HTML names, not wildcard paths. Reusing `rows[].name` gives the validator an array once multiple rows exist. `each` validates every row independently, so only an empty row receives `css-error` and `aria-invalid="true"`; `getState().errors['rows[].name']` remains a flat `string[]`. The form-subtree `MutationObserver` clears field lookups and, because the default controller is already validated, re-runs validation when each row is appended.
 
 ---
 
@@ -251,7 +247,7 @@ mount()
 
 ## 7. Manual-only validation
 
-When you want validation to run only when you ask (not on every change), disable `autoValidate` and call `validate()` yourself.
+When you want validation to run only when you ask (not on every change), disable `autoValidate` and call `validate()` yourself. Initial `css-filled` state still synchronizes for prefilled controls without running any rules.
 
 ```ts
 import { form } from '@samline/forms'
@@ -403,6 +399,7 @@ const shipping = form('shipping-form', {
   validators: {
     method: { required: true },
     country: {
+      dependsOn: 'method',
       validate: ({ value, values }) => {
         if (values.method === 'international' && value !== 'US') return null
         if (values.method === 'domestic' && value === 'US') return null
@@ -412,12 +409,11 @@ const shipping = form('shipping-form', {
   }
 })
 
-// Programmatic update still triggers the delegated event pipeline.
+// Programmatic update triggers the delegated pipeline and revalidates country.
 shipping.setValue('method', 'international')
-shipping.validate(['method', 'country'])
 ```
 
-Custom validators receive the full values map, so cross-field rules read like plain JavaScript.
+Custom validators receive the full values map, so cross-field rules read like plain JavaScript. `dependsOn` tells the controller that `country` must be revalidated whenever `method` changes; exact-name dependency chains and cycles are deduplicated.
 
 ---
 
@@ -466,6 +462,63 @@ Things to know:
 - If you prefer to pre-author the visible with the display name (e.g. `<input name="phone_displayed" />`) instead of letting `format()` rename it, `format()` picks that up and skips the rename. Both authoring styles end up with the same DOM.
 - Use `formatAll({ type, field: ['a', 'b', 'c'], options })` to bind the same configuration to several fields in one call. Each field gets its own pair (`a` + `a_displayed`, `b` + `b_displayed`, `c` + `c_displayed`).
 - `@samline/formatter` is an **optional peer dependency** for module builds. When it is missing, the module instance logs one cached `console.error` and asynchronously restores affected fields so the rest of the form keeps working. The standalone global IIFE bundles formatter behavior.
+
+---
+
+## 15. Validate numeric ranges
+
+```ts
+import { form } from '@samline/forms'
+
+const invoice = form('invoice-form', {
+  validators: {
+    amount: {
+      required: true,
+      numeric: { value: true, message: 'Enter an unformatted decimal amount.' },
+      min: { value: 0, message: 'Amount cannot be negative.' },
+      max: { value: 100000, message: 'Amount is above the limit.' }
+    }
+  }
+})
+```
+
+The bounds are inclusive. Ordinary signed decimals such as `-1`, `+2.5`, `.75`, and `10.` are accepted; exponent notation, hexadecimal, `Infinity`, `NaN`, and values containing formatting separators are rejected. Empty input skips numeric rules, so use `required` when it must fail.
+
+---
+
+## 16. Track async submission state
+
+```ts
+const profile = form('profile-form')
+
+profile.subscribe(state => {
+  saveButton.disabled = state.isSubmitting
+  saveButton.textContent = state.isSubmitting ? 'Saving...' : 'Save'
+})
+
+profile.onSubmit(async (_form, _data, formData) => {
+  await fetch('/api/profile', { method: 'POST', body: formData })
+})
+```
+
+Multiple async handlers start in registration order without awaiting one another. Overlapping submissions keep `isSubmitting` true until all tracked work settles. Rejections settle the state and are not converted into validation errors.
+
+---
+
+## 17. Tie third-party resources to controller cleanup
+
+```ts
+const checkout = form('checkout-form')
+const abortController = new AbortController()
+
+window.addEventListener('resize', updateCheckoutLayout, {
+  signal: abortController.signal
+})
+
+checkout.addCleanup(() => abortController.abort())
+```
+
+Active cleanups run once in reverse registration order on `destroy()`. The returned unregister function removes only its own registration, duplicate callback registrations remain independent, and a cleanup registered after destruction runs immediately.
 
 ---
 
