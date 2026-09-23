@@ -5,7 +5,7 @@
     "": {
       "name": "@samline/forms",
       "devDependencies": {
-        "@samline/formatter": "^2.0.0",
+        "@samline/formatter": "^2.0.3",
         "@types/node": "^26.6.2",
         "@vitest/coverage-v8": "^5.0.1",
         "jsdom": "^30.1.0",
@@ -15,7 +15,7 @@
         "vitest": "^5.0.1",
       },
       "peerDependencies": {
-        "@samline/formatter": "^2.0.0",
+        "@samline/formatter": "^2.0.3",
       },
       "optionalPeers": [
         "@samline/formatter",
@@ -203,7 +203,7 @@
 
     "@rollup/rollup-win32-x64-msvc": ["@rollup/rollup-win32-x64-msvc@4.60.0", "", { "os": "win32", "cpu": "x64" }, "sha512-PrsWNQ8BuE00O3Xsx3ALh2Df8fAj9+cvvX9AIA6o4KpATR98c9mud4XtDWVvsEuyia5U4tVSTKygawyJkjm60w=="],
 
-    "@samline/formatter": ["@samline/formatter@2.0.0", "", { "dependencies": { "cleave-zen": "^0.0.17", "libphonenumber-js": "^1.13.7" } }, "sha512-fPKDROmhWE/SzVZW8HTzXfk5BSN9HgOLm7mgoVGE+qmo3ENlqZ0t8VBSrbp/yt3cxeipdprzTHHfqcP0e4Y3Bw=="],
+    "@samline/formatter": ["@samline/formatter@2.0.3", "", { "dependencies": { "cleave-zen": "^0.0.17", "libphonenumber-js": "^1.13.7" } }, "sha512-Sv8pxdkuk0wcRk4W8yJplgACnhIGCknJCOGBZpyCFK/ZdvBmFMoJf68OJxV8Iq/m3qHsEOdiN+NrUkYbW79qRg=="],
 
     "@types/chai": ["@types/chai@5.2.3", "", { "dependencies": { "@types/deep-eql": "*", "assertion-error": "^2.0.1" } }, "sha512-Mw558oeA9fFbv65/y4mHtXDs9bPnFMZAL/jxdPFUpOHHIXX91mcgEHbS5Lahr+pwZFR8A7GQleRWeI6cGFC2UA=="],
 

@@ -4,6 +4,13 @@ All notable changes to `@samline/forms` are documented in this file. The format 
 
 ## [Unreleased]
 
+## [2.7.2] - 2026-09-23
+
+### Changed
+
+- Raised the optional `@samline/formatter` peer and development dependency minimum to `^2.0.3`, ensuring consumers receive the latest formatter fixes for empty date/time delimiters, suffix stripping, and parametric password validation.
+- Updated the npm-bundled and Starlight documentation examples to reference `@samline/forms@2.7.2`.
+
 ## [2.7.1] - 2026-09-23
 
 ### Fixed
@@ -242,7 +249,9 @@ All notable changes to `@samline/forms` are documented in this file. The format 
 
 - Initial release of `@samline/forms`. Vanilla JS form controller with framework-specific variants (React, Vue, Svelte) initially included; bundled `.local/` agent docs at the repo root.
 
-[Unreleased]: https://github.com/samline/forms/compare/v2.7.0...HEAD
+[Unreleased]: https://github.com/samline/forms/compare/v2.7.2...HEAD
+[2.7.2]: https://github.com/samline/forms/compare/v2.7.1...v2.7.2
+[2.7.1]: https://github.com/samline/forms/compare/v2.7.0...v2.7.1
 [2.7.0]: https://github.com/samline/forms/compare/v2.6.0...v2.7.0
 [2.6.0]: https://github.com/samline/forms/compare/v2.5.1...v2.6.0
 [2.5.1]: https://github.com/samline/forms/compare/v2.5.0...v2.5.1
