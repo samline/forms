@@ -461,6 +461,7 @@ Things to know:
 - If you authored your own `<input type="hidden" name="<field>">` (or `<input data-formatter-raw-for="<field>">`) before wiring the controller, `format()` reuses it instead of duplicating it. Pre-existing mirrors survive `destroy()`; mirrors created by `format()` are removed.
 - If you prefer to pre-author the visible with the display name (e.g. `<input name="phone_displayed" />`) instead of letting `format()` rename it, `format()` picks that up and skips the rename. Both authoring styles end up with the same DOM.
 - Use `formatAll({ type, field: ['a', 'b', 'c'], options })` to bind the same configuration to several fields in one call. Each field gets its own pair (`a` + `a_displayed`, `b` + `b_displayed`, `c` + `c_displayed`).
+- Date/time initial values and canonical mirror writes use the formatter's `auto` interpretation; live visible-input events and re-binds use `display`. This preserves server-prefilled raw values without misreading a full-length delimiter-less paste in the visible field. An explicit `options.interpretInputAs` always wins.
 - `@samline/formatter` is an **optional peer dependency** for module builds. When it is missing, the module instance logs one cached `console.error` and asynchronously restores affected fields so the rest of the form keeps working. The standalone global IIFE bundles formatter behavior.
 
 ---

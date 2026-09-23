@@ -81,11 +81,11 @@ When the visible field already carries a value at the moment `format()` first ru
 To bridge the two layers, the controller:
 
 - For the **initial pass** (and for input events whose source is the hidden mirror, e.g. a `setValue('field', raw)` that wrote the canonical raw), overrides the formatter call to use `interpretInputAs: 'auto'`. This handles the realistic `old()` re-render case where the server hands the visible the canonical raw.
-- For **live keystrokes** on the visible input, the formatter is invoked with the caller's `options` as-is — what the user typed is in display order, and the formatter's default (`'auto'` since v2.0.0) does the right thing.
-- For the **re-bind** path (a second `format()` call with new options for the same field), the formatter is also invoked with the caller's `options` as-is — the visible at that point is whatever the formatter previously produced, in display order.
+- For **live input events** on the visible field, the controller injects `interpretInputAs: 'display'` when the caller did not choose a mode. This keeps typing and full-length delimiter-less pastes in display order instead of leaving them ambiguous under the formatter's automatic heuristic.
+- For the **re-bind** path (a second `format()` call with new options for the same field), the controller also injects `'display'` by default because the current visible value is already in display order.
 - An **explicit `interpretInputAs`** in `options` is always respected, never overridden. Use `'display'` if you pre-render the visible in display order from the server, or `'raw'` if you want the legacy pre-1.2.0 round-trip semantics for the initial pass.
 
-This is transparent for the common case: a Blade re-render with `value="{{ old('birthday') }}"` carrying `"19901212"` repopulates the visible as `"12/12/1990"` without any extra wiring on the consumer side. The option is opt-in only when the consumer needs the inverse convention.
+This is transparent for the common case: a Blade re-render with `value="{{ old('birthday') }}"` carrying `"19901212"` repopulates the visible as `"12/12/1990"`, while pasting `"12121990"` into the visible field remains 12 December 1990. Set `interpretInputAs` explicitly only when your application needs a different convention.
 
 ## Pre-authoring the visible
 

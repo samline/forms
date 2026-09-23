@@ -4,6 +4,17 @@ All notable changes to `@samline/forms` are documented in this file. The format 
 
 ## [Unreleased]
 
+## [2.7.1] - 2026-09-23
+
+### Fixed
+
+- Interpreted user input and rebind values as display-order data while retaining automatic detection for canonical mirrors and initial server values.
+
+### Changed
+
+- Synchronized the internal and Starlight formatter-integration documentation.
+- Removed duplicated implementation narratives and obsolete comments without changing the public API.
+
 ## [2.7.0] - 2026-09-22
 
 ### Added

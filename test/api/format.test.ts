@@ -8,17 +8,6 @@ import {
   type FormatterModule
 } from '../../src/core/formatter-loader'
 
-// The formatter loader is exposed via `__setFormatterModuleForTests`
-// so we can simulate both the "installed" and "missing" peer scenarios
-// without going through a real dynamic import in jsdom.
-//
-// The tests below cover the new mirror convention: a formatted field
-// is exposed as a `<field>` hidden raw mirror (the canonical name) and
-// a `<field>_displayed` visible input (configurable via
-// `FieldFormatConfig.displayField`). Both names are first-class in the
-// controller API — `getValue`/`getField`/`setValue`/`watch`/`getData`
-// each return the value of the name they were given.
-
 const buildFixture = () => {
   document.body.innerHTML = `
     <form id="checkout-form">
@@ -57,10 +46,7 @@ const numeralFormatter: FormatterModule = {
   }
 }
 
-// Hardcoded DD/MM/YYYY formatter for the deletion-adjacent-to-delimiter
-// tests. Mirrors the shape of `@samline/formatter`'s `date` mode but
-// keeps the expected output string predictable so the caret math in the
-// test is obvious to read.
+// Deterministic DD/MM/YYYY fixture for caret tests.
 const dateFormatter: FormatterModule = {
   format: (value, _type, _options) => {
     const digits = String(value ?? '').replace(/\D/g, '').slice(0, 8)
@@ -967,8 +953,8 @@ describe('format() integration', () => {
   // explicitly for the initial pass and for mirror-source events
   // so the intent is documented in code and the behaviour is
   // robust against future formatter changes. The live input
-  // listener keeps the formatter's defaults (no override) so
-  // user keystrokes (always in display order) are unaffected.
+  // listener explicitly uses display mode so user keystrokes and
+  // delimiter-less full-length pastes stay in display order.
   // The same override applies to mirror-source events so
   // `setValue('birthday', '19901212')` round-trips correctly.
 
@@ -1134,15 +1120,57 @@ describe('format() integration', () => {
         .value
     ).toBe('19901213')
 
-    // The keystroke was processed with the formatter's default
-    // (no `interpretInputAs` override) — the listener honours
-    // what the user typed.
+    // The listener declares the visible field's display-order
+    // convention explicitly.
     const keystroke = calls[calls.length - 1]
     expect(keystroke?.value).toBe('13/12/1990')
     expect(
       (keystroke?.options as { interpretInputAs?: 'raw' | 'display' | 'auto' } | undefined)
         ?.interpretInputAs
-    ).toBeUndefined()
+    ).toBe('display')
+  })
+
+  it('keeps a full-length delimiter-less paste in display order', async () => {
+    const { formatter, calls } = buildRecordingDateFormatter()
+    __setFormatterModuleForTests(formatter)
+
+    document.body.innerHTML = `
+      <form id="paste-form">
+        <input name="birthday" />
+      </form>
+    `
+
+    const api = form('paste-form')
+    api.format({
+      type: 'date',
+      field: 'birthday',
+      options: {
+        datePattern: ['d', 'm', 'Y'],
+        delimiter: '/',
+        dateRawPattern: ['Y', 'm', 'd'],
+        dateRawPatternDelimiter: ''
+      }
+    })
+    await flush()
+
+    const formElement = document.getElementById('paste-form') as HTMLFormElement
+    const visible = formElement.querySelector<HTMLInputElement>(
+      'input[name="birthday_displayed"]'
+    )!
+    visible.value = '12121990'
+    visible.dispatchEvent(new Event('input', { bubbles: true }))
+    await flush()
+
+    expect(visible.value).toBe('12/12/1990')
+    expect(
+      formElement.querySelector<HTMLInputElement>('input[type="hidden"][name="birthday"]')!
+        .value
+    ).toBe('19901212')
+    expect(
+      (calls[calls.length - 1]?.options as
+        | { interpretInputAs?: 'raw' | 'display' | 'auto' }
+        | undefined)?.interpretInputAs
+    ).toBe('display')
   })
 
   it('forwards the raw interpretation when setValue writes the canonical (date) name', async () => {
@@ -1245,7 +1273,7 @@ describe('format() integration', () => {
     ).toBe('display')
   })
 
-  it('leaves the re-bind (re-call format() with new options) path using the user-supplied options verbatim', async () => {
+  it('uses display interpretation when re-binding a visible value', async () => {
     const { formatter, calls } = buildRecordingDateFormatter()
     __setFormatterModuleForTests(formatter)
 
@@ -1271,9 +1299,9 @@ describe('format() integration', () => {
     calls.length = 0
 
     // Re-call format() with a fresh options object. The
-    // re-bind path runs the formatter on the current visible
-    // value using the user-supplied options verbatim — no
-    // implicit `interpretInputAs: 'raw'` override.
+    // re-bind path runs the formatter on the current visible value,
+    // so it declares display interpretation unless the caller chose
+    // a mode explicitly.
     api.format({
       type: 'date',
       field: 'birthday',
@@ -1286,13 +1314,12 @@ describe('format() integration', () => {
     })
     await flush()
 
-    // The re-bind call forwarded the user's options as-is
-    // (no `interpretInputAs` was injected).
+    // The re-bind call identifies its value as display-order input.
     expect(calls.length).toBeGreaterThan(0)
     const reBindCall = calls[calls.length - 1]
     expect(
       (reBindCall?.options as { interpretInputAs?: 'raw' | 'display' } | undefined)
         ?.interpretInputAs
-    ).toBeUndefined()
+    ).toBe('display')
   })
 })

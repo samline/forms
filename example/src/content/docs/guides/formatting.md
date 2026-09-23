@@ -79,7 +79,7 @@ Avoid submitting in the same synchronous turn in which formatting is first confi
 
 ## Server-prefilled values
 
-An existing visible value is formatted once after the peer loads. The initial pass defaults `interpretInputAs` to `auto`, which lets a canonical date such as `19901212` become its configured display form. An explicit `interpretInputAs` in `options` always wins:
+An existing visible value is formatted once after the peer loads. The initial pass defaults `interpretInputAs` to `auto`, which lets a canonical date such as `19901212` become its configured display form. Later events from the visible field and re-bind operations default to `display`, so a full-length paste such as `12121990` remains in display order. Writes to the canonical hidden mirror use `auto`. An explicit `interpretInputAs` in `options` always wins:
 
 ```ts
 checkout.format({
@@ -87,7 +87,7 @@ checkout.format({
   field: 'birthday',
   options: {
     datePattern: ['d', 'm', 'Y'],
-    rawDatePattern: ['Y', 'm', 'd'],
+    dateRawPattern: ['Y', 'm', 'd'],
     interpretInputAs: 'raw'
   }
 })
