@@ -12,6 +12,7 @@ example/
 
 # Tooling & lockfiles
 .agents/
+.claude/
 .github/
 bun.lock
 bun.lockb

@@ -56,6 +56,12 @@ The AI must treat them as operational context of the project.
 
 ---
 
+## Agent skills and memory location
+
+Agents, Claude included, store and read project skills and memory in `.agents/`. Skills are created and edited only in `.agents/skills/`. `.claude/skills` is a tracked relative symlink to `../.agents/skills` because Claude Code loads project skills only from `.claude/skills/`; never keep a second copy there. On Windows, clone with `git config core.symlinks true`.
+
+---
+
 ## Persistence Rule
 
 If the user adds new internal rules, todos, or lessons, the AI must keep the corresponding documents inside `.agents/` updated.
