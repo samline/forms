@@ -9,6 +9,7 @@ import type { FormSubmitHandler } from '../core/types'
 export const createOnSubmit =
   (state: FormControllerState, _helpers: FormControllerHelpers) =>
   (callback: FormSubmitHandler, preventDefault = true) => {
+    if (state.isDestroyed) return state.api!
     state.submitHandlers.add({ callback, preventDefault })
     return state.api!
   }

@@ -45,7 +45,7 @@ export default defineConfig([
   },
   {
     entry: {
-      'browser/global': 'src/browser/global.ts'
+      'browser/global': 'src/browser/iife.ts'
     },
     format: ['iife'],
     dts: true,
@@ -53,7 +53,10 @@ export default defineConfig([
     clean: false,
     target: 'es2020',
     outDir: 'dist',
-    globalName: 'Forms'
+    globalName: 'Forms',
+    // The IIFE is what CDN users download directly, with the formatter
+    // bundled in, so it ships minified. Bundler entries stay readable.
+    minify: true
     // Intentionally NO `external`: the IIFE must self-contain the
     // formatter so it works when loaded from a CDN with `<script>`.
   }

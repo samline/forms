@@ -1,0 +1,158 @@
+---
+locale: en
+sidebar:
+  group: api
+  order: 1
+title: 'Create a controller with form()'
+titleAccent: 'form()'
+description: 'Creates a new controller bound to a form. This is the main entry point of @samline/forms.'
+---
+
+Creates a new controller bound to a form. This is the main entry point of `@samline/forms`.
+
+## Signature
+
+```ts
+function form(target: FormTarget, options?: FormControllerOptions): FormController
+```
+
+## Parameters
+
+| Name      | Type                                                                         | Required | Description                                                                                                   |
+| --------- | ---------------------------------------------------------------------------- | -------- | ------------------------------------------------------------------------------------------------------------- |
+| `target`  | [`FormTarget`](../../reference/typescript/#formtarget)                       | yes      | What to bind to: a string id, an `HTMLFormElement`, a ref-like `{ current }` object, or `null` / `undefined`. |
+| `options` | [`FormControllerOptions`](../../reference/typescript/#formcontrolleroptions) | no       | Controller configuration. See [docs/options.md](../../reference/configuration/).                              |
+
+## Returns
+
+A [`FormController`](../../reference/typescript/#formcontroller) — chainable for every method that does not return data or an unsubscribe function.
+
+## Binding modes
+
+### By id string
+
+```ts
+import { form } from '@samline/forms'
+
+const profile = form('profile-form')
+```
+
+The string is passed to `document.getElementById`. If no element is found, or the found element is not an `HTMLFormElement`, the controller is created but `controller.element` is `null` and most methods become no-ops.
+
+### By `HTMLFormElement`
+
+```ts
+const element = document.querySelector<HTMLFormElement>('#profile-form')
+const profile = form(element)
+```
+
+Useful when you already have the element from a `querySelector` call.
+
+### By ref-like object
+
+```ts
+const ref = { current: document.querySelector<HTMLFormElement>('#profile-form') }
+const profile = form(ref)
+```
+
+The controller reads `target.current` only at construction time. If you mount the form later, recreate the controller or call `destroy()` and re-bind.
+
+### By `null` / `undefined`
+
+```ts
+const profile = form()
+```
+
+Allowed for type-system ergonomics. The resulting controller has `element === null` and is effectively inert.
+
+## Behaviour
+
+On creation the controller:
+
+1. Resolves the form element.
+2. Merges the provided options with defaults (`autoValidate: true`, `clearErrorsOnSubmit: true`, `clearManualErrorsOnChange: true`, `attributes: { filled: 'css-filled', error: 'css-error' }`).
+3. Wires delegated `input` and `submit` listeners, including controls associated through `form="id"`.
+4. Starts a `MutationObserver` on the form subtree to track dynamic fields.
+5. Optionally enables [`autoSubmit`](../auto-submit/) when `options.autoSubmit` is truthy.
+6. Synchronizes initial `css-filled` state for every tracked control, including when `autoValidate` is disabled.
+7. Runs an initial validation pass only if `autoValidate` is enabled.
+
+## Examples
+
+### Minimal setup
+
+```ts
+import { form } from '@samline/forms'
+
+const contact = form('contact-form')
+
+contact.onSubmit(async (_element, _data, formData) => {
+  await fetch('/api/contact', { method: 'POST', body: formData })
+})
+```
+
+### With validators and options
+
+```ts
+import { form } from '@samline/forms'
+
+const signup = form('signup-form', {
+  attributes: { filled: 'is-filled', error: 'is-invalid' },
+  autoValidate: true,
+  autoSubmit: { debounce: 600 },
+  clearManualErrorsOnChange: false,
+  validators: {
+    email: {
+      required: { value: true, message: 'Email is required.' },
+      pattern: {
+        value: /^[^\s@]+@[^\s@]+\.[^\s@]+$/,
+        message: 'Enter a valid email address.',
+      },
+    },
+    password: { required: true, minLength: 8 },
+  },
+  formats: {
+    phone: { type: 'phone', field: 'phone', options: { country: 'MX' } },
+  },
+})
+```
+
+### Bind later via ref
+
+```ts
+import { form } from '@samline/forms'
+
+const profileRef = { current: null as HTMLFormElement | null }
+
+const profile = form(profileRef)
+
+document.querySelector('#mount')?.appendChild(document.createElement('form'))
+profileRef.current = document.querySelector<HTMLFormElement>('#mount form')
+
+// Re-bind because the controller captured `current` at construction time.
+profile.destroy()
+form(profileRef)
+```
+
+## Edge cases
+
+- **The id is resolved once.** If the DOM element with that id is replaced, the controller keeps listening to the original element. Recreate the controller if you re-render the form.
+- **`null` / `undefined` targets** are accepted and produce an inert controller. The chainable methods still return the controller, so they are safe to call as no-ops.
+- **Reusing a target across multiple controllers** is supported but they each install their own listeners — call [`destroy()`](../destroy/) on the previous one to avoid duplicate work.
+- **`autoValidate: false` disables the initial rule pass, not visual initialization.** Prefilled fields still receive `css-filled`; no validation errors are produced and `isValidated` remains `false`.
+- **`createFormController` is also exported** as the lower-level factory; prefer `form` for ergonomic imports.
+
+## `createFormController`
+
+```ts
+function createFormController(target: FormTarget, options?: FormControllerOptions): FormController
+```
+
+This is the factory used by `form()` and accepts the same arguments. It is exported for integrations that prefer an explicit constructor-style name.
+
+## Related
+
+- [`FormController`](../../reference/typescript/#formcontroller) — the returned controller type.
+- [`destroy`](../destroy/) — tear the controller down.
+- [`addCleanup`](../add-cleanup/) — attach integration cleanup to the controller lifecycle.
+- [docs/options.md](../../reference/configuration/) — every option in detail.

@@ -1,183 +1,171 @@
-# Forms
+# @samline/forms
 
-> A TypeScript-first, framework-free controller for native HTML forms.
+Validation, reactive state, serialization and auto-submit for native HTML forms, with a typed, framework-free API for JavaScript and TypeScript.
 
-> Add validation, reactive field state, accessible error handling, serialization, auto-submit, and optional input formatting without adopting a UI framework.
+[Demo](https://samline.github.io/forms/) · [Examples](https://samline.github.io/forms/examples/) · [Documentation](https://samline.github.io/forms/docs/) · [Changelog](CHANGELOG.md)
 
----
-
-## Table of Contents
+## Table of contents
 
 - [Installation](#installation)
-- [CDN / Browser](#cdn--browser)
-- [Entrypoints](#entrypoints)
-- [Quick Start](#quick-start)
-- [What You Can Build](#what-you-can-build)
-- [API at a Glance](#api-at-a-glance)
+- [Quick start](#quick-start)
+- [HTML / CDN](#html--cdn)
+- [Capabilities](#capabilities)
+- [API at a glance](#api-at-a-glance)
 - [Documentation](#documentation)
+- [Changelog](#changelog)
+- [AI agent skill](#ai-agent-skill)
 - [License](#license)
-
----
 
 ## Installation
 
-```bash
+```sh
 npm install @samline/forms
 ```
 
-```bash
+```sh
 pnpm add @samline/forms
 ```
 
-```bash
+```sh
 bun add @samline/forms
 ```
 
-Requires Node 20+ when bundling. Runtime target is ES2020.
+Requires Node 20+ when bundling; the runtime targets ES2020 browsers. Formatting needs the optional peer `@samline/formatter` (`npm install @samline/formatter`); validation, state and serialization do not.
 
----
+## Quick start
 
-## CDN / Browser
-
-Use the browser build when you do not have a bundler and need to run the package directly in HTML, Shopify, WordPress, or any traditional template.
+Keep a native form with named fields. `novalidate` lets the controller's rules replace the browser's bubbles.
 
 ```html
-<script src="https://unpkg.com/@samline/forms@2.7.2/dist/browser/global.global.js"></script>
+<form id="signup" novalidate>
+  <label for="email">Email</label>
+  <input id="email" name="email" type="email" autocomplete="email" aria-describedby="email-error" />
+  <p id="email-error" data-error-for="email" aria-live="polite"></p>
+  <button type="submit">Sign up</button>
+</form>
 ```
 
-> Pin the version in production. Replace `2.7.2` with the version you ship.
+```js
+import { form } from '@samline/forms'
 
-The browser bundle exposes a single global: `window.Forms`.
+const signup = form('signup', {
+  autoValidate: false,
+  validators: {
+    email: {
+      required: { value: true, message: 'Enter your email.' },
+      pattern: { value: /^[^\s@]+@[^\s@]+\.[^\s@]+$/, message: 'Use a valid email.' },
+    },
+  },
+})
+
+signup.subscribe(state => {
+  document.querySelector('#email-error').textContent = state.errors.email?.[0] ?? ''
+})
+
+signup.onSubmit(async (_element, _data, formData) => {
+  await fetch('/api/signup', { method: 'POST', body: formData })
+  signup.reset()
+})
+
+// When the form goes away (route change, component unmount):
+// signup.destroy()
+```
+
+Invalid submits are always prevented and focus moves to the first invalid field. Valid submits reach every `onSubmit()` handler with a plain object, a fresh `FormData` and a state snapshot.
+
+## HTML / CDN
+
+The standalone build defines `window.Forms` and already includes `@samline/formatter`. Pin the version.
 
 ```html
-<form id="contact-form">
-  <input name="email" type="email" />
-  <button type="submit">Send</button>
-</form>
-
-<script src="https://unpkg.com/@samline/forms@2.7.2/dist/browser/global.global.js"></script>
+<script src="https://unpkg.com/@samline/forms@2.8.0/dist/browser/global.global.js"></script>
 <script>
-  const contactForm = window.Forms.newForm({ id: 'contact-form' })
-
-  contactForm.onSubmit(async (form, data, formData) => {
-    await fetch('/api/contact', { method: 'POST', body: formData })
+  const signup = window.Forms.form('signup', {
+    validators: { email: { required: true, pattern: /^[^\s@]+@[^\s@]+\.[^\s@]+$/ } },
   })
-
-  contactForm.validate()
 </script>
 ```
 
-The browser surface keeps a small registry under `Forms.available`, keyed by the `id` you pass to `Forms.newForm`. Each successful `newForm` call stores the returned controller there, and `Forms.destroyForm(id)` calls `destroy()` and removes the entry. Use `Forms.form` directly when you need the factory without the registry side-effect.
+`window.Forms` has `form`, `newForm({ id, options })`, `destroyForm(id)` and the `available` registry. See [Browser global and CDN](https://samline.github.io/forms/docs/reference/browser/).
 
-See [docs/browser.md](docs/browser.md) for the full browser surface.
+## Capabilities
 
----
+- **Validation rules:** `required`, `minLength`, `maxLength`, `pattern`, `numeric`, `min`, `max`, `sameAs`, `dependsOn`, per-row `each` and custom validators that read every value.
+- **Accessible state:** invalid controls get `aria-invalid` and `css-error`, filled ones `css-filled`; a failed submit focuses the first invalid control in document order.
+- **Reactive state:** `subscribe()` for the whole form, `observe()`/`watch()` for one field.
+- **Submission:** promise-aware `onSubmit()`, `autoSubmit()` with debounce, `setErrors()` for server responses, `prefill()` from the URL and `reset()`.
+- **Native controls:** checkbox groups, radios, multiple selects, files, repeated `name[]` inputs and controls linked with `form="id"`, including fields added later.
+- **Formatting:** `format()`, `formatAll()` and the `formats` option format phones, cards, dates, times and amounts while a hidden field submits the raw value.
+- **DOM-free helpers:** `validateValues()` and `validateFieldValue()` run the same rules on the server; `parseFormData()` serializes any form.
 
-## Entrypoints
+### Lifecycle
 
-| Entrypoint | When to use |
-| --- | --- |
-| `@samline/forms` | Main vanilla API for bundlers, ESM, or CJS consumers. |
-| `@samline/forms/browser` | ESM/CJS browser module with registry exports, bundled types, and `window.Forms` registration. |
-| `@samline/forms/browser/global` | Pre-bundled IIFE for direct `<script>` usage; the CDN URL resolves to `dist/browser/global.global.js`. |
+One controller owns one form's listeners, `MutationObserver` and auto-submit timer. Create it once the form exists and call `destroy()` when it goes away. `addCleanup()` ties your own teardown to the same lifetime. After `destroy()`, writes and new registrations are no-ops.
 
-The vanilla entrypoint also exports `browser`, the same `{ form, newForm, destroyForm, available }` surface as the IIFE but as a module-level singleton (no `globalThis` side-effect). Use it from a bundler when you want the registry helpers without the IIFE — see [docs/browser.md → Using the same shape from a bundler](docs/browser.md#using-the-same-shape-from-a-bundler).
+## API at a glance
 
----
+| Export                                     | Purpose                                                             |
+| ------------------------------------------ | ------------------------------------------------------------------- |
+| `form(target, options?)`                   | Create a controller for an id, `HTMLFormElement` or `{ current }`.  |
+| `createFormController(target, options?)`   | The same factory under its descriptive name.                        |
+| `browser`                                  | `{ form, newForm, destroyForm, available }` registry singleton.     |
+| `parseFormData(form, submitter?)`          | Serialize a form into `{ data, formData }`.                         |
+| `validateValues(values, schema)`           | Validate a plain values object against a `ValidationSchema`.        |
+| `validateFieldValue(field, value, rules, values)` | Validate one value.                                          |
+| `@samline/forms/browser`                   | The registry as a module namespace; also sets `globalThis.Forms`.   |
+| `@samline/forms/browser/global`            | The standalone IIFE that defines `window.Forms`.                    |
 
-## Quick Start
+### Controller methods
 
-```ts
-import { form } from '@samline/forms'
+| Group         | Methods                                                                            |
+| ------------- | ---------------------------------------------------------------------------------- |
+| Submission    | `onSubmit`, `autoSubmit`, `disableAutoSubmit`                                      |
+| Validation    | `validate`, `revalidate`, `setErrors`, `clearErrors`                               |
+| State         | `subscribe`, `observe`, `watch`, `unwatch`, `getState`                             |
+| Values        | `setValue`, `getValue`, `getField`, `getData`, `prefill`, `reset`                  |
+| Formatting    | `format`, `formatAll`                                                              |
+| Lifecycle     | `element`, `f`, `options`, `append`, `addCleanup`, `destroy`                       |
 
-const contactForm = form('contact-form', {
-  validators: {
-    email: {
-      required: true,
-      pattern: /^[^\s@]+@[^\s@]+\.[^\s@]+$/
-    }
-  }
-})
+### Options
 
-contactForm.watch('email', value => {
-  console.log('email is now:', value)
-})
-
-contactForm.onSubmit(async (_element, _data, formData) => {
-  await fetch('/api/contact', { method: 'POST', body: formData })
-})
-```
-
-What this does:
-
-- Binds to the form with id `contact-form`.
-- Adds `css-filled` / `css-error` attributes on fields so you can style them with CSS.
-- Validates `email` on every change and on submit.
-- Intercepts valid submits (the default for `onSubmit`) and hands a real `FormData` instance to your handler.
-
----
-
-## What You Can Build
-
-- Contact, newsletter, login, signup, checkout, and profile forms.
-- Forms that submit with `fetch` while keeping native `FormData` payloads.
-- Autosave / autosubmit flows with optional debounce.
-- Visual feedback driven by `css-filled` and `css-error` attributes.
-- Progressive enhancement on top of any existing HTML form.
-- Forms rendered server-side (Blade, Twig, ERB) that still want client-side validation.
-
----
-
-## API at a Glance
-
-The controller is built around one factory and a small set of focused methods. Most methods are chainable.
-
-| Group | Methods |
-| --- | --- |
-| Lifecycle | [`form`](docs/api/form.md) · [`addCleanup`](docs/api/add-cleanup.md) · [`destroy`](docs/api/destroy.md) · [`reset`](docs/api/reset.md) |
-| Registry (vanilla) | [`browser`](docs/getting-started.md#browser-registry-helpers) — bundler-friendly `{ form, newForm, destroyForm, available }` singleton. |
-| Properties | [`element`](docs/api/element.md) · [`options`](docs/options.md) |
-| Submission | [`onSubmit`](docs/api/on-submit.md) · [`autoSubmit`](docs/api/auto-submit.md) · [`disableAutoSubmit`](docs/api/disable-auto-submit.md) |
-| Field observation | [`watch`](docs/api/watch.md) · [`observe`](docs/api/observe.md) · [`unwatch`](docs/api/unwatch.md) · [`subscribe`](docs/api/subscribe.md) |
-| Field values | [`setValue`](docs/api/set-value.md) · [`getValue`](docs/api/get-value.md) · [`getField`](docs/api/get-field.md) · [`prefill`](docs/api/prefill.md) · [`format`](docs/api/format.md) · [`formatAll`](docs/api/format.md) |
-| Validation | [`validate`](docs/api/validate.md) · [`revalidate`](docs/api/revalidate.md) · [`setErrors`](docs/api/set-errors.md) · [`clearErrors`](docs/api/clear-errors.md) |
-| State and data | [`getData`](docs/api/get-data.md) · [`getState`](docs/api/get-state.md) · [`append`](docs/api/append.md) |
-| Pure helpers | [`parseFormData`](docs/api/parse-form-data.md) · [`validateValues`](docs/api/validate-values.md) · [`validateFieldValue`](docs/api/validate-field-value.md) |
-
-Validation supports explicit cross-field dependencies with `dependsOn`, per-member collection rules with `each`, and strict decimal `numeric` / inclusive `min` / `max` rules. Async `onSubmit` handlers are reflected by `getState().isSubmitting`, while `addCleanup()` lets integrations register controller-owned teardown work.
-
-See the full per-method reference in [`docs/api/`](docs/api/index.md).
-
----
-
-## Optional peer: `@samline/formatter`
-
-[`format`](docs/api/format.md) and [`formatAll`](docs/api/format.md) rely on the optional peer dependency [`@samline/formatter`](https://github.com/samline/formatter). Install it when you need input masks (phone, credit-card, date, time, numeral, general):
-
-```bash
-npm install @samline/formatter
-```
-
-If the peer is not installed, the methods log a single `console.error` explaining how to install it and return the controller unchanged — the rest of the form keeps working. See [docs/recipes.md → 13. Format inputs with `@samline/formatter`](docs/recipes.md#13-format-inputs-with-samlineformatter) for end-to-end examples.
-
----
+`validators`, `autoValidate` (default `true`), `autoSubmit`, `clearErrorsOnSubmit` (default `true`), `clearManualErrorsOnChange` (default `true`), `attributes` (default `{ filled: 'css-filled', error: 'css-error' }`) and `formats`. Every option is described in [Configuration options](https://samline.github.io/forms/docs/reference/configuration/); every type is exported, see the [TypeScript reference](https://samline.github.io/forms/docs/reference/typescript/).
 
 ## Documentation
 
-Full API reference, guides, and examples are available at **[samline.github.io/forms](https://samline.github.io/forms)**.
+| Guide                                                                                      | What it covers                                                       |
+| ------------------------------------------------------------------------------------------ | -------------------------------------------------------------------- |
+| [Get started](https://samline.github.io/forms/docs/getting-started/)                       | Installation, the first form, CDN use and cleanup.                   |
+| [Examples](https://samline.github.io/forms/docs/guides/examples/)                          | Twelve live forms with their code.                                   |
+| [Validation and errors](https://samline.github.io/forms/docs/guides/validation/)           | Every rule, cross-field checks and accessible messages.              |
+| [State and submission](https://samline.github.io/forms/docs/guides/state-and-submission/)  | Subscribers, async submits, auto-submit, prefill and reset.          |
+| [Formatting fields](https://samline.github.io/forms/docs/guides/formatting/)               | The optional formatter and the hidden raw mirror.                    |
+| [Framework integrations](https://samline.github.io/forms/docs/guides/frameworks/)          | React, Vue, Svelte, Astro, Shopify and WordPress.                    |
+| [API reference](https://samline.github.io/forms/docs/reference/api/)                       | Every method, grouped by task, with one page per method.             |
 
-| Doc | Purpose |
-| --- | --- |
-| [docs/getting-started.md](docs/getting-started.md) | Concepts, observable contract, lifecycle, and side-effect overview. |
-| [docs/options.md](docs/options.md) | Full `FormControllerOptions` reference. |
-| [docs/css-styling.md](docs/css-styling.md) | `css-filled` and `css-error` styling recipes. |
-| [docs/typescript.md](docs/typescript.md) | Every exported TypeScript type, with examples. |
-| [docs/api/index.md](docs/api/index.md) | One page per public method. |
-| [docs/recipes.md](docs/recipes.md) | End-to-end patterns: fetch submit, server errors, autosave, multi-step, etc. |
-| [docs/browser.md](docs/browser.md) | Browser global (`window.Forms`) usage. |
+## Changelog
 
----
+Read [CHANGELOG.md](CHANGELOG.md) or the [published changelog](https://samline.github.io/forms/docs/changelog/) for release history and explicitly marked behavior changes.
+
+### Upgrading to 2.8
+
+2.8.0 removes no API. Review these behavior fixes before upgrading: `prefill()` writes repeated query keys as arrays and auto-submits once; native reset buttons now clear errors and attributes; `reset()` calls watchers; failed submits focus the first invalid control in document order and automatic submits never move focus; methods called after `destroy()` no longer change the form; rejected async submit handlers are logged. The Markdown `docs/` folder is no longer published to npm; the documentation lives on the website. The optional `@samline/formatter` peer now requires `^2.1.0`, which the standalone script bundles. Read the [2.8.0 notes](CHANGELOG.md).
+
+## AI agent skill
+
+<a id="agent-integration"></a>
+
+The [Forms skill](https://samline.github.io/forms/skills/forms/SKILL.md) describes 2.8 integration: loading modes, validation rules and accessible messages, state and submission, formatting and host ownership. Pass it to an agent or install it using a skills-compatible tool. Verify the installed package version before applying its guidance.
+
+Download [SKILL.md](https://samline.github.io/forms/skills/forms/SKILL.md) into a `forms/` folder in your agent's supported skill directory. For agents that discover project skills from `.agents/skills/`:
+
+```sh
+mkdir -p .agents/skills/forms
+curl --fail --location https://samline.github.io/forms/skills/forms/SKILL.md \
+  --output .agents/skills/forms/SKILL.md
+```
+
+When working from this repository, copy `skills/forms/SKILL.md` instead. Keep the filename `SKILL.md`; discovery paths and invocation syntax depend on the agent.
 
 ## License
 
-MIT
+MIT — [LICENSE.md](LICENSE.md)

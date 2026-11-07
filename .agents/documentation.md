@@ -1,93 +1,57 @@
 # Documentation in-sync rule
 
-`@samline/forms` ships two documentation surfaces that must reflect the current public API at all times:
+`@samline/forms` documents its public API on the website (Astro collection in `docs/src/content/docs/`, published at `https://samline.github.io/forms`) plus `README.md` and the agent skill `skills/forms/SKILL.md`. Since 2.8.0 there is no npm-bundled Markdown `docs/` folder and no Starlight `example/` app; both were migrated and retired at `612ac51`.
 
-1. **`docs/`** — bundled with the npm tarball. Read by consumers directly on disk and via the GitHub repo.
-2. **`example/src/content/docs/reference/`** — the Starlight site served at `https://samline.github.io/forms`.
-
-A change to the public API is **not done** until both surfaces are updated. This file is the checklist.
+A change to the public API is **not done** until every surface below is updated in the same change.
 
 ## When to read this file
 
-- Before any release / version bump (e.g. `2.3.3` → `2.4.0`).
-- After any change to `src/index.ts` (the public surface) or `src/core/types.ts` (the public types).
-- After any change to a per-method factory in `src/api/*.ts` (signature, behaviour, return shape).
-- After any change to peer-dependent behaviour (`@samline/formatter` integration, `regex`, `formats`).
+- Before any release / version bump.
+- After any change to `src/index.ts`, `src/core/types.ts`, `src/browser/*` or a factory in `src/api/*.ts`.
+- After any change to peer-dependent behaviour (`@samline/formatter`, `format`, `formatAll`, `formats`, `regex`).
 
 ## Sync checklist
 
-Run these checks in order. Mark each as ✅ / ❌ before merging.
-
 ### 1. Public surface
 
-```bash
-cat src/index.ts
-cat src/core/types.ts
-```
+`src/index.ts`, `src/core/types.ts` and `dist/index.d.ts` are the contract. If the docs disagree with `dist/`, the docs are wrong.
 
-These two files are the source of truth. Any signature change here must propagate to every doc.
+### 2. Website reference
 
-### 2. `dist/` snapshot
+- [ ] `docs/src/content/docs/api/<method>.md` exists for every controller method and pure helper, with the current signature, behaviour list and edge cases. New pages need a `sidebar.group: api` order and a label in `docs/src/i18n/translations/en/navigation.ts`.
+- [ ] `docs/src/content/docs/reference/api.mdx` lists the method in its task group and per-method summary.
+- [ ] `reference/configuration.mdx` lists every `FormControllerOptions` field and default.
+- [ ] `reference/typescript.mdx` lists every exported type.
+- [ ] `reference/browser.mdx` and `reference/entrypoints.mdx` match the `/browser` subpath and the IIFE global (`form`, `newForm`, `destroyForm`, `available`).
+- [ ] Guides (`validation`, `state-and-submission`, `formatting`, `controls`, `css-styling`, `accessibility`, `frameworks`, `recipes`) still describe real behaviour.
+- [ ] `content-audit.json` maps new sources/exports to reviewed destinations (`npm run site:check:release`).
 
-```bash
-cat dist/index.d.ts
-```
+### 3. Examples and landing
 
-The bundled `.d.ts` is what consumers actually import from. It must match `src/index.ts` and `src/core/types.ts` exactly — if the docs disagree with `dist/`, the docs are wrong (the build is the canonical export).
+- [ ] Scenario catalog (`shared/i18n/translations/en/demo.ts`) and behavior regions (`shared/lib/demo-behavior.js`) use the current API; the browser suite replays every sample against the built files.
+- [ ] Landing snippets in `landing/src/i18n/translations/en/sections.ts` (setup, recipes, FAQ answers) still run.
 
-### 3. `docs/` (the npm-bundled reference)
+### 4. Peer-aware surfaces
 
-For every public symbol listed in `src/index.ts` / `src/core/types.ts`:
+`@samline/formatter` is an optional peer. Every page that mentions `format` / `formatAll` / `formats` / `regex` keeps the "optional peer" caveat; the standalone IIFE bundles it.
 
-- [ ] `docs/api/<method>.md` exists for every method and reflects the current signature, parameters, return shape, and behaviour table.
-- [ ] `docs/api/index.md` lists the new / removed / renamed method.
-- [ ] `docs/options.md` lists every field of `FormControllerOptions` (including the new `formats?: FieldFormatConfigMap`).
-- [ ] `docs/typescript.md` lists every exported type (including `FieldFormatConfig`, `FieldFormatConfigMap`, `FormatType`, `FieldValidator`, etc.).
-- [ ] `docs/recipes.md` has a recipe if the feature warrants one (e.g. `format` → "13. Format inputs with `@samline/formatter`").
-- [ ] `docs/api/element.md` example shows the new option in `options`.
+### 5. Code ↔ doc consistency
 
-### 4. `example/src/content/docs/reference/` (the Starlight site)
+Every behaviour claim must be verifiable in source and, where possible, covered by a test. Examples must run against the current build.
 
-Same checks, against the Starlight mirror:
+### 6. Version references
 
-- [ ] `example/src/content/docs/reference/api.md` lists the new / removed / renamed method in both the TOC and the per-method summaries.
-- [ ] `example/src/content/docs/reference/typescript.md` lists the new types.
-- [ ] `example/src/content/docs/reference/configuration.md` lists the new options.
-- [ ] `example/site.config.mjs` adds the new page to the `sidebar` array (e.g. `regex`, new per-method page).
-- [ ] Cross-links use Starlight absolute paths (`/forms/reference/...`) — not relative paths like `../api/...`.
+- [ ] `package.json`, `project.config.json` (`package.version`, `delivery.cdnScript`) and `content-audit.json.packageVersion`.
+- [ ] CDN URLs in README, `getting-started.mdx`, `reference/browser.mdx`, `reference/entrypoints.mdx`, `guides/recipes.mdx`, `guides/frameworks.mdx` and `skills/forms/SKILL.md` (`grep -rn "@samline/forms@" README.md docs/src skills`).
+- [ ] `skills/forms/SKILL.md` `package-version`.
 
-### 5. Peer-aware surfaces
+### 7. CHANGELOG
 
-`@samline/formatter` is an **optional peer dependency**. Anything sourced from it must be documented as such, with the warning that the import throws when the peer is missing:
+Every release adds a `CHANGELOG.md` section (`Added` / `Fixed` / `Changed`, breaking changes labelled) and a compare link. The website loads it as `/docs/changelog/`.
 
-- [ ] `regex` (peer) — `docs/api/regex.md` and `example/.../regex.md`. Callout at the top: "importing this without the peer throws a module-not-found error".
-- [ ] `format` / `formatAll` / `formats` (peer) — every page that mentions them must include the "optional peer" caveat.
-- [ ] The shim in `src/types/formatter.d.ts` matches what `docs/typescript.md` declares.
+### 8. Verify
 
-### 6. Code ↔ doc consistency
-
-The doc is a contract, not a wish. Every code-path claim in a doc page must be verifiable in the source. Specifically:
-
-- [ ] The "Behaviour" table in every per-method page matches the actual `if` / `switch` branches in the source. (Concrete past bug: `docs/api/set-value.md` claimed `<select multiple>` is treated as a checkbox group; the code only has branches for `checkbox` / `radio` / `file`, so the documented behaviour was wrong.)
-- [ ] The signature in every doc page matches the export in `src/index.ts` or the type in `src/core/types.ts`.
-- [ ] Examples in the docs actually run with the current build. If a doc example would throw on the current API, fix the example.
-- [ ] Cross-links (`[label](path.md#anchor)`) point to an existing page and an existing heading. (Concrete past bug: `docs/api/form.md` linked `[createFormController](element.md)` but `element.md` documents `element` / `f` / `options`, not `createFormController`. The right target is `typescript.md#formcontroller`.)
-
-### 7. Version references
-
-A version bump needs a separate sweep — see the agent memory entry "Barrido completo de versiones antes de commitear un bump". The short version:
-
-- [ ] `package.json` bumped.
-- [ ] `README.md` CDN URLs bumped (`@samline/forms@<x.y.z>`).
-- [ ] `docs/browser.md` CDN URL bumped.
-- [ ] `example/src/content/docs/reference/browser.md` CDN URL bumped.
-- [ ] `example/src/content/docs/getting-started.mdx` and `examples.mdx` CDN URL bumped.
-- [ ] `CHANGELOG.md` has a new entry with a "compare" link at the bottom.
-- [ ] Any prose mention of "the latest version is X" in `docs/getting-started.md`, `example/.../index.mdx`, etc.
-
-### 8. CHANGELOG
-
-A release is a release when it has a CHANGELOG entry. Every release adds one section in `CHANGELOG.md` with `### Added` / `### Fixed` / ### Changed bullets and a compare link at the bottom (`[X.Y.Z]: https://github.com/.../compare/vPREV...vX.Y.Z`).
+`npm run build && npm test && npm run test:package`, then `npm run site:verify` and `npm run site:check:release`.
 
 ## Past post-mortems
 
@@ -97,3 +61,4 @@ These are real bugs caught by past sweeps. Keep this list updated when a new one
 - **2.3.x (2026-07-16):** `docs/api/set-value.md` documented `<select multiple>` as "treated like a checkbox group", but `src/core/dom.ts → writeFieldValue` only branches on `checkbox` / `radio` / `file`; the actual behaviour is `field.value = String(value)`. Documentation claimed a code path that did not exist.
 - **2.3.x (2026-07-16):** `docs/api/form.md` linked `[createFormController](element.md)` to a page that documented the `element` / `f` / `options` getters, not `createFormController`. The correct target is `typescript.md#formcontroller`.
 - **2.3.x (2026-07-16):** `docs/api/regex.md` did not exist. `regex` is exported by the optional peer `@samline/formatter` and was only mentioned tangentially in `getting-started.md` and `browser.md`. Consumers had no dedicated reference.
+- **2.8.0 (2026-11-06):** the Starlight site described `reset()` as not invoking watchers and `prefill()` as writing repeated keys one by one; both were changed in the runtime and every page was updated in the same change. The migration also showed that MDX imports must be followed by a blank line, and that page title accents must be the trailing part of the title.

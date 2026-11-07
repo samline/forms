@@ -4,6 +4,34 @@ All notable changes to `@samline/forms` are documented in this file. The format 
 
 ## [Unreleased]
 
+## [2.8.0] - 2026-11-06
+
+No breaking API changes. The behavior changes below fix incorrect or surprising results; review them if your code relied on the old behavior.
+
+### Fixed
+
+- `prefill()` writes a repeated query key (`?tags[]=a&tags[]=b`) once as an array instead of keeping only the last value, and auto-submit runs once after the whole prefill instead of once per field.
+- A native `<button type="reset">` or a direct `form.reset()` now clears errors, `css-filled`, `css-error` and `aria-invalid` and restores formatted mirrors, like `reset()`. A canceled `reset` event is respected.
+- The form's `MutationObserver` ignores markup that contains no form controls, so a subscriber that renders messages or a summary into the form no longer re-enters validation in an endless loop.
+- An invalid submit started by auto-submit no longer moves focus away from the field being edited.
+- After a failed submit, focus goes to the first invalid control in document order instead of the first field declared in `validators`.
+- Formatting no longer moves the selection of an input that does not have focus (initial values, `setValue()`, `reset()`), which could also focus it in Safari.
+- After `destroy()`, mutating methods (`setValue`, `setErrors`, `clearErrors`, `validate`, `revalidate`, `reset`, `prefill`, `append`, `autoSubmit`) and new registrations (`subscribe`, `observe`, `watch`, `onSubmit`) are no-ops, so an async handler that settles late cannot repaint a form now owned by another controller. `validate()` returns `{ isValid: true, errors: {} }`.
+- `window.Forms` from the standalone script has exactly `form`, `newForm`, `destroyForm` and `available`; it no longer includes a `default` key.
+
+### Changed
+
+- `reset()` and native resets call `watch()`/`observe()` callbacks with the restored values.
+- A rejected promise returned by an `onSubmit()` handler is reported with `console.error('[forms] submit handler failed', reason)` instead of being swallowed. `isSubmitting` still settles.
+- The standalone `dist/browser/global.global.js` is minified (about 188 KB instead of 343 KB before compression); module builds are unchanged.
+- State reads index the form's controls once per snapshot instead of once per field name.
+- Raised the optional `@samline/formatter` peer and development dependency to `^2.1.0` (released 2026-11-06). The standalone script now bundles it, including its fixes for `regex.numeral`, `regex.password`, case-insensitive phone countries and decorated `general` masks.
+- Documentation moved to the website at <https://samline.github.io/forms/docs/>. The npm tarball now ships `dist`, `README.md`, `LICENSE.md` and `CHANGELOG.md`; the Markdown `docs/` folder is no longer published. Old Starlight URLs redirect to their new pages.
+
+### Added
+
+- A landing page, twelve live examples with copyable HTML / CDN and Package / ESM files, framework guides and an AI agent skill at `skills/forms/SKILL.md`.
+
 ## [2.7.2] - 2026-09-23
 
 ### Changed
@@ -249,7 +277,8 @@ All notable changes to `@samline/forms` are documented in this file. The format 
 
 - Initial release of `@samline/forms`. Vanilla JS form controller with framework-specific variants (React, Vue, Svelte) initially included; bundled `.local/` agent docs at the repo root.
 
-[Unreleased]: https://github.com/samline/forms/compare/v2.7.2...HEAD
+[Unreleased]: https://github.com/samline/forms/compare/v2.8.0...HEAD
+[2.8.0]: https://github.com/samline/forms/compare/v2.7.2...v2.8.0
 [2.7.2]: https://github.com/samline/forms/compare/v2.7.1...v2.7.2
 [2.7.1]: https://github.com/samline/forms/compare/v2.7.0...v2.7.1
 [2.7.0]: https://github.com/samline/forms/compare/v2.6.0...v2.7.0

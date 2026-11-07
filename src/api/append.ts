@@ -9,7 +9,7 @@ import type { AppendContentOptions } from '../core/types'
 export const createAppend =
   (state: FormControllerState, helpers: FormControllerHelpers) =>
   ({ tag, content, class: className, atStart = false }: AppendContentOptions) => {
-    if (!state.element) return null
+    if (!state.element || state.isDestroyed) return null
 
     helpers.clearFieldCache()
 

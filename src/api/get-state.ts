@@ -11,7 +11,7 @@ export const createGetState =
   (): FormStateSnapshot => {
     const values = helpers.getValues()
     const errors = cloneErrors(helpers.getMergedErrors())
-    const filledFields = helpers.getTrackedFieldNames().filter(name => {
+    const filledFields = Object.keys(values).filter(name => {
       const value = values[name]
       if (Array.isArray(value)) return value.length > 0
       if (typeof value === 'string') return value.trim().length > 0

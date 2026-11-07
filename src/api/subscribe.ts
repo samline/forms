@@ -9,6 +9,7 @@ import type { FormStateListener } from '../core/types'
 export const createSubscribe =
   (state: FormControllerState, _helpers: FormControllerHelpers) =>
   (listener: FormStateListener) => {
+    if (state.isDestroyed) return () => undefined
     state.subscribers.add(listener)
     listener(state.api!.getState())
     return () => {

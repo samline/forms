@@ -1,0 +1,42 @@
+{
+  "package": {
+    "name": "Forms",
+    "npmName": "@samline/forms",
+    "version": "2.8.0",
+    "description": "Forms that check themselves. Validation, reactive state, serialization and auto-submit for native HTML forms, with a typed, framework-free API.",
+    "author": "Samuel Olvera (samline)",
+    "license": "MIT",
+    "keywords": [
+      "forms",
+      "form-validation",
+      "form-state",
+      "serialization",
+      "typescript",
+      "javascript",
+      "react",
+      "vue",
+      "svelte",
+      "astro",
+      "html-cdn"
+    ]
+  },
+  "site": {
+    "url": "https://samline.github.io/forms/",
+    "repository": "https://github.com/samline/forms",
+    "namespace": "pkg-samline-forms",
+    "template": false
+  },
+  "theme": {
+    "accentLight": "#0369a1",
+    "accentDark": "#38bdf8"
+  },
+  "delivery": {
+    "cdnScript": "https://unpkg.com/@samline/forms@2.8.0/dist/browser/global.global.js",
+    "cdnStylesheet": null
+  },
+  "dev": {
+    "landingPort": 4360,
+    "docsPort": 4361,
+    "testPort": 4368
+  }
+}

@@ -1,0 +1,42 @@
+---
+locale: en
+sidebar:
+  group: start
+  order: 1
+title: 'Forms documentation'
+titleAccent: 'documentation'
+description: 'Guides and reference for @samline/forms: validation, reactive state, serialization and auto-submit for native HTML forms.'
+---
+
+import CardGrid from '../../../../shared/components/CardGrid.astro'
+import LinkCard from '../../../../shared/components/LinkCard.astro'
+
+import { href } from '../../lib/routes'
+
+`@samline/forms` binds a controller to a native `HTMLFormElement`. The controller reads values straight from the DOM, runs your validation rules, marks fields with attributes you can style, reports one state snapshot to subscribers and hands your submit handler a serialized object and a real `FormData`. It has no runtime dependencies and no framework adapter: the same API works in plain pages, server-rendered templates and component frameworks.
+
+## What it covers
+
+- **Validation** — required, length, pattern and numeric rules, matching fields (`sameAs`), declared dependencies (`dependsOn`), per-row rules (`each`) and custom validators that read every value.
+- **State** — `subscribe()` for the whole form, `observe()` and `watch()` for one field, plus `getState()` and `getValue()` for reads.
+- **Submission** — `onSubmit()` handlers with promise tracking, `autoSubmit()` with debounce, server errors through `setErrors()`, and `prefill()` from the URL.
+- **Formatting** — `format()`, `formatAll()` and the `formats` option, powered by the optional peer `@samline/formatter`.
+- **Three ways to load it** — ESM and CommonJS from npm, the `/browser` registry subpath, or a standalone script that defines `window.Forms`.
+
+## Choose your next step
+
+<CardGrid columns={2}>
+  <LinkCard href={href('getting-started')} title="Getting started">
+    Install the package, keep your markup and create your first controller.
+  </LinkCard>
+  <LinkCard href={href('guides/examples')} title="Working examples">
+    Twelve live forms with their code: validation, steps, conditional rules, formatting,
+    auto-submit, server errors and more.
+  </LinkCard>
+  <LinkCard href={href('reference/api')} title="API reference">
+    Every controller method, registry helper and pure utility, grouped by task.
+  </LinkCard>
+  <LinkCard href={href('changelog')} title="Changelog">
+    Release notes, including behavior changes and how to upgrade.
+  </LinkCard>
+</CardGrid>

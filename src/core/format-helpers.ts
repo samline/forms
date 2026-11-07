@@ -303,6 +303,10 @@ const restoreCursor = (
   field: HTMLInputElement | HTMLTextAreaElement,
   position: number
 ): void => {
+  // Moving the selection of a control the user is not editing is never
+  // wanted, and Safari focuses an input when its selection is set.
+  if (field.ownerDocument.activeElement !== field) return
+
   const max = field.value.length
   const safe = clamp(position, 0, max)
 

@@ -8,6 +8,7 @@ import { writeFieldValue } from '../core/dom'
 export const createSetValue =
   (state: FormControllerState, helpers: FormControllerHelpers) =>
   (name: string, value: unknown) => {
+    if (state.isDestroyed) return state.api!
     const fields = helpers.getFieldsByName(name)
     if (fields.length === 0) return state.api!
 

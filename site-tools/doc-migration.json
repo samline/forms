@@ -1,0 +1,127 @@
+{
+  "source": "example/src/content/docs",
+  "sourceRevision": "612ac51",
+  "pages": [
+    {
+      "source": "index.mdx",
+      "destination": "index",
+      "title": "Forms documentation",
+      "titleAccent": "documentation",
+      "group": "start",
+      "order": 1
+    },
+    {
+      "source": "getting-started.mdx",
+      "destination": "getting-started",
+      "title": "Getting started with Forms",
+      "titleAccent": "started",
+      "group": "start",
+      "order": 2
+    },
+    {
+      "source": "guides/validation-and-errors.mdx",
+      "destination": "guides/validation",
+      "title": "Validation and errors",
+      "titleAccent": "errors",
+      "group": "guides",
+      "order": 2
+    },
+    {
+      "source": "guides/formatting.md",
+      "destination": "guides/formatting",
+      "title": "Formatting fields",
+      "titleAccent": "fields",
+      "group": "guides",
+      "order": 4
+    },
+    {
+      "source": "reference/controls.md",
+      "destination": "guides/controls",
+      "title": "Supported form controls",
+      "titleAccent": "form controls",
+      "group": "guides",
+      "order": 5
+    },
+    {
+      "source": "reference/css-styling.md",
+      "destination": "guides/css-styling",
+      "title": "Styling with CSS",
+      "titleAccent": "CSS",
+      "group": "guides",
+      "order": 6
+    },
+    {
+      "source": "reference/examples.mdx",
+      "destination": "guides/recipes",
+      "title": "Recipes for real forms",
+      "titleAccent": "real forms",
+      "group": "guides",
+      "order": 9
+    },
+    {
+      "source": "reference/api.md",
+      "destination": "reference/api",
+      "title": "API reference",
+      "titleAccent": "reference",
+      "group": "reference",
+      "order": 1,
+      "description": "Every FormController method, browser registry helper and pure utility exported by @samline/forms, grouped by task."
+    },
+    {
+      "source": "reference/configuration.md",
+      "destination": "reference/configuration",
+      "title": "Configuration options",
+      "titleAccent": "options",
+      "group": "reference",
+      "order": 2
+    },
+    {
+      "source": "reference/typescript.md",
+      "destination": "reference/typescript",
+      "title": "TypeScript reference",
+      "titleAccent": "TypeScript",
+      "group": "reference",
+      "order": 3
+    },
+    {
+      "source": "reference/entrypoints.md",
+      "destination": "reference/entrypoints",
+      "title": "Entrypoints and builds",
+      "titleAccent": "builds",
+      "group": "reference",
+      "order": 4
+    },
+    {
+      "source": "reference/browser.md",
+      "destination": "reference/browser",
+      "title": "Browser global and CDN",
+      "titleAccent": "CDN",
+      "group": "reference",
+      "order": 5,
+      "description": "Load the standalone script from a CDN and use window.Forms: form(), newForm(), destroyForm() and the available registry."
+    },
+    {
+      "source": "reference/regex.md",
+      "destination": "reference/regex",
+      "title": "Regex presets from the formatter",
+      "titleAccent": "Regex presets",
+      "group": "reference",
+      "order": 6
+    }
+  ],
+  "redirects": {
+    "getting-started": "getting-started",
+    "guides/validation-and-errors": "guides/validation",
+    "guides/formatting": "guides/formatting",
+    "reference": "reference/api",
+    "reference/api": "reference/api",
+    "reference/browser": "reference/browser",
+    "reference/configuration": "reference/configuration",
+    "reference/controls": "guides/controls",
+    "reference/css-styling": "guides/css-styling",
+    "reference/entrypoints": "reference/entrypoints",
+    "reference/examples": "guides/recipes",
+    "reference/regex": "reference/regex",
+    "reference/typescript": "reference/typescript"
+  }
+}

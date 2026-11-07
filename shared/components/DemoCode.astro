@@ -1,0 +1,64 @@
+---
+import Tabs from './Tabs.astro'
+import TabPanel from './TabPanel.astro'
+import CodeFiles from './CodeFiles.astro'
+import t, {
+  demoModes,
+  homePresets,
+  loadingModes,
+  scenarios,
+  type DemoPreset,
+  type Scenario,
+} from '../i18n/translations/en/demo'
+import { createDemoFiles } from '../lib/demo-files'
+interface Props {
+  preset?: DemoPreset
+}
+const { preset = homePresets[0] } = Astro.props
+const id = `demo-code-${crypto.randomUUID()}`
+const peers = (scenarios[preset] as Scenario).peers
+const modes = await Promise.all(
+  demoModes.map(async mode => ({
+    id: mode,
+    label: loadingModes[mode].label,
+    note: loadingModes[mode].note + (mode === 'esm' && peers ? t.peerNote(peers) : ''),
+    source: await createDemoFiles(preset, mode),
+  }))
+)
+---
+
+<div data-ui class:list={['demo-code']} data-demo-code={preset}>
+  {modes.length > 1 ? (
+    <Tabs id={id} label={t.modeLabel} items={modes}>
+      {modes.map(mode => (
+        <TabPanel id={mode.id} label={mode.label}>
+          <p class:list={['note']}>{mode.note}</p>
+          <CodeFiles
+            files={mode.source.files}
+            complete={{ code: mode.source.complete.code, copyLabel: t.copyComplete }}
+          />
+        </TabPanel>
+      ))}
+    </Tabs>
+  ) : (
+    <div data-mode={modes[0].id}>
+      <p class:list={['note']}>{modes[0].note}</p>
+      <CodeFiles
+        files={modes[0].source.files}
+        complete={{ code: modes[0].source.complete.code, copyLabel: t.copyComplete }}
+      />
+    </div>
+  )}
+</div>
+
+<style>
+  .demo-code {
+    min-width: 0;
+  }
+  .note {
+    margin-block: 0 var(--space-lg);
+    color: var(--color-text-muted);
+    font-size: var(--text-small);
+    line-height: 1.75;
+  }
+</style>

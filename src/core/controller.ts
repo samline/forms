@@ -14,7 +14,8 @@ import {
   createFormat,
   createFormatAll,
   resolveCanonicalForName,
-  resolveDisplayNameForName
+  resolveDisplayNameForName,
+  resetFormattedFields
 } from '../api/format'
 import { createGetData } from '../api/get-data'
 import { createGetField } from '../api/get-field'
@@ -35,6 +36,7 @@ import { validateFieldValueDetailed } from '../core/validation'
 import { parseFormData } from './serialize'
 import {
   applyBooleanAttribute,
+  clearAttributes,
   getNamedFields,
   isFieldElement,
   isFieldFilled,
@@ -101,6 +103,9 @@ export const createFormController = (
     submitCount: 0,
     pendingSubmitCount: 0,
     autoSubmitTimer: null,
+    isAutoSubmitting: false,
+    autoSubmitSuspended: false,
+    isResetting: false,
     isDestroyed: false,
     listeners: [],
     mutationObserver: null,
@@ -169,12 +174,23 @@ export const createFormController = (
     return fields
   }
 
-  const getTrackedFieldNames = (): string[] => {
+  // Group every named control in one pass over `form.elements`. Reading
+  // all values field-by-field would rescan the collection once per name.
+  const indexFieldsByName = (): Map<string, FormFieldElement[]> => {
+    const index = new Map<string, FormFieldElement[]>()
+    if (!state.element) return index
+    for (const field of getNamedFields(state.element)) {
+      const bucket = index.get(field.name)
+      if (bucket) bucket.push(field)
+      else index.set(field.name, [field])
+    }
+    return index
+  }
+
+  const getTrackedFieldNames = (index = indexFieldsByName()): string[] => {
     if (!state.element) return Object.keys(state.validators)
     const names = new Set<string>(Object.keys(state.validators))
-    for (const field of getNamedFields(state.element)) {
-      names.add(field.name)
-    }
+    for (const name of index.keys()) names.add(name)
     // The formatted registry keeps the canonical name as the bucket
     // key. The display name (e.g. `phone_displayed`) is also a
     // tracked field because the developer can `watch`/`getValue` it
@@ -190,8 +206,9 @@ export const createFormController = (
 
   const getValues = () => {
     const values: Record<string, FormFieldValue> = {}
-    for (const name of getTrackedFieldNames()) {
-      values[name] = readFieldValue(getFieldsByName(name))
+    const index = indexFieldsByName()
+    for (const name of getTrackedFieldNames(index)) {
+      values[name] = readFieldValue(index.get(name) ?? [])
     }
     return values
   }
@@ -319,30 +336,63 @@ export const createFormController = (
     callbacks.forEach(callback => callback(value, fieldElement, state.element!, snapshot))
   }
 
+  // `requestSubmit()` dispatches `submit` synchronously, so the flag tells
+  // the submit handler that no user asked to submit. An invalid automatic
+  // submission must not move focus away from the field being edited.
+  const runAutoSubmit = () => {
+    state.autoSubmitTimer = null
+    if (!state.element || state.isDestroyed || !state.autoSubmitEnabled) return
+    state.isAutoSubmitting = true
+    try {
+      submitForm(state.element)
+    } finally {
+      state.isAutoSubmitting = false
+    }
+  }
+
   const scheduleAutoSubmit = () => {
-    if (!state.element || !state.autoSubmitEnabled) return
+    if (!state.element || !state.autoSubmitEnabled || state.autoSubmitSuspended) return
     if (state.autoSubmitTimer) clearTimeout(state.autoSubmitTimer)
+    state.autoSubmitTimer = null
     if (state.autoSubmitDebounce > 0) {
-      state.autoSubmitTimer = setTimeout(
-        () => submitForm(state.element!),
-        state.autoSubmitDebounce
-      )
+      state.autoSubmitTimer = setTimeout(runAutoSubmit, state.autoSubmitDebounce)
       return
     }
-    submitForm(state.element)
+    runAutoSubmit()
+  }
+
+  const emitAllFieldWatchers = () => {
+    for (const name of Array.from(state.watchedFields.keys())) emitFieldWatchers(name)
+  }
+
+  // Shared by `reset()` and native reset buttons: values are already back
+  // to their defaults, so clear every error and resynchronize the DOM.
+  const applyReset = () => {
+    if (!state.element || state.isDestroyed) return
+    clearFieldCache()
+    resetFormattedFields(state)
+    state.manualErrors = {}
+    state.validationErrors = {}
+    state.validationGroupErrors = {}
+    state.validationElementErrors.clear()
+    clearAttributes(state.element, [attributes.error, attributes.filled, 'aria-invalid'])
+    syncVisualState()
+    emitAllFieldWatchers()
+    notifySubscribers()
   }
 
   const helpers: FormControllerHelpers = {
     notifySubscribers,
     clearFieldCache,
     getFieldsByName,
-    getTrackedFieldNames,
+    getTrackedFieldNames: () => getTrackedFieldNames(),
     getValues,
     getMergedErrors,
     syncVisualState,
     validateNames,
     emitFieldWatchers,
-    scheduleAutoSubmit
+    scheduleAutoSubmit,
+    applyReset
   }
 
   // ------- DOM event wiring ---------------------------------------------
@@ -397,6 +447,28 @@ export const createFormController = (
     handleDelegatedEvent(event)
   }
 
+  const isFocusable = (candidate: FormFieldElement) => {
+    if (!candidate.isConnected || candidate.disabled || candidate.hidden) return false
+    return !(candidate instanceof HTMLInputElement && candidate.type === 'hidden')
+  }
+
+  // Focus the invalid control that comes first in the document, not the
+  // first rule declared in the schema, so keyboard users land where the
+  // form visually starts failing.
+  const focusFirstInvalidField = (errors: Record<string, string[]>) => {
+    const candidates: FormFieldElement[] = []
+    for (const name of Object.keys(errors)) {
+      const fields = getFieldsByName(resolveDisplayNameForName(state, name)).filter(isFocusable)
+      const elementErrors = state.validationElementErrors.get(name)
+      const field = fields.find(candidate => elementErrors?.has(candidate)) ?? fields[0]
+      if (field) candidates.push(field)
+    }
+    candidates.sort((left, right) =>
+      left.compareDocumentPosition(right) & Node.DOCUMENT_POSITION_FOLLOWING ? -1 : 1
+    )
+    candidates[0]?.focus()
+  }
+
   const handleSubmitEvent = (event: Event) => {
     if (!state.element || state.isDestroyed || !state.api) return
 
@@ -414,25 +486,7 @@ export const createFormController = (
     notifySubscribers()
 
     if (!validation.isValid) {
-      for (const name of Object.keys(validation.errors)) {
-        const displayName = resolveDisplayNameForName(state, name)
-        const fields = getFieldsByName(displayName)
-        const elementErrors = state.validationElementErrors.get(name)
-        const field =
-          fields.find(candidate => {
-            if (!candidate.isConnected || candidate.disabled || candidate.hidden) return false
-            if (candidate instanceof HTMLInputElement && candidate.type === 'hidden') return false
-            return elementErrors?.has(candidate)
-          }) ??
-          fields.find(candidate => {
-            if (!candidate.isConnected || candidate.disabled || candidate.hidden) return false
-            return !(candidate instanceof HTMLInputElement && candidate.type === 'hidden')
-          })
-        if (field) {
-          field.focus()
-          break
-        }
-      }
+      if (!state.isAutoSubmitting) focusFirstInvalidField(validation.errors)
       return
     }
 
@@ -448,7 +502,13 @@ export const createFormController = (
     try {
       for (const handler of handlers) {
         const result = handler.callback(state.element!, data, formData, snapshot)
-        if (result && typeof result.then === 'function') pending.push(Promise.resolve(result))
+        if (result && typeof result.then === 'function') {
+          pending.push(
+            Promise.resolve(result).catch(error => {
+              console.error('[forms] submit handler failed', error)
+            })
+          )
+        }
       }
     } catch (error) {
       synchronousError = error
@@ -467,10 +527,36 @@ export const createFormController = (
     if (hasSynchronousError) throw synchronousError
   }
 
+  // The `reset` event fires before the browser restores default values,
+  // and a user-initiated reset runs microtasks between the two steps, so
+  // the state pass waits for the next task. `reset()` handles itself.
+  const handleResetEvent = (event: Event) => {
+    if (state.isResetting) return
+    const timer = setTimeout(() => {
+      state.cleanups.delete(cancel)
+      if (!event.defaultPrevented) applyReset()
+    }, 0)
+    const cancel = () => clearTimeout(timer)
+    state.cleanups.add(cancel)
+  }
+
   const startMutationObserver = () => {
     if (!state.element || typeof MutationObserver === 'undefined') return
 
-    state.mutationObserver = new MutationObserver(() => {
+    const touchesFields = (node: Node) =>
+      node instanceof Element &&
+      (isFieldElement(node) || node.querySelector('input, select, textarea') !== null)
+
+    // Error messages or other markup rendered into the form by a subscriber
+    // must not re-enter validation; that would notify the same subscriber
+    // again and loop. Only control additions/removals and renames count.
+    const isRelevant = (record: MutationRecord) =>
+      record.type === 'attributes' ||
+      Array.from(record.addedNodes).some(touchesFields) ||
+      Array.from(record.removedNodes).some(touchesFields)
+
+    state.mutationObserver = new MutationObserver(records => {
+      if (state.isDestroyed || !records.some(isRelevant)) return
       clearFieldCache()
       if (state.isValidated) {
         validateNames()
@@ -531,6 +617,7 @@ export const createFormController = (
     addListener(state.element, 'input', handleDelegatedEvent)
     addListener(document, 'input', handleExternalDelegatedEvent)
     addListener(state.element, 'submit', handleSubmitEvent)
+    addListener(state.element, 'reset', handleResetEvent)
     startMutationObserver()
   }
 

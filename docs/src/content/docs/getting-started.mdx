@@ -1,0 +1,140 @@
+---
+locale: en
+sidebar:
+  group: start
+  order: 2
+title: 'Get started with Forms'
+titleAccent: 'with Forms'
+description: 'Install @samline/forms, keep your native form markup and create a controller that validates, reports state and submits clean data.'
+---
+
+import Installer from '../../../../shared/components/Installer.astro'
+import Callout from '../../../../shared/components/Callout.astro'
+import DemoCode from '../../../../shared/components/DemoCode.astro'
+
+import { project } from '../../../../shared/lib/project.mjs'
+
+`@samline/forms` adds validation, reactive state, serialization and auto-submit to a native `<form>`. It does not render inputs or messages: your markup stays yours, and one controller listens to it.
+
+## Requirements
+
+- **Browsers:** an ES2020 runtime with `FormData`, `MutationObserver` and `requestSubmit()` (current evergreen browsers). The controller falls back to clicking a submit button when `requestSubmit()` is missing.
+- **Node.js 20+** when you install and bundle the package. The DOM-free helpers `validateValues()` and `validateFieldValue()` also run in Node; `form()` needs a browser DOM.
+- **Optional:** [`@samline/formatter`](https://www.npmjs.com/package/@samline/formatter) for `format()`, `formatAll()` and the `formats` option. The standalone browser script already includes it.
+
+## Install
+
+<Installer />
+
+## Your first form
+
+Keep a native form with named fields. Add `novalidate` so the browser does not stop the submit with its own bubbles before the controller can run your rules.
+
+```html title="index.html"
+<form id="signup" novalidate>
+  <label for="email">Email</label>
+  <input id="email" name="email" type="email" autocomplete="email" aria-describedby="email-error" />
+  <p id="email-error" data-error-for="email" aria-live="polite"></p>
+  <button type="submit">Sign up</button>
+</form>
+```
+
+Create one controller for that form. `form()` accepts an id, an `HTMLFormElement` or a `{ current }` ref.
+
+```js title="main.js"
+import { form } from '@samline/forms'
+
+const signup = form('signup', {
+  // Stay quiet until the first submit, then revalidate on every input.
+  autoValidate: false,
+  validators: {
+    email: {
+      required: { value: true, message: 'Enter your email.' },
+      pattern: { value: /^[^\s@]+@[^\s@]+\.[^\s@]+$/, message: 'Use a valid email.' },
+    },
+  },
+})
+
+// The controller marks invalid fields; you decide where messages appear.
+signup.subscribe(state => {
+  document.querySelector('#email-error').textContent = state.errors.email?.[0] ?? ''
+})
+
+// Runs only when every rule passes. The browser's navigation is prevented.
+signup.onSubmit(async (_element, data, formData) => {
+  await fetch('/api/signup', { method: 'POST', body: formData })
+  signup.reset()
+})
+```
+
+What happens:
+
+- With `autoValidate: false`, rules first run on submit and then on every `input` event. The default, `autoValidate: true`, runs them on load as well; see [`autoValidate`](../reference/configuration/#autovalidate).
+- Invalid controls receive `css-error` and `aria-invalid="true"`; filled controls receive `css-filled`. Style them as described in [Styling with CSS](../guides/css-styling/).
+- An invalid submit is always prevented, handlers do not run, and focus moves to the first invalid control in document order.
+- A valid submit passes the serialized object, a fresh `FormData` and a state snapshot to every handler. `state.isSubmitting` stays `true` until a returned promise settles.
+
+## Working starter files
+
+These are the files behind the first live example on Home: a sign-up form with four rules, run by the real package. Save HTML, CSS and JavaScript together, or copy the complete file. Choose **HTML / CDN** to run them without a build step.
+
+<DemoCode />
+
+<Callout title="Pin the version in production">
+  The CDN script points at `{project.delivery.cdnScript}`. Keep an exact version in production URLs
+  and update it deliberately with the [changelog](../changelog/).
+</Callout>
+
+## HTML / CDN
+
+Without a bundler, load the standalone script. It defines `window.Forms` with `form`, `newForm`, `destroyForm` and `available`, and it already contains the formatter.
+
+```html title="index.html"
+<script src="https://unpkg.com/@samline/forms@2.8.0/dist/browser/global.global.js"></script>
+<script>
+  const signup = window.Forms.form('signup', {
+    validators: { email: { required: true, pattern: /^[^\s@]+@[^\s@]+\.[^\s@]+$/ } },
+  })
+</script>
+```
+
+`newForm({ id, options })` does the same and stores the controller in `Forms.available[id]`; `destroyForm(id)` destroys and removes it. See [Browser global and CDN](../reference/browser/).
+
+## Browser registry helpers (bundler)
+
+With a bundler you can use the same `{ form, newForm, destroyForm, available }` shape without loading the standalone script. Import the `browser` singleton from the root entry; it does not set a global.
+
+```js title="main.js"
+import { browser } from '@samline/forms'
+
+const signup = browser.newForm({ id: 'signup', options: { autoValidate: false } })
+browser.available.signup === signup // true
+browser.destroyForm('signup')
+```
+
+`newForm` destroys an earlier controller registered under the same id before creating a new one. Spreading `browser` into your own object shares its registry, so every copy sees the same `available` map. The `@samline/forms/browser` subpath exports the same functions and, unlike the root entry, also sets `globalThis.Forms`.
+
+## Ownership and cleanup
+
+A controller owns the listeners, `MutationObserver` and auto-submit timer it creates for one form. Create it when the form exists in the DOM and call `destroy()` when the form goes away: on component unmount, on client-side route changes, or never for a form that lives as long as the page.
+
+```js title="main.js"
+const controller = form('signup')
+
+// Tie your own listeners or timers to the same lifetime.
+const onResize = () => {}
+window.addEventListener('resize', onResize)
+controller.addCleanup(() => window.removeEventListener('resize', onResize))
+
+// Later:
+controller.destroy()
+```
+
+After `destroy()`, methods remain callable but no longer change the form, so a late callback cannot repaint a form that another controller now owns. Read [Framework integrations](../guides/frameworks/) for React, Vue, Svelte, Astro, Shopify and WordPress lifecycles.
+
+## Next steps
+
+- [Examples](../guides/examples/) — twelve live forms with their code.
+- [Validation and errors](../guides/validation/) — every rule, cross-field checks and accessible messages.
+- [Configuration options](../reference/configuration/) — every option and default.
+- [API reference](../reference/api/) — every method, grouped by task.

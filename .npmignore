@@ -7,10 +7,27 @@ tsconfig.json
 tsup.config.ts
 vitest.config.ts
 
-# Examples
-example/
+# Website and its development-only theme/tooling
+landing/
+docs/
+shared/
+skills/
+site-tools/
+site-tests/
+site-e2e/
+SITE*.md
+REFERENCE.md
+project.config.json
+content-audit.json
+design-reference.json
+playwright.site.config.ts
+.prettierrc.cjs
+.site-prettierignore
 
 # Tooling & lockfiles
+scripts/
+AGENTS.md
+tsconfig.package.json
 .agents/
 .claude/
 .github/

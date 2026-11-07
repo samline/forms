@@ -1,0 +1,88 @@
+---
+locale: en
+sidebar:
+  group: api
+  order: 24
+title: 'Tear down with destroy()'
+titleAccent: 'destroy()'
+description: 'Tears the controller down: removes listeners, disconnects the observer, runs registered cleanups and makes later calls inert. Safe to call twice.'
+---
+
+Tears the controller down. Removes all DOM listeners, disconnects the `MutationObserver`, runs registered cleanups, clears caches, drops subscribers and submit handlers, and resets internal state.
+
+## Signature
+
+```ts
+destroy(): void
+```
+
+## Returns
+
+`void`. Idempotent — calling `destroy()` more than once is a no-op.
+
+## Behaviour
+
+When invoked, the controller:
+
+- Removes every listener it added (`input`, `submit`, formatter listeners, and document delegation for external controls).
+- Cancels any pending auto-submit debounce timer.
+- Disconnects the form `MutationObserver`.
+- Runs active callbacks registered with [`addCleanup()`](../add-cleanup/) once in reverse registration order. A thrown cleanup is logged and does not stop the others.
+- Clears `watchedFields`, `subscribers`, `submitHandlers`, and `fieldCache`.
+- Resets manual and validation error maps.
+- Clears tracked async-submit state. Pending handler promises continue independently, but no completion notification is emitted after destruction.
+
+After `destroy()` the controller object still exists and its methods remain callable, but they no longer touch the form (since 2.8.0). `setValue`, `setErrors`, `clearErrors`, `validate`, `revalidate`, `reset`, `prefill`, `append`, `autoSubmit` and `format` return without effect; `subscribe`, `observe`, `watch` and `onSubmit` register nothing; `validate()` returns `{ isValid: true, errors: {} }`. Reads such as `getValue()` and `getData()` still inspect the DOM. This matters when an async submit handler settles after its owner was destroyed: a late `setErrors()` cannot mark a form that now belongs to another controller.
+
+## Examples
+
+### SPA route unmount
+
+```ts
+import { form } from '@samline/forms'
+
+let profile: ReturnType<typeof form> | null = null
+
+function mountProfileForm(element: HTMLFormElement) {
+  profile = form(element, { validators: { email: { required: true } } })
+}
+
+function unmountProfileForm() {
+  profile?.destroy()
+  profile = null
+}
+```
+
+### Cleanup on script teardown
+
+```ts
+const profile = form('profile-form')
+
+window.addEventListener('beforeunload', () => {
+  profile.destroy()
+})
+```
+
+### Own integration resources
+
+```ts
+const profile = form('profile-form')
+const observer = new ResizeObserver(() => updateLayout())
+
+if (profile.element) observer.observe(profile.element)
+profile.addCleanup(() => observer.disconnect())
+```
+
+## Edge cases
+
+- **`destroy()` does not remove `css-filled` / `css-error` attributes** from fields. If you need that, call [`reset()`](../reset/) before destroy, or strip the attributes yourself.
+- **Subscribers and watchers stop receiving notifications immediately**, but their closures remain until you release them.
+- **Cleanup registrations are independent.** Registering the same callback twice runs it twice unless one registration's unregister function is called.
+- **Late cleanup registration runs immediately.** Calling `addCleanup()` after destruction executes the callback at once and returns a no-op unregister function.
+- **Reusing the controller reference after destroy is possible but usually misleading.** Reads still inspect the bound form and methods such as `setValue()` can still write fields, but watchers, subscribers, validation-on-input, and auto-submit no longer run.
+
+## Related
+
+- [`reset`](../reset/) — restore form values without removing listeners.
+- [`form`](../form/) — bind a new controller.
+- [`addCleanup`](../add-cleanup/) — register controller-owned teardown work.

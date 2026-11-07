@@ -36,3 +36,19 @@ skills-lock.json
 # Local files
 # .local/ deprecado desde 2026-07-13 — usar .agents/ en su lugar
 # AGENTS.md y .agents/ SÍ se versionan (decisión 2026-07-13)
+# npm pack output
+*.tgz
+
+# Website build artifacts
+.astro/
+playwright-report/
+test-results/
+brief/
+landing/public/fonts/
+landing/public/font-licenses/
+docs/public/fonts/
+docs/public/font-licenses/
+
+# Local Claude Code session config (machine-specific); only the skills symlink is tracked
+.claude/*
+!.claude/skills

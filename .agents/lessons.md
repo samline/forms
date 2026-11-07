@@ -10,3 +10,14 @@
 - Keep public field errors serializable and stable; retain per-element ownership in controller state instead of exposing live DOM nodes through snapshots.
 - Synchronize visual filled state independently from validation activation so `autoValidate: false` does not leave prefilled controls visually stale.
 - Review related dependency updates as one compatibility set; action runtimes, documentation frameworks, Node engines, and custom theme selectors can require coordinated changes.
+- A `MutationObserver` that reacts to every child mutation loops when a subscriber renders markup into the observed form; filter records to the mutations that actually touch form controls.
+- `requestSubmit()` dispatches `submit` synchronously: a flag set around it tells the handler the submit was automatic, so it must not steal focus.
+- The `reset` event fires before the browser restores defaults, and microtasks can run in between for user-initiated resets; defer the state pass to the next task.
+- Destroyed controllers must ignore late calls: async submit handlers commonly settle after their owner is gone and would otherwise repaint a reused form.
+- tsup's `globalName` assigns the entry module's namespace; an entry with `export default` leaks a `default` key into `window.Forms`. The IIFE uses its own named-export entry (`src/browser/iife.ts`).
+- With bun workspaces, check hoisted transitive versions (`parse5`, `@emnapi/runtime`) when Astro tooling fails in ways the npm-locked template does not.
+- Compare the rendered header and footer with a published sibling at 1024 and 1440 pixels, not only the source: a template breakpoint change hid the header's GitHub and Get started actions while every check passed.
+- Shared `Field` must apply `type` after spreading attributes; a duplicated `type` attribute keeps the first value, which showed passwords as text.
+- Docs examples show each preview with its code (`<Playground preset showCode />`); never send readers to the landing to copy code.
+- `validate()` does not notify subscribers: render messages from its returned `errors` when calling it outside a submit.
+- npm rejects an override of a direct dependency unless its specifier matches the direct dependency exactly; keep both Vite ranges aligned and verify with test:package after changing tooling overrides.

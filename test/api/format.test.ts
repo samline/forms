@@ -292,6 +292,7 @@ describe('format() integration', () => {
 
     const visible = api.getField('phone_displayed') as HTMLInputElement
     visible.value = '5512345678'
+    visible.focus()
     visible.setSelectionRange(visible.value.length, visible.value.length)
     visible.dispatchEvent(new Event('input', { bubbles: true }))
     await flush()
@@ -319,6 +320,7 @@ describe('format() integration', () => {
     // we mutate `.value`, so we set it explicitly to mirror what the
     // browser would have produced.
     visible.value = '5' + visible.value
+    visible.focus()
     visible.setSelectionRange(1, 1)
     visible.dispatchEvent(new Event('input', { bubbles: true }))
     await flush()
@@ -488,6 +490,7 @@ describe('format() integration', () => {
     // `5` and `6`). The digit `5` at position 8 is removed; the caret
     // lands at position 8 (between the second ` ` and `6`).
     visible.value = '55 1234 678'
+    visible.focus()
     visible.setSelectionRange(8, 8)
     dispatchDeletion(visible, 'deleteContentBackward')
     await flush()
@@ -514,6 +517,7 @@ describe('format() integration', () => {
     // the second ` ` and `5`): the ` ` at position 7 is removed; the
     // caret lands at 7.
     visible.value = '55 12345678'
+    visible.focus()
     visible.setSelectionRange(7, 7)
     dispatchDeletion(visible, 'deleteContentBackward')
     await flush()
@@ -540,6 +544,7 @@ describe('format() integration', () => {
     // its leading delimiter; we simulate the resulting state directly:
     // value `55 123458` (9 chars), caret at 7 (between `4` and `5`).
     visible.value = '55 123458'
+    visible.focus()
     visible.setSelectionRange(7, 7)
     dispatchDeletion(visible, 'deleteWordBackward')
     await flush()
@@ -570,6 +575,7 @@ describe('format() integration', () => {
     // removes the `/`; the browser leaves the caret at position 2
     // (between `2` and the deleted position).
     visible.value = '1234/5678'
+    visible.focus()
     visible.setSelectionRange(2, 2)
     dispatchDeletion(visible, 'deleteContentBackward')
     await flush()

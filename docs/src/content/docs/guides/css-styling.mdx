@@ -1,0 +1,202 @@
+---
+locale: en
+sidebar:
+  group: guides
+  order: 6
+title: 'Styling with CSS'
+titleAccent: 'CSS'
+description: 'Style forms with the css-filled and css-error attributes that @samline/forms toggles on fields.'
+---
+
+import Callout from '../../../../../shared/components/Callout.astro'
+
+The controller does not ship styles. It only toggles boolean attributes on fields so your CSS can react. By default those attributes are `css-filled` and `css-error`. You can rename them with [`options.attributes`](../../reference/configuration/#attributes).
+
+This page shows how the attributes behave, which elements they apply to, and how to write CSS that pairs cleanly with them.
+
+## How attributes are applied
+
+| Attribute    | Added when                                                                                                                            | Removed when                                                                                                                                                               |
+| ------------ | ------------------------------------------------------------------------------------------------------------------------------------- | -------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| `css-filled` | The field has a non-empty value (for checkboxes/radios, when checked; for files, when one or more files are selected).                | The field becomes empty.                                                                                                                                                   |
+| `css-error`  | The field has at least one error — either from built-in validation rules or from [`setErrors`](../../reference/api/#seterrorsfields). | All errors for that field are cleared (via [`clearErrors`](../../reference/api/#clearerrorsfields), [`reset`](../../reference/api/#reset), or a successful re-validation). |
+
+The attributes are added and removed on:
+
+- Construction for `css-filled`, regardless of `autoValidate`. Initial `css-error` requires validation and therefore follows `autoValidate`.
+- Every delegated `input` event, including controls associated through `form="id"`.
+- Every explicit call to [`validate`](../../reference/api/#validatefields), [`revalidate`](../../reference/api/#revalidatefields), [`setErrors`](../../reference/api/#seterrorsfields), or [`clearErrors`](../../reference/api/#clearerrorsfields).
+- DOM mutations detected by the controller's `MutationObserver` (new fields, changed `name` / `type` attributes).
+
+[`reset()`](../../reference/api/#reset) clears the visual and accessibility attributes first. If the controller has already validated, it then recalculates `css-filled` from native default values; error attributes remain absent until rules or manual errors add them again.
+
+Initial filled-state synchronization is a visual concern, not validation. A server-rendered or browser-restored value therefore has `css-filled` immediately even with `autoValidate: false`; `isValidated` remains `false` and no validation error is created.
+
+## Default selectors
+
+```css
+/* any field that has a value */
+[css-filled] {
+  /* ... */
+}
+
+/* any field with at least one error */
+[css-error] {
+  /* ... */
+}
+```
+
+These attributes are boolean: present or absent. They never have a value. The selector `[css-filled]` matches both `[css-filled]` and `[css-filled=""]`.
+
+## Recipes
+
+### Text inputs
+
+```css
+input[css-filled] {
+  border-color: var(--color-border-emphasis);
+}
+
+input[css-error] {
+  border-color: var(--color-danger);
+  background-color: var(--color-danger-soft);
+}
+
+input[css-error]:focus-visible {
+  outline-color: var(--color-danger);
+}
+```
+
+### Textarea
+
+```css
+textarea[css-filled] {
+  background-color: var(--color-surface-soft);
+}
+
+textarea[css-error] {
+  border-color: var(--color-danger);
+}
+```
+
+### Selects
+
+```css
+select[css-filled] {
+  background-color: var(--color-surface-soft);
+}
+
+select[css-error] {
+  border-color: var(--color-danger);
+}
+```
+
+### Checkboxes and radios
+
+The attribute is set on the input itself when it's checked.
+
+```css
+input[type='checkbox'][css-filled],
+input[type='radio'][css-filled] {
+  outline: 2px solid var(--color-accent);
+  outline-offset: 2px;
+}
+
+input[type='checkbox'][css-error],
+input[type='radio'][css-error] {
+  outline: 2px solid var(--color-danger);
+  outline-offset: 2px;
+}
+```
+
+### File inputs
+
+```css
+input[type='file'][css-filled] {
+  border-color: var(--color-success);
+}
+
+input[type='file'][css-error] {
+  border-color: var(--color-danger);
+}
+```
+
+### Styling the wrapper
+
+A common pattern is to style a parent label that contains the input:
+
+```html
+<label class="field">
+  <span>Email</span>
+  <input name="email" type="email" />
+</label>
+```
+
+```css
+.field {
+  display: grid;
+  gap: 0.25rem;
+}
+
+.field:has([css-filled]) > span {
+  color: var(--color-text-emphasis);
+}
+
+.field:has([css-error]) > span {
+  color: var(--color-danger);
+}
+```
+
+<Callout title='`:has()` support'>
+
+`:has()` is supported in evergreen browsers. If you need older browser support, attach the attributes to the wrapper from your own code or use class-based selectors instead.
+
+</Callout>
+### Custom attribute names
+
+```ts
+form('signup-form', {
+  attributes: { filled: 'is-filled', error: 'is-invalid' },
+})
+```
+
+```css
+.is-filled {
+  /* ... */
+}
+.is-invalid {
+  /* ... */
+}
+```
+
+## Accessibility
+
+The controller sets `aria-invalid="true"` while a field has validation or manual errors and removes it when the field becomes valid. Invalid submission focuses the first connected, enabled, non-hidden invalid field in document order. Provide `aria-describedby` and an error message element in your template:
+
+```html
+<label class="field">
+  <span>Email</span>
+  <input name="email" type="email" aria-describedby="email-error" />
+  <small id="email-error" hidden></small>
+</label>
+```
+
+Subscribe to state so the message stays synchronized after input, submit, and manual-error changes:
+
+```ts
+profileForm.subscribe(state => {
+  emailErrorEl.hidden = !state.errors.email
+  emailErrorEl.textContent = state.errors.email?.[0] ?? ''
+})
+```
+
+See [Validation and accessible errors](../../guides/validation/) for labels, summaries, live announcements, and focus behavior in one complete example.
+
+For repeated controls validated with `each`, `css-error` and `aria-invalid` are applied only to the concrete members that fail. Group-level rules and manual errors apply to every concrete control for that field name. The public `FormErrors` entry remains a flat `string[]`, so render item-specific text using your own index-aware markup when needed.
+
+## Common pitfalls
+
+- **The attributes have no value.** A selector like `[css-filled="true"]` will not match. Use `[css-filled]` instead.
+- **`css-error` is set whenever there is any error**, including manual errors from [`setErrors`](../../reference/api/#seterrorsfields). Combine your selector with the actual message you render.
+- **Field labels do not automatically receive the attributes.** Apply styles to the input itself, or use `:has()` / a wrapper class.
+- **CSS is not the only place the attributes appear.** Treat them as a styling hook, not as state. Read [`getState()`](../../reference/api/#getstate) if you need the authoritative state.

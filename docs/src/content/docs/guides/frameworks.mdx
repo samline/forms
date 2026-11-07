@@ -1,0 +1,128 @@
+---
+locale: en
+title: 'Framework integrations'
+titleAccent: 'integrations'
+description: 'Use @samline/forms in React, Vue, Svelte, Astro, Shopify and WordPress by creating one controller after the form mounts and destroying it on unmount.'
+sidebar:
+  group: guides
+  order: 8
+---
+
+import FrameworkExamples from '../../../../../shared/components/FrameworkExamples.astro'
+
+import { frameworkFiles } from '../../../../../shared/lib/framework-files'
+
+`@samline/forms` is a **DOM controller**, not a set of framework components. Every host follows the same ownership rule: create one controller when the `<form>` exists in the browser, keep the returned object, and call `destroy()` when that form goes away. There are no adapters to install.
+
+## JavaScript and TypeScript
+
+Plain JavaScript needs nothing beyond the [first form](../../getting-started/#your-first-form). TypeScript can import every option and callback type from the same package — `FormController`, `FormControllerOptions`, `ValidationSchema`, `FormStateSnapshot` and more. Check reusable rule sets with `satisfies ValidationSchema`; see the [TypeScript reference](../../reference/typescript/).
+
+## React, Vue and Svelte
+
+Let the framework render the form once and leave its fields **uncontrolled**: the controller reads values from the DOM. Render only what depends on state, such as messages and disabled buttons, from a `subscribe()` listener. Each component instance owns its own controller and ids.
+
+<FrameworkExamples groups={frameworkFiles} label="Framework" />
+
+- **React** creates the controller in `useEffect` and destroys it in the cleanup, which also handles the development double-mount of Strict Mode. If you need a controlled input, write changes through `controller.setValue()` so validation and watchers run.
+- **Vue** creates it in `onMounted` and destroys it in `onBeforeUnmount`.
+- **Svelte 5** returns the cleanup from `onMount`.
+- In SSR frameworks, importing the package on the server is safe; creating a controller is not. Keep `form()` inside client lifecycle hooks.
+
+These components were checked for syntax with Prettier's Babel and Vue parsers; they were not compiled by React, Vue or Svelte toolchains in this repository. Lifecycle references: [React Effects](https://react.dev/reference/react/useEffect), [Vue lifecycle hooks](https://vuejs.org/api/composition-api-lifecycle.html), [Svelte onMount](https://svelte.dev/docs/svelte/lifecycle-hooks).
+
+## Astro
+
+Create controllers in a processed client `<script>`, not in frontmatter. Astro bundles the import and runs it once per page.
+
+```astro title="Signup.astro"
+<form id="signup" novalidate>
+  <label for="email">Email</label>
+  <input id="email" name="email" type="email" />
+  <button type="submit">Sign up</button>
+</form>
+
+<script>
+  import { form } from '@samline/forms'
+
+  const signup = form('signup', { validators: { email: { required: true } } })
+  window.addEventListener('pagehide', event => {
+    if (!event.persisted) signup.destroy()
+  })
+</script>
+```
+
+With view transitions (`<ClientRouter />`), set up on `astro:page-load` and call `destroy()` on `astro:before-swap`, so each visit gets one controller and the previous page's listeners are released.
+
+## Shopify
+
+Upload `dist/browser/global.global.js` from the release you use as `assets/forms.global.js`, load it once in `layout/theme.liquid`, and bind each section's form in a small theme script. The standalone file already includes the formatter.
+
+```liquid title="layout/theme.liquid"
+<script src="{{ 'forms.global.js' | asset_url }}" defer></script>
+<script src="{{ 'forms-sections.js' | asset_url }}" defer></script>
+```
+
+```js title="assets/forms-sections.js"
+const controllers = new Map()
+
+const mount = root => {
+  for (const element of root.querySelectorAll('form[data-forms]')) {
+    if (controllers.has(element)) continue
+    const controller = window.Forms.form(element, { validators: { email: { required: true } } })
+    controllers.set(element, controller)
+  }
+}
+const unmount = root => {
+  for (const [element, controller] of controllers) {
+    if (!root.contains(element)) continue
+    controller.destroy()
+    controllers.delete(element)
+  }
+}
+
+mount(document)
+document.addEventListener('shopify:section:load', event => mount(event.target))
+document.addEventListener('shopify:section:unload', event => unmount(event.target))
+```
+
+Give each section's form `data-forms` and unique field ids, for example `id="email-{{ section.id }}"`. The theme editor's section events keep one controller per form. Shopify's own customer and contact forms post to Shopify; use `onSubmit(callback, false)` to validate first and let the native submit continue. See [Shopify section events](https://shopify.dev/docs/storefronts/themes/best-practices/editor/integrate-sections-and-blocks).
+
+## WordPress
+
+Register the standalone script once and enqueue a small integration that depends on it. Pin the version you tested.
+
+```php title="wp-content/plugins/forms-example/forms-example.php"
+<?php
+/**
+ * Plugin Name: Forms example
+ */
+add_action('wp_enqueue_scripts', function () {
+  wp_register_script(
+    'samline-forms',
+    'https://unpkg.com/@samline/forms@2.8.0/dist/browser/global.global.js',
+    [],
+    '2.8.0',
+    ['strategy' => 'defer']
+  );
+  wp_enqueue_script(
+    'forms-example',
+    plugins_url('assets/forms-example.js', __FILE__),
+    ['samline-forms'],
+    '1.0.0',
+    ['strategy' => 'defer']
+  );
+});
+```
+
+```js title="assets/forms-example.js"
+for (const element of document.querySelectorAll('form[data-forms]')) {
+  window.Forms.form(element, { validators: { email: { required: true } } })
+}
+```
+
+The `strategy` argument requires WordPress 6.3+. Add `data-forms` to the forms you want to enhance (a custom block, a template part or a form plugin's markup filter). Validate submitted data again in PHP: client rules improve the experience, they do not protect your server.
+
+## Plain HTML and server-rendered templates
+
+Use [HTML / CDN](../../reference/browser/) with the same API. For classic Blade, ERB or Twig forms that post to the server, register `onSubmit(callback, false)` or no handler at all: valid submits navigate normally, invalid ones are stopped with focus on the first error.

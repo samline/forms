@@ -7,6 +7,7 @@ import type { FormControllerHelpers, FormControllerState } from '../core/state'
 export const createAutoSubmit =
   (state: FormControllerState, helpers: FormControllerHelpers) =>
   (next: boolean | { debounce?: number } = true) => {
+    if (state.isDestroyed) return state.api!
     state.autoSubmitEnabled = next !== false
     if (!state.autoSubmitEnabled && state.autoSubmitTimer) {
       clearTimeout(state.autoSubmitTimer)

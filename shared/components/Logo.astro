@@ -1,0 +1,69 @@
+---
+import type { HTMLAttributes } from 'astro/types'
+import { format } from '../i18n/format'
+import { getI18n } from '../i18n/utils'
+interface Props extends HTMLAttributes<'a'> {
+  version?: string
+  href?: string
+  /** Hide the version badge between 64rem and 75rem, where the landing header is tightest. */
+  compactVersion?: boolean
+}
+const {
+  version,
+  href = '#top',
+  compactVersion = false,
+  class: className,
+  ...attributes
+} = Astro.props
+const i18n = getI18n(Astro)
+---
+
+<a
+  {...attributes}
+  href={href}
+  class:list={['flex min-w-0 items-center gap-2.5 text-sm font-medium tracking-tight', className]}
+  aria-label={format(i18n.common.brandHome, { name: i18n.common.packageName })}
+>
+  <span class:list={['dot-mark']} aria-hidden="true"></span>
+  <span class:list={['logo-name font-mono text-[0.95rem]']}>{i18n.common.packageName}</span>
+  {version && (
+    <span
+      class:list={[
+        'ml-1 hidden rounded-full border-[0.0625rem] border-border bg-surface px-2 py-0.5 font-mono text-[0.65rem] text-text-muted sm:inline-block',
+        { 'lg:hidden xl:inline-block': compactVersion },
+      ]}
+    >
+      {format(i18n.common.versionLabel, { version })}
+    </span>
+  )}
+</a>
+
+<style>
+  .dot-mark {
+    display: inline-block;
+    flex: none;
+    width: 0.6875rem;
+    height: 0.6875rem;
+    border-radius: var(--radius-pill);
+    background: var(--color-accent);
+  }
+  /* Long scoped names (@scope/package) wrap instead of overflowing at 320px/200% text. */
+  .logo-name {
+    min-width: 0;
+    overflow-wrap: anywhere;
+  }
+  @media (width < 37.5rem) {
+    .logo-name {
+      font-size: 0.8rem;
+    }
+  }
+  @media (width < 23.4375rem) {
+    .logo-name {
+      font-size: 0.72rem;
+    }
+  }
+  :focus-visible {
+    outline: 0.125rem solid var(--color-accent);
+    outline-offset: 0.25rem;
+  }
+</style>

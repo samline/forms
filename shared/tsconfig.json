@@ -1,0 +1,10 @@
+{
+  "extends": "astro/tsconfigs/strict",
+  "include": ["env.d.ts", "**/*"],
+  "exclude": ["node_modules"],
+  "compilerOptions": {
+    "paths": {
+      "@samline/forms": ["../src/index.ts"]
+    }
+  }
+}

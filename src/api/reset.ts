@@ -1,29 +1,21 @@
 // api/reset.ts
 // Resets the native form, clears manual and validation errors, strips
-// css-filled/css-error attributes, and notifies subscribers.
+// css-filled/css-error attributes, re-emits field watchers and notifies
+// subscribers. Native reset buttons run the same state pass.
 
 import type { FormControllerHelpers, FormControllerState } from '../core/state'
-import { clearAttributes } from '../core/dom'
-import { resetFormattedFields } from './format'
 
 export const createReset =
   (state: FormControllerState, helpers: FormControllerHelpers) =>
   () => {
-    if (!state.element) return state.api!
+    if (!state.element || state.isDestroyed) return state.api!
 
-    state.element.reset()
-    resetFormattedFields(state)
-    state.manualErrors = {}
-    state.validationErrors = {}
-    state.validationGroupErrors = {}
-    state.validationElementErrors.clear()
-    clearAttributes(state.element, [
-      state.attributes.error,
-      state.attributes.filled,
-      'aria-invalid'
-    ])
-
-    helpers.syncVisualState()
-    helpers.notifySubscribers()
+    state.isResetting = true
+    try {
+      state.element.reset()
+    } finally {
+      state.isResetting = false
+    }
+    helpers.applyReset()
     return state.api!
   }

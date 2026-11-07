@@ -1,0 +1,28 @@
+---
+locale: en
+sidebar:
+  group: guides
+  order: 1
+title: 'Twelve forms to try and copy'
+titleAccent: 'try and copy'
+description: 'Try twelve live forms built with @samline/forms, read what each one demonstrates and copy its runnable HTML, CSS and JavaScript right here.'
+---
+
+import Playground from '../../../../../shared/components/Playground.astro'
+import { scenarios, presetIds } from '../../../../../shared/i18n/translations/en/demo'
+
+Each preview below is a real form driven by the published API, the same component used on Home and on the Examples page. Open **Explore the code** under a preview to copy its HTML, CSS and JavaScript, separately or as one complete file, in HTML / CDN and Package / ESM versions. **Try it** buttons start from a fresh form, write values with `setValue()` and press submit when the scenario needs it. **Reset** restores the authored form.
+
+{presetIds.map(key => (
+
+  <section aria-labelledby={`guide-${key}`}>
+    <h2 id={`guide-${key}`}>{scenarios[key].title}</h2>
+    <p>{scenarios[key].description}</p>
+    <Playground preset={key} showCode />
+    <p>{scenarios[key].hint}</p>
+  </section>
+))}
+
+## Where to go next
+
+The [recipes](../recipes/) cover patterns without a preview: multi-step forms, autosave, server-rendered submits and SPA cleanup. Every option used here is listed in [Configuration options](../../reference/configuration/).

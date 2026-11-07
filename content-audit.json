@@ -1,0 +1,1396 @@
+{
+  "capabilityReview": {
+    "status": "verified",
+    "integrations": [
+      {
+        "name": "JavaScript and TypeScript",
+        "evidence": "Root ESM/CJS exports and exported types in src/index.ts",
+        "destination": "docs/src/content/docs/guides/frameworks.mdx",
+        "reviewed": true
+      },
+      {
+        "name": "HTML / CDN",
+        "evidence": "dist/browser/global.global.js (IIFE, formatter bundled), run as a classic script by test:package and the copied-file e2e",
+        "destination": "docs/src/content/docs/reference/browser.mdx",
+        "reviewed": true
+      },
+      {
+        "name": "React",
+        "evidence": "useEffect with a { current } ref target (FormTarget)",
+        "destination": "docs/src/content/docs/guides/frameworks.mdx",
+        "reviewed": true
+      },
+      {
+        "name": "Vue",
+        "evidence": "onMounted / onBeforeUnmount owning one controller",
+        "destination": "docs/src/content/docs/guides/frameworks.mdx",
+        "reviewed": true
+      },
+      {
+        "name": "Svelte",
+        "evidence": "onMount returning destroy()",
+        "destination": "docs/src/content/docs/guides/frameworks.mdx",
+        "reviewed": true
+      },
+      {
+        "name": "Astro",
+        "evidence": "Processed client script and view-transition events",
+        "destination": "docs/src/content/docs/guides/frameworks.mdx",
+        "reviewed": true
+      },
+      {
+        "name": "Shopify",
+        "evidence": "Standalone script as a theme asset with section load/unload ownership",
+        "destination": "docs/src/content/docs/guides/frameworks.mdx",
+        "reviewed": true
+      },
+      {
+        "name": "WordPress",
+        "evidence": "wp_register_script dependency on the standalone script",
+        "destination": "docs/src/content/docs/guides/frameworks.mdx",
+        "reviewed": true
+      },
+      {
+        "name": "Server-side validation",
+        "evidence": "validateValues / validateFieldValue are DOM-free; executed in Node by test:package",
+        "destination": "docs/src/content/docs/api/validate-values.md",
+        "reviewed": true
+      }
+    ],
+    "scenarios": [
+      {
+        "name": "signup — validation",
+        "evidence": "required, pattern, minLength, sameAs, autoValidate:false, focus after a failed submit",
+        "destination": "shared/i18n/translations/en/demo.ts",
+        "reviewed": true
+      },
+      {
+        "name": "checkout — formatting",
+        "evidence": "formats option with phone, creditCard and numeral; raw hidden mirrors read through getData",
+        "destination": "shared/i18n/translations/en/demo.ts",
+        "reviewed": true
+      },
+      {
+        "name": "filters — auto-submit",
+        "evidence": "autoSubmit debounce, select, tags[] checkboxes, FormData query string, prefill",
+        "destination": "shared/i18n/translations/en/demo.ts",
+        "reviewed": true
+      },
+      {
+        "name": "feedback — live state",
+        "evidence": "subscribe isValid/filledFields, observe character count, reset after submit, [css-error][css-filled]",
+        "destination": "shared/i18n/translations/en/demo.ts",
+        "reviewed": true
+      },
+      {
+        "name": "username — server errors",
+        "evidence": "async onSubmit, isSubmitting, setErrors, manual errors cleared on change",
+        "destination": "shared/i18n/translations/en/demo.ts",
+        "reviewed": true
+      },
+      {
+        "name": "guests — repeated fields",
+        "evidence": "guests[] with each rules, MutationObserver revalidation, addCleanup",
+        "destination": "shared/i18n/translations/en/demo.ts",
+        "reviewed": true
+      },
+      {
+        "name": "wizard — steps",
+        "evidence": "validate([names]) per step, Back/Next, addCleanup for the step buttons",
+        "destination": "shared/i18n/translations/en/demo.ts",
+        "reviewed": true
+      },
+      {
+        "name": "delivery — conditional rules",
+        "evidence": "custom validate reading values with dependsOn and pattern",
+        "destination": "shared/i18n/translations/en/demo.ts",
+        "reviewed": true
+      },
+      {
+        "name": "order — numbers",
+        "evidence": "required, numeric, min, max and observe() for a live total",
+        "destination": "shared/i18n/translations/en/demo.ts",
+        "reviewed": true
+      },
+      {
+        "name": "preferences — all controls",
+        "evidence": "radio group, checkbox group with minLength, multiple select, required consent checkbox, getState().values shapes",
+        "destination": "shared/i18n/translations/en/demo.ts",
+        "reviewed": true
+      },
+      {
+        "name": "floating — custom attributes",
+        "evidence": "attributes option renaming css-filled/css-error, floating labels with :has()",
+        "destination": "shared/i18n/translations/en/demo.ts",
+        "reviewed": true
+      },
+      {
+        "name": "summary — error summary",
+        "evidence": "append() with atStart and class replacement, links via getField(), submitCount",
+        "destination": "shared/i18n/translations/en/demo.ts",
+        "reviewed": true
+      }
+    ],
+    "onboarding": {
+      "equivalentModes": true,
+      "notes": "Home shows markup plus one ESM file; complete HTML / CDN and Package / ESM files live in the file viewer on Getting started and Examples."
+    }
+  },
+  "themeReview": {
+    "status": "verified",
+    "source": "Maintainer request, 2026-11-06: “el color de forms será azul celeste” (sky blue). Accessible pair derived with site:accent from #0ea5e9 / #38bdf8, darkened to Tailwind sky-700 for 4.5:1 on accent-tinted cards.",
+    "accentLight": "#0369a1",
+    "accentDark": "#38bdf8"
+  },
+  "status": "verified",
+  "packageVersion": "2.8.0",
+  "sources": [
+    {
+      "source": "CHANGELOG.md",
+      "sha256": "e823dd909c210252ab4304a35c498119af1e61ecb445ba003116d8ea7970abbd",
+      "destination": "CHANGELOG.md",
+      "reviewed": true
+    },
+    {
+      "source": "README.md",
+      "sha256": "56f9e719cc0fca62538b9fe622f8d4ad8185b5a7e4cc2a194184df965781363d",
+      "destination": "README.md",
+      "reviewed": true
+    },
+    {
+      "source": "docs/api/add-cleanup.md",
+      "sha256": "b15615c828bb05bae84571f0048ed1c928a91e9f4da472c7ccefd12f994e3e79",
+      "destination": "docs/src/content/docs/api/add-cleanup.md",
+      "reviewed": true,
+      "retiredAt": "612ac51"
+    },
+    {
+      "source": "docs/api/append.md",
+      "sha256": "a8d89f4ae72f170ecea8695c09fca8feb3cfd80a262a277fd8d5a4f549b75936",
+      "destination": "docs/src/content/docs/api/append.md",
+      "reviewed": true,
+      "retiredAt": "612ac51"
+    },
+    {
+      "source": "docs/api/auto-submit.md",
+      "sha256": "604173cec15db0cd37956841564cca6a99a14df62b778a700500a4cbd8b69f9a",
+      "destination": "docs/src/content/docs/api/auto-submit.md",
+      "reviewed": true,
+      "retiredAt": "612ac51"
+    },
+    {
+      "source": "docs/api/clear-errors.md",
+      "sha256": "6203e3629fbc62e5fb888395b0661d06c34ba5c37cf207d2e1add76b25898ba0",
+      "destination": "docs/src/content/docs/api/clear-errors.md",
+      "reviewed": true,
+      "retiredAt": "612ac51"
+    },
+    {
+      "source": "docs/api/destroy.md",
+      "sha256": "dd5e6672c7cfc351613d937183e2e9d6423d1bbc5c27b92c5fe89d2e036934fb",
+      "destination": "docs/src/content/docs/api/destroy.md",
+      "reviewed": true,
+      "retiredAt": "612ac51"
+    },
+    {
+      "source": "docs/api/disable-auto-submit.md",
+      "sha256": "d02af760978503ea51fcf3a16554109bc1852cae2e91a1d8a70639e15a7b2734",
+      "destination": "docs/src/content/docs/api/disable-auto-submit.md",
+      "reviewed": true,
+      "retiredAt": "612ac51"
+    },
+    {
+      "source": "docs/api/element.md",
+      "sha256": "1769fbb8e0cc0b40c80e1d70c6cd4dbee80787a093878b235ce19e9a44f4cf01",
+      "destination": "docs/src/content/docs/api/element.md",
+      "reviewed": true,
+      "retiredAt": "612ac51"
+    },
+    {
+      "source": "docs/api/form.md",
+      "sha256": "f44c43f41ffbdb71d76900ba751d253314a44c0f9e6c6a72c8e5513cd0dd3ec8",
+      "destination": "docs/src/content/docs/api/form.md",
+      "reviewed": true,
+      "retiredAt": "612ac51"
+    },
+    {
+      "source": "docs/api/format.md",
+      "sha256": "d7d2c175404b0abe3ca7036711a2d7dc04b716adef33f1c293af3cfbf8e678a6",
+      "destination": "docs/src/content/docs/api/format.md",
+      "reviewed": true,
+      "retiredAt": "612ac51"
+    },
+    {
+      "source": "docs/api/get-data.md",
+      "sha256": "4120ad803ed52bebc235889acdeff851de2b319dedb1a4fb954537ebe8e1a3f2",
+      "destination": "docs/src/content/docs/api/get-data.md",
+      "reviewed": true,
+      "retiredAt": "612ac51"
+    },
+    {
+      "source": "docs/api/get-field.md",
+      "sha256": "28ab6c3204a42c838d1cf813dc7b31fe1b3f21d95682384e7ec77fbb1a6987c3",
+      "destination": "docs/src/content/docs/api/get-field.md",
+      "reviewed": true,
+      "retiredAt": "612ac51"
+    },
+    {
+      "source": "docs/api/get-state.md",
+      "sha256": "8d7778bbf0674ce36208ee983d5691bb47a677c1f05d8cd6c46264a00d60c761",
+      "destination": "docs/src/content/docs/api/get-state.md",
+      "reviewed": true,
+      "retiredAt": "612ac51"
+    },
+    {
+      "source": "docs/api/get-value.md",
+      "sha256": "224db7cd1a69b8a32fe1235d0807e4cb3a8e7c5af595c809930e31a414ad620b",
+      "destination": "docs/src/content/docs/api/get-value.md",
+      "reviewed": true,
+      "retiredAt": "612ac51"
+    },
+    {
+      "source": "docs/api/index.md",
+      "sha256": "fe4c167d825f5b2e8c97de27fcd41c6140f9cb823c2d4e4b593400ff38771a9c",
+      "destination": "docs/src/content/docs/reference/api.mdx",
+      "reviewed": true,
+      "retiredAt": "612ac51"
+    },
+    {
+      "source": "docs/api/observe.md",
+      "sha256": "3003bbf5f4b7cf1a6b452a483a91d0931463f8de8318299115ee94ec9e1cbc00",
+      "destination": "docs/src/content/docs/api/observe.md",
+      "reviewed": true,
+      "retiredAt": "612ac51"
+    },
+    {
+      "source": "docs/api/on-submit.md",
+      "sha256": "067a4c7e6d68e3f25ef5d0825d5c33b9eb3b486d7d96ddf4f5e241b30999cc96",
+      "destination": "docs/src/content/docs/api/on-submit.md",
+      "reviewed": true,
+      "retiredAt": "612ac51"
+    },
+    {
+      "source": "docs/api/parse-form-data.md",
+      "sha256": "c8964b48c910a78de3d1c986e6e954162206508de59d9cf5bb88a024cb078907",
+      "destination": "docs/src/content/docs/api/parse-form-data.md",
+      "reviewed": true,
+      "retiredAt": "612ac51"
+    },
+    {
+      "source": "docs/api/prefill.md",
+      "sha256": "04791d6fcb6e16b911784295f6e6c8c62041ce180c127ee75524aac027400d54",
+      "destination": "docs/src/content/docs/api/prefill.md",
+      "reviewed": true,
+      "retiredAt": "612ac51"
+    },
+    {
+      "source": "docs/api/regex.md",
+      "sha256": "a4711de223f8c356f84bec1df7ae324cb358008820d5396a91cafb46122ba6c8",
+      "destination": "docs/src/content/docs/reference/regex.mdx",
+      "reviewed": true,
+      "retiredAt": "612ac51"
+    },
+    {
+      "source": "docs/api/reset.md",
+      "sha256": "baf8cfcef699c5783950810b50ff376640ecf7192e2f8a15bb48a1cb788dde2d",
+      "destination": "docs/src/content/docs/api/reset.md",
+      "reviewed": true,
+      "retiredAt": "612ac51"
+    },
+    {
+      "source": "docs/api/revalidate.md",
+      "sha256": "3ce77b96d9b7410af82459a311633d9445f6c8815b025171f105dedf6e361343",
+      "destination": "docs/src/content/docs/api/revalidate.md",
+      "reviewed": true,
+      "retiredAt": "612ac51"
+    },
+    {
+      "source": "docs/api/set-errors.md",
+      "sha256": "e7263115e33a909aad0a304f41d850acb8b48b15a203fd3837b50a36bd6a2517",
+      "destination": "docs/src/content/docs/api/set-errors.md",
+      "reviewed": true,
+      "retiredAt": "612ac51"
+    },
+    {
+      "source": "docs/api/set-value.md",
+      "sha256": "d56c4a1e742cc9ce8cf45d59d9395b1536b02364990764f34ea90ce2c55f7b04",
+      "destination": "docs/src/content/docs/api/set-value.md",
+      "reviewed": true,
+      "retiredAt": "612ac51"
+    },
+    {
+      "source": "docs/api/subscribe.md",
+      "sha256": "187d40284f4060905b2d93a35a27f2d90ce10ca5499f6f5b520642807a21ab87",
+      "destination": "docs/src/content/docs/api/subscribe.md",
+      "reviewed": true,
+      "retiredAt": "612ac51"
+    },
+    {
+      "source": "docs/api/unwatch.md",
+      "sha256": "6a22e83a6abf2175c72fa7152fd5b15922cf21d7a7b667632984ce6db32f9601",
+      "destination": "docs/src/content/docs/api/unwatch.md",
+      "reviewed": true,
+      "retiredAt": "612ac51"
+    },
+    {
+      "source": "docs/api/validate-field-value.md",
+      "sha256": "c66ac795754d1fdd83c80ebeae0c417b508553f65d570773fe5ed6cd2e273f00",
+      "destination": "docs/src/content/docs/api/validate-field-value.md",
+      "reviewed": true,
+      "retiredAt": "612ac51"
+    },
+    {
+      "source": "docs/api/validate-values.md",
+      "sha256": "05f062e21aa969cf59b8e1c7365ace7d2b633526948e90285786615c9d55987a",
+      "destination": "docs/src/content/docs/api/validate-values.md",
+      "reviewed": true,
+      "retiredAt": "612ac51"
+    },
+    {
+      "source": "docs/api/validate.md",
+      "sha256": "026f77a5a23da0f95ef2d270bde889d7759aded7d846a086ac4552269e256148",
+      "destination": "docs/src/content/docs/api/validate.md",
+      "reviewed": true,
+      "retiredAt": "612ac51"
+    },
+    {
+      "source": "docs/api/watch.md",
+      "sha256": "8e94798df29bf2a54d820887bfba135fa3cd9c5bd8bb17ad99f6184d12e8a27d",
+      "destination": "docs/src/content/docs/api/watch.md",
+      "reviewed": true,
+      "retiredAt": "612ac51"
+    },
+    {
+      "source": "docs/browser.md",
+      "sha256": "d782ff79814d2a7f5da2602525a795f2e6d1680de393c3184e63df37e7478742",
+      "destination": "docs/src/content/docs/reference/browser.mdx",
+      "reviewed": true,
+      "retiredAt": "612ac51"
+    },
+    {
+      "source": "docs/css-styling.md",
+      "sha256": "d3c1e6673977d2d62293e07f7bc48a291417be9c6be270ce5346150c4668451f",
+      "destination": "docs/src/content/docs/guides/css-styling.mdx",
+      "reviewed": true,
+      "retiredAt": "612ac51"
+    },
+    {
+      "source": "docs/getting-started.md",
+      "sha256": "06ff31c23f6bfed9119441294a5660ad51af3d71b3b1de2e494789a7ef8bce68",
+      "destination": "docs/src/content/docs/getting-started.mdx",
+      "reviewed": true,
+      "retiredAt": "612ac51"
+    },
+    {
+      "source": "docs/options.md",
+      "sha256": "e1991178e31e34cf97edfba026fc6ea5899b29a3b5d0a56fbbf38b97fe5d04df",
+      "destination": "docs/src/content/docs/reference/configuration.mdx",
+      "reviewed": true,
+      "retiredAt": "612ac51"
+    },
+    {
+      "source": "docs/recipes.md",
+      "sha256": "584af86beba4e36a5c5718f20645478a2c386b0e157e738b5b6840af1f4811df",
+      "destination": "docs/src/content/docs/guides/recipes.mdx",
+      "reviewed": true,
+      "retiredAt": "612ac51"
+    },
+    {
+      "source": "docs/typescript.md",
+      "sha256": "7fe0221e9c78472906006d17461d3be29e59bb8bf5987d91212d5229608c5870",
+      "destination": "docs/src/content/docs/reference/typescript.mdx",
+      "reviewed": true,
+      "retiredAt": "612ac51"
+    },
+    {
+      "source": "docs/vanilla.md",
+      "sha256": "8659b6879901c4c26ab4db55ac38701e475f42f82b41fdbd4c4e99fbc9d86a90",
+      "destination": "docs/src/content/docs/getting-started.mdx",
+      "reviewed": true,
+      "retiredAt": "612ac51"
+    },
+    {
+      "source": "example/AGENTS.md",
+      "sha256": "eb024ec1b518f0b627342257657b5af67921123f2829e93995ecbe66f9acde28",
+      "destination": "SITE.md",
+      "reviewed": true,
+      "retiredAt": "612ac51"
+    },
+    {
+      "source": "example/README.md",
+      "sha256": "50f76becf8bd97506f4664d8372ee51a327c887cf07ff78c374ca8ee607dfd11",
+      "destination": "SITE.md",
+      "reviewed": true,
+      "retiredAt": "612ac51"
+    },
+    {
+      "source": "example/astro.config.mjs",
+      "sha256": "f31a63fd5622d7972ae545d95cb1ec5e6e587f3f2aabe42c2eb72561100213bd",
+      "destination": "SITE.md",
+      "reviewed": true,
+      "retiredAt": "612ac51"
+    },
+    {
+      "source": "example/site.config.mjs",
+      "sha256": "223bcda80c81a0ece44ddc74ccd4c3937620e72a7ef029725be0872261ff6dc5",
+      "destination": "SITE.md",
+      "reviewed": true,
+      "retiredAt": "612ac51"
+    },
+    {
+      "source": "example/site.schema.mjs",
+      "sha256": "ed33325fd2111039ccf3ecbcf013cbaefb5d530a36706130e861ac1c6094e74c",
+      "destination": "SITE.md",
+      "reviewed": true,
+      "retiredAt": "612ac51"
+    },
+    {
+      "source": "example/src/content.config.ts",
+      "sha256": "9aa2d4dc8829ec3419ace79a9e96a697ce022d7f53f0528c1a7fe35a7f6c4f06",
+      "destination": "SITE.md",
+      "reviewed": true,
+      "retiredAt": "612ac51"
+    },
+    {
+      "source": "example/src/content/docs/getting-started.mdx",
+      "sha256": "ee75c5399c5118f26dbbc90d83eac914b2a70aa0b468c58b8c7dce997c440cc5",
+      "destination": "docs/src/content/docs/getting-started.mdx",
+      "reviewed": true,
+      "retiredAt": "612ac51"
+    },
+    {
+      "source": "example/src/content/docs/guides/formatting.md",
+      "sha256": "1bb87102af3c3be948bff8045e69e09d1a0331fc4602982731257c45c9fecff4",
+      "destination": "docs/src/content/docs/guides/formatting.mdx",
+      "reviewed": true,
+      "retiredAt": "612ac51"
+    },
+    {
+      "source": "example/src/content/docs/guides/validation-and-errors.mdx",
+      "sha256": "4f35fdf8c044cfe90c21dbd72ada05e63881cacff48e286e91ca666767f97da1",
+      "destination": "docs/src/content/docs/guides/validation.mdx",
+      "reviewed": true,
+      "retiredAt": "612ac51"
+    },
+    {
+      "source": "example/src/content/docs/index.mdx",
+      "sha256": "2ec9535df74a73fde96e8a36960b42f1df08ad1ff083839debb4836cb4d19d36",
+      "destination": "docs/src/content/docs/index.mdx",
+      "reviewed": true,
+      "retiredAt": "612ac51"
+    },
+    {
+      "source": "example/src/content/docs/reference/api.md",
+      "sha256": "8cfa8451441c04d94bef7daa602a9473bfe7f647abe44719eb22360873161520",
+      "destination": "docs/src/content/docs/reference/api.mdx",
+      "reviewed": true,
+      "retiredAt": "612ac51"
+    },
+    {
+      "source": "example/src/content/docs/reference/browser.md",
+      "sha256": "59f8783754f05599f024075b6dc3709ac162073b72d523e82182cb6ca34753b6",
+      "destination": "docs/src/content/docs/reference/browser.mdx",
+      "reviewed": true,
+      "retiredAt": "612ac51"
+    },
+    {
+      "source": "example/src/content/docs/reference/configuration.md",
+      "sha256": "bc5b075bacc2c54402cb88e3e1d483190f8ebdc42e467e77625b4750785a2898",
+      "destination": "docs/src/content/docs/reference/configuration.mdx",
+      "reviewed": true,
+      "retiredAt": "612ac51"
+    },
+    {
+      "source": "example/src/content/docs/reference/controls.md",
+      "sha256": "33dae0a33c80bb17608b2a678dc46986975e17790123affbe4e53914e0604b23",
+      "destination": "docs/src/content/docs/guides/controls.mdx",
+      "reviewed": true,
+      "retiredAt": "612ac51"
+    },
+    {
+      "source": "example/src/content/docs/reference/css-styling.md",
+      "sha256": "11592e892bb9b8aebacd3aa90724953e134a6b0b5db44a8eb0e1ed2e1847878d",
+      "destination": "docs/src/content/docs/guides/css-styling.mdx",
+      "reviewed": true,
+      "retiredAt": "612ac51"
+    },
+    {
+      "source": "example/src/content/docs/reference/entrypoints.md",
+      "sha256": "e4c75aba70acb7e154825eea6f9ce19d86a38abc1232b8762cd594e225ca9118",
+      "destination": "docs/src/content/docs/reference/entrypoints.mdx",
+      "reviewed": true,
+      "retiredAt": "612ac51"
+    },
+    {
+      "source": "example/src/content/docs/reference/examples.mdx",
+      "sha256": "dfaf3e9746e2d9c1dc0e57671e62e7fbbbe25080278928336a2ee4e1f05082ad",
+      "destination": "docs/src/content/docs/guides/recipes.mdx",
+      "reviewed": true,
+      "retiredAt": "612ac51"
+    },
+    {
+      "source": "example/src/content/docs/reference/index.md",
+      "sha256": "eeee725a817d5a1c28233e3c6158b4d2b70d1012704a19302428000a3ab42815",
+      "destination": "docs/src/content/docs/reference/api.mdx",
+      "reviewed": true,
+      "retiredAt": "612ac51"
+    },
+    {
+      "source": "example/src/content/docs/reference/regex.md",
+      "sha256": "8f889a28279bb84e1f7a9f7023dd87edbd8b70fc2d19eec11195f1d7735bb871",
+      "destination": "docs/src/content/docs/reference/regex.mdx",
+      "reviewed": true,
+      "retiredAt": "612ac51"
+    },
+    {
+      "source": "example/src/content/docs/reference/typescript.md",
+      "sha256": "374fc12565e8f53e02c5c4cee1584df7a0d72e93008c3393ccd685ff86f3a123",
+      "destination": "docs/src/content/docs/reference/typescript.mdx",
+      "reviewed": true,
+      "retiredAt": "612ac51"
+    },
+    {
+      "source": "example/src/content/i18n/README.md",
+      "sha256": "ce0477303c6a83f218ef444d53a057ee4ea6732fe1a3d0da1a277b7ba0897ff7",
+      "destination": "SITE.md",
+      "reviewed": true,
+      "retiredAt": "612ac51"
+    },
+    {
+      "source": "example/src/styles/custom.css",
+      "sha256": "2f48900fb0ce2d2d99241c9c8e539de1e21304fd7edbf7d773805bc4a2c9a1c9",
+      "destination": "SITE.md",
+      "reviewed": true,
+      "retiredAt": "612ac51"
+    },
+    {
+      "source": "package.json",
+      "sha256": "59396eec2eb72eb95376fe8ee29b9793ee8b34a8c85801f65a5c2fbbfb962d51",
+      "destination": "docs/src/content/docs/reference/entrypoints.mdx",
+      "reviewed": true
+    },
+    {
+      "source": "src/api/add-cleanup.ts",
+      "sha256": "72791f267bb2279431ba90941438863c8c98ce24a5d30f96e3c2833596ace475",
+      "destination": "docs/src/content/docs/api/add-cleanup.md",
+      "reviewed": true
+    },
+    {
+      "source": "src/api/append.ts",
+      "sha256": "f7a875708fb143f5b5e6fee5dedb9ee756ea14ea7b7a6ad060d2c414de60dfae",
+      "destination": "docs/src/content/docs/api/append.md",
+      "reviewed": true
+    },
+    {
+      "source": "src/api/auto-submit.ts",
+      "sha256": "2f63fd8ac03c87d73833ce148f25edf2ebcc85e652b1ed8a1e3f6fd3c848d0b5",
+      "destination": "docs/src/content/docs/api/auto-submit.md",
+      "reviewed": true
+    },
+    {
+      "source": "src/api/clear-errors.ts",
+      "sha256": "e31a5f71e15128fe4bfb77ccaf53af36de510c643d123c7221d71e163c257c18",
+      "destination": "docs/src/content/docs/api/clear-errors.md",
+      "reviewed": true
+    },
+    {
+      "source": "src/api/destroy.ts",
+      "sha256": "31efc08792477bd9d734c648751b78aa117002127b91b27f6b187413885bda53",
+      "destination": "docs/src/content/docs/api/destroy.md",
+      "reviewed": true
+    },
+    {
+      "source": "src/api/disable-auto-submit.ts",
+      "sha256": "301f319baacbb5f8c40e8c2f97cf6c767b5e1d4ea2b104a6e276279146423ab2",
+      "destination": "docs/src/content/docs/api/disable-auto-submit.md",
+      "reviewed": true
+    },
+    {
+      "source": "src/api/form.ts",
+      "sha256": "6543389d33ce2ccfc422e92fc7b36cc67c7e77c0a731251fe68abada0d9dfc23",
+      "destination": "docs/src/content/docs/api/form.md",
+      "reviewed": true
+    },
+    {
+      "source": "src/api/format.ts",
+      "sha256": "38e0093455f27634f9617ed6c4cf260d7857452060a14c3fd9c262c3cfbb1b7a",
+      "destination": "docs/src/content/docs/api/format.md",
+      "reviewed": true
+    },
+    {
+      "source": "src/api/get-data.ts",
+      "sha256": "ddb367e1f18ebcd7eb2d5a4b976eb99c539ec68308d9b24ba7adc25d45e42bea",
+      "destination": "docs/src/content/docs/api/get-data.md",
+      "reviewed": true
+    },
+    {
+      "source": "src/api/get-field.ts",
+      "sha256": "ac19f78f4ff9f567b86923a1b1b1def22e2aa80dd88066c3be50fc466501cf0d",
+      "destination": "docs/src/content/docs/api/get-field.md",
+      "reviewed": true
+    },
+    {
+      "source": "src/api/get-state.ts",
+      "sha256": "be9daf9ae96d7345be2cdc756f5092b4dc0b284ad0d734b85f1afb85e454fb4c",
+      "destination": "docs/src/content/docs/api/get-state.md",
+      "reviewed": true
+    },
+    {
+      "source": "src/api/get-value.ts",
+      "sha256": "fc65dddbb7f683280b954489554c88b8e522d256c2fcfad68f5ee874ac02dbb1",
+      "destination": "docs/src/content/docs/api/get-value.md",
+      "reviewed": true
+    },
+    {
+      "source": "src/api/observe.ts",
+      "sha256": "463d3cd35c1f4331c7a9ec1810ef00b05462a345ab6ce09dddb43be1ff7aa3d4",
+      "destination": "docs/src/content/docs/api/observe.md",
+      "reviewed": true
+    },
+    {
+      "source": "src/api/on-submit.ts",
+      "sha256": "1da533a694e7d42c792a4feee6845cda04cf1285a9aa5241849a85cde5f360f2",
+      "destination": "docs/src/content/docs/api/on-submit.md",
+      "reviewed": true
+    },
+    {
+      "source": "src/api/parse-form-data.ts",
+      "sha256": "ebe08d0171fd6957305bc30e7f7ce4894d00f66db935136f43dcf479669407a9",
+      "destination": "docs/src/content/docs/api/parse-form-data.md",
+      "reviewed": true
+    },
+    {
+      "source": "src/api/prefill.ts",
+      "sha256": "c59ef88275f3d00173a853a9268133e4e0f5e1e35e91c4f916febfda97d446cd",
+      "destination": "docs/src/content/docs/api/prefill.md",
+      "reviewed": true
+    },
+    {
+      "source": "src/api/reset.ts",
+      "sha256": "40ae305b83c0ce2b7bbf28463f129e04297fc39f7ec9cb0cf5b047f497b9dcbd",
+      "destination": "docs/src/content/docs/api/reset.md",
+      "reviewed": true
+    },
+    {
+      "source": "src/api/revalidate.ts",
+      "sha256": "c1fc15fc632079322e148a308ac0eafd5cea7b946016ab430b7123ede447d29c",
+      "destination": "docs/src/content/docs/api/revalidate.md",
+      "reviewed": true
+    },
+    {
+      "source": "src/api/set-errors.ts",
+      "sha256": "364e6b0715f6f565f73d23f00dce78ff1583101862f66aa389abb508b3873bcd",
+      "destination": "docs/src/content/docs/api/set-errors.md",
+      "reviewed": true
+    },
+    {
+      "source": "src/api/set-value.ts",
+      "sha256": "1660ec7d4a061d96206d7701284e2ed44d573ab2a33569cc2675db622ce8e62f",
+      "destination": "docs/src/content/docs/api/set-value.md",
+      "reviewed": true
+    },
+    {
+      "source": "src/api/subscribe.ts",
+      "sha256": "bc99b4fad5769d704ef98df0121ae6150352655bae07a618203620cb5b4d7e6a",
+      "destination": "docs/src/content/docs/api/subscribe.md",
+      "reviewed": true
+    },
+    {
+      "source": "src/api/unwatch.ts",
+      "sha256": "8ba3e4d6f64180a8897e95ae881dfde8a20991000e849a529e1d987811c40672",
+      "destination": "docs/src/content/docs/api/unwatch.md",
+      "reviewed": true
+    },
+    {
+      "source": "src/api/validate-values.ts",
+      "sha256": "3a0cf0f270a473e4820f40d7c1e21a24dc99552d8450a090718b5fefbb81c3d4",
+      "destination": "docs/src/content/docs/api/validate-values.md",
+      "reviewed": true
+    },
+    {
+      "source": "src/api/validate.ts",
+      "sha256": "bea37b75853f763128a4fc8a89c255b090b898d0ddfb99136c78cd729b131b1f",
+      "destination": "docs/src/content/docs/api/validate.md",
+      "reviewed": true
+    },
+    {
+      "source": "src/api/watch.ts",
+      "sha256": "b7749c101a2b85de6640e0f1214188f88397f702c8a498320dcdb87c68d4d15c",
+      "destination": "docs/src/content/docs/api/watch.md",
+      "reviewed": true
+    },
+    {
+      "source": "src/browser/global.ts",
+      "sha256": "0c7fb7f614561e3c09c4b5a9e280250761616e329a589b0a2ac7301748ac460a",
+      "destination": "docs/src/content/docs/reference/browser.mdx",
+      "reviewed": true
+    },
+    {
+      "source": "src/browser/iife.ts",
+      "destination": "docs/src/content/docs/reference/browser.mdx",
+      "sha256": "65ec1962c9fb2b8b4fd84e5fb6c9098544f081dbe74cbc2d56e6e5cfea5c2950",
+      "reviewed": true
+    },
+    {
+      "source": "src/browser/index.ts",
+      "sha256": "8eafdd785827a73bebc01bed7da11ffeede601b2f75d459ab43471af3104ae14",
+      "destination": "docs/src/content/docs/reference/entrypoints.mdx",
+      "reviewed": true
+    },
+    {
+      "source": "src/browser/registry.ts",
+      "sha256": "ace3bc65af100c5e916be633d31acb4d74f296582563aa3d350a0f65886fc221",
+      "destination": "docs/src/content/docs/reference/browser.mdx",
+      "reviewed": true
+    },
+    {
+      "source": "src/core/controller.ts",
+      "sha256": "2293ab440fd06aefdff36c5ce277c62ac6354305ae765978555f2fff63a8f961",
+      "destination": "docs/src/content/docs/reference/api.mdx",
+      "reviewed": true
+    },
+    {
+      "source": "src/core/dom.ts",
+      "sha256": "9108d3f195c4b63045cdb433f4f67dd69216978c423343cbe08fbb54e650ba81",
+      "destination": "docs/src/content/docs/guides/controls.mdx",
+      "reviewed": true
+    },
+    {
+      "source": "src/core/format-helpers.ts",
+      "sha256": "f3af1cf164d42952d07c33b67b885977dc358ff169eb1990c1ac6d1c940ac4b7",
+      "destination": "docs/src/content/docs/guides/formatting.mdx",
+      "reviewed": true
+    },
+    {
+      "source": "src/core/formatter-loader.ts",
+      "sha256": "71dc256e404c82d0b4a6f005dcb5870d12895de0e9a0921fe5cd3536d91a087b",
+      "destination": "docs/src/content/docs/guides/formatting.mdx",
+      "reviewed": true
+    },
+    {
+      "source": "src/core/index.ts",
+      "sha256": "78613fc00515b960d38c72b32ac7f6aedc31f4738ffbc00f7410295584d4f08f",
+      "destination": "docs/src/content/docs/reference/typescript.mdx",
+      "reviewed": true
+    },
+    {
+      "source": "src/core/serialize.ts",
+      "sha256": "7a58efdda4ec260630373aada880d5b7604bba24a71e69386de570b1c518c0e9",
+      "destination": "docs/src/content/docs/api/parse-form-data.md",
+      "reviewed": true
+    },
+    {
+      "source": "src/core/state.ts",
+      "sha256": "94cd446ba92864ca9f72f16cb7ec61c21c42ef1140f37b01a9490689d69960d3",
+      "destination": "docs/src/content/docs/guides/state-and-submission.md",
+      "reviewed": true
+    },
+    {
+      "source": "src/core/types.ts",
+      "sha256": "8304cedbbfc28d54abf857f06146e1dba9e477d474e56a0b063a14e4c2438e5e",
+      "destination": "docs/src/content/docs/reference/typescript.mdx",
+      "reviewed": true
+    },
+    {
+      "source": "src/core/validation.ts",
+      "sha256": "b0b743f98674ef289bb2328ddd8ee87041a57c24757f36e0bbfd34d5e2599836",
+      "destination": "docs/src/content/docs/guides/validation.mdx",
+      "reviewed": true
+    },
+    {
+      "source": "src/index.ts",
+      "sha256": "546b420e4caa433ce4081637b1831372364371e6230be2d03d8394ad508b12f7",
+      "destination": "docs/src/content/docs/reference/api.mdx",
+      "reviewed": true
+    },
+    {
+      "source": "src/types/formatter.d.ts",
+      "sha256": "76dda40de8091c9612f4a43cb615b33012f05924783744b6b365072809756a87",
+      "destination": "docs/src/content/docs/reference/regex.mdx",
+      "reviewed": true
+    }
+  ],
+  "publicExports": [
+    {
+      "name": "form",
+      "kind": "function",
+      "entrypoint": ".",
+      "source": "src/index.ts",
+      "destination": "docs/src/content/docs/api/form.md",
+      "reviewed": true
+    },
+    {
+      "name": "createFormController",
+      "kind": "function",
+      "entrypoint": ".",
+      "source": "src/index.ts",
+      "destination": "docs/src/content/docs/reference/api.mdx",
+      "reviewed": true
+    },
+    {
+      "name": "browser",
+      "kind": "object",
+      "entrypoint": ".",
+      "source": "src/index.ts",
+      "destination": "docs/src/content/docs/reference/browser.mdx",
+      "reviewed": true
+    },
+    {
+      "name": "parseFormData",
+      "kind": "function",
+      "entrypoint": ".",
+      "source": "src/index.ts",
+      "destination": "docs/src/content/docs/api/parse-form-data.md",
+      "reviewed": true
+    },
+    {
+      "name": "validateValues",
+      "kind": "function",
+      "entrypoint": ".",
+      "source": "src/index.ts",
+      "destination": "docs/src/content/docs/api/validate-values.md",
+      "reviewed": true
+    },
+    {
+      "name": "validateFieldValue",
+      "kind": "function",
+      "entrypoint": ".",
+      "source": "src/index.ts",
+      "destination": "docs/src/content/docs/api/validate-field-value.md",
+      "reviewed": true
+    },
+    {
+      "name": "Forms (default), form, newForm, destroyForm, available",
+      "kind": "namespace",
+      "entrypoint": "./browser",
+      "source": "src/browser/index.ts",
+      "destination": "docs/src/content/docs/reference/browser.mdx",
+      "reviewed": true
+    },
+    {
+      "name": "window.Forms",
+      "kind": "global",
+      "entrypoint": "./browser/global",
+      "source": "src/browser/iife.ts",
+      "destination": "docs/src/content/docs/reference/browser.mdx",
+      "reviewed": true
+    },
+    {
+      "name": "FormsApi",
+      "kind": "type",
+      "entrypoint": ".",
+      "source": "src/index.ts",
+      "destination": "docs/src/content/docs/reference/typescript.mdx",
+      "reviewed": true
+    },
+    {
+      "name": "FormsAvailable",
+      "kind": "type",
+      "entrypoint": ".",
+      "source": "src/index.ts",
+      "destination": "docs/src/content/docs/reference/typescript.mdx",
+      "reviewed": true
+    },
+    {
+      "name": "NewFormInput",
+      "kind": "type",
+      "entrypoint": ".",
+      "source": "src/index.ts",
+      "destination": "docs/src/content/docs/reference/typescript.mdx",
+      "reviewed": true
+    },
+    {
+      "name": "AppendContentOptions",
+      "kind": "type",
+      "entrypoint": ".",
+      "source": "src/index.ts",
+      "destination": "docs/src/content/docs/reference/typescript.mdx",
+      "reviewed": true
+    },
+    {
+      "name": "AutoSubmitOptions",
+      "kind": "type",
+      "entrypoint": ".",
+      "source": "src/index.ts",
+      "destination": "docs/src/content/docs/reference/typescript.mdx",
+      "reviewed": true
+    },
+    {
+      "name": "FieldFormatConfig",
+      "kind": "type",
+      "entrypoint": ".",
+      "source": "src/index.ts",
+      "destination": "docs/src/content/docs/reference/typescript.mdx",
+      "reviewed": true
+    },
+    {
+      "name": "FieldFormatConfigMap",
+      "kind": "type",
+      "entrypoint": ".",
+      "source": "src/index.ts",
+      "destination": "docs/src/content/docs/reference/typescript.mdx",
+      "reviewed": true
+    },
+    {
+      "name": "FieldValidationContext",
+      "kind": "type",
+      "entrypoint": ".",
+      "source": "src/index.ts",
+      "destination": "docs/src/content/docs/reference/typescript.mdx",
+      "reviewed": true
+    },
+    {
+      "name": "FieldValidationRules",
+      "kind": "type",
+      "entrypoint": ".",
+      "source": "src/index.ts",
+      "destination": "docs/src/content/docs/reference/typescript.mdx",
+      "reviewed": true
+    },
+    {
+      "name": "FieldValidator",
+      "kind": "type",
+      "entrypoint": ".",
+      "source": "src/index.ts",
+      "destination": "docs/src/content/docs/reference/typescript.mdx",
+      "reviewed": true
+    },
+    {
+      "name": "FormatType",
+      "kind": "type",
+      "entrypoint": ".",
+      "source": "src/index.ts",
+      "destination": "docs/src/content/docs/reference/typescript.mdx",
+      "reviewed": true
+    },
+    {
+      "name": "FormController",
+      "kind": "type",
+      "entrypoint": ".",
+      "source": "src/index.ts",
+      "destination": "docs/src/content/docs/reference/typescript.mdx",
+      "reviewed": true
+    },
+    {
+      "name": "FormControllerOptions",
+      "kind": "type",
+      "entrypoint": ".",
+      "source": "src/index.ts",
+      "destination": "docs/src/content/docs/reference/typescript.mdx",
+      "reviewed": true
+    },
+    {
+      "name": "FormCleanup",
+      "kind": "type",
+      "entrypoint": ".",
+      "source": "src/index.ts",
+      "destination": "docs/src/content/docs/reference/typescript.mdx",
+      "reviewed": true
+    },
+    {
+      "name": "FormDataPrimitive",
+      "kind": "type",
+      "entrypoint": ".",
+      "source": "src/index.ts",
+      "destination": "docs/src/content/docs/reference/typescript.mdx",
+      "reviewed": true
+    },
+    {
+      "name": "FormErrors",
+      "kind": "type",
+      "entrypoint": ".",
+      "source": "src/index.ts",
+      "destination": "docs/src/content/docs/reference/typescript.mdx",
+      "reviewed": true
+    },
+    {
+      "name": "FormFieldElement",
+      "kind": "type",
+      "entrypoint": ".",
+      "source": "src/index.ts",
+      "destination": "docs/src/content/docs/reference/typescript.mdx",
+      "reviewed": true
+    },
+    {
+      "name": "FormFieldWatcher",
+      "kind": "type",
+      "entrypoint": ".",
+      "source": "src/index.ts",
+      "destination": "docs/src/content/docs/reference/typescript.mdx",
+      "reviewed": true
+    },
+    {
+      "name": "FormFieldValue",
+      "kind": "type",
+      "entrypoint": ".",
+      "source": "src/index.ts",
+      "destination": "docs/src/content/docs/reference/typescript.mdx",
+      "reviewed": true
+    },
+    {
+      "name": "FormStateListener",
+      "kind": "type",
+      "entrypoint": ".",
+      "source": "src/index.ts",
+      "destination": "docs/src/content/docs/reference/typescript.mdx",
+      "reviewed": true
+    },
+    {
+      "name": "FormStateSnapshot",
+      "kind": "type",
+      "entrypoint": ".",
+      "source": "src/index.ts",
+      "destination": "docs/src/content/docs/reference/typescript.mdx",
+      "reviewed": true
+    },
+    {
+      "name": "FormSubmitHandler",
+      "kind": "type",
+      "entrypoint": ".",
+      "source": "src/index.ts",
+      "destination": "docs/src/content/docs/reference/typescript.mdx",
+      "reviewed": true
+    },
+    {
+      "name": "FormTarget",
+      "kind": "type",
+      "entrypoint": ".",
+      "source": "src/index.ts",
+      "destination": "docs/src/content/docs/reference/typescript.mdx",
+      "reviewed": true
+    },
+    {
+      "name": "FormValues",
+      "kind": "type",
+      "entrypoint": ".",
+      "source": "src/index.ts",
+      "destination": "docs/src/content/docs/reference/typescript.mdx",
+      "reviewed": true
+    },
+    {
+      "name": "RuleConfig",
+      "kind": "type",
+      "entrypoint": ".",
+      "source": "src/index.ts",
+      "destination": "docs/src/content/docs/reference/typescript.mdx",
+      "reviewed": true
+    },
+    {
+      "name": "SerializedFormResult",
+      "kind": "type",
+      "entrypoint": ".",
+      "source": "src/index.ts",
+      "destination": "docs/src/content/docs/reference/typescript.mdx",
+      "reviewed": true
+    },
+    {
+      "name": "SerializedFormValue",
+      "kind": "type",
+      "entrypoint": ".",
+      "source": "src/index.ts",
+      "destination": "docs/src/content/docs/reference/typescript.mdx",
+      "reviewed": true
+    },
+    {
+      "name": "ValidationResult",
+      "kind": "type",
+      "entrypoint": ".",
+      "source": "src/index.ts",
+      "destination": "docs/src/content/docs/reference/typescript.mdx",
+      "reviewed": true
+    },
+    {
+      "name": "ValidationSchema",
+      "kind": "type",
+      "entrypoint": ".",
+      "source": "src/index.ts",
+      "destination": "docs/src/content/docs/reference/typescript.mdx",
+      "reviewed": true
+    },
+    {
+      "name": "ValueValidationRules",
+      "kind": "type",
+      "entrypoint": ".",
+      "source": "src/index.ts",
+      "destination": "docs/src/content/docs/reference/typescript.mdx",
+      "reviewed": true
+    },
+    {
+      "name": "VisualAttributes",
+      "kind": "type",
+      "entrypoint": ".",
+      "source": "src/index.ts",
+      "destination": "docs/src/content/docs/reference/typescript.mdx",
+      "reviewed": true
+    },
+    {
+      "name": "FormController.onSubmit",
+      "kind": "method",
+      "entrypoint": ".",
+      "source": "src/core/types.ts",
+      "destination": "docs/src/content/docs/api/on-submit.md",
+      "reviewed": true
+    },
+    {
+      "name": "FormController.addCleanup",
+      "kind": "method",
+      "entrypoint": ".",
+      "source": "src/core/types.ts",
+      "destination": "docs/src/content/docs/api/add-cleanup.md",
+      "reviewed": true
+    },
+    {
+      "name": "FormController.watch",
+      "kind": "method",
+      "entrypoint": ".",
+      "source": "src/core/types.ts",
+      "destination": "docs/src/content/docs/api/watch.md",
+      "reviewed": true
+    },
+    {
+      "name": "FormController.observe",
+      "kind": "method",
+      "entrypoint": ".",
+      "source": "src/core/types.ts",
+      "destination": "docs/src/content/docs/api/observe.md",
+      "reviewed": true
+    },
+    {
+      "name": "FormController.unwatch",
+      "kind": "method",
+      "entrypoint": ".",
+      "source": "src/core/types.ts",
+      "destination": "docs/src/content/docs/api/unwatch.md",
+      "reviewed": true
+    },
+    {
+      "name": "FormController.subscribe",
+      "kind": "method",
+      "entrypoint": ".",
+      "source": "src/core/types.ts",
+      "destination": "docs/src/content/docs/api/subscribe.md",
+      "reviewed": true
+    },
+    {
+      "name": "FormController.prefill",
+      "kind": "method",
+      "entrypoint": ".",
+      "source": "src/core/types.ts",
+      "destination": "docs/src/content/docs/api/prefill.md",
+      "reviewed": true
+    },
+    {
+      "name": "FormController.append",
+      "kind": "method",
+      "entrypoint": ".",
+      "source": "src/core/types.ts",
+      "destination": "docs/src/content/docs/api/append.md",
+      "reviewed": true
+    },
+    {
+      "name": "FormController.setErrors",
+      "kind": "method",
+      "entrypoint": ".",
+      "source": "src/core/types.ts",
+      "destination": "docs/src/content/docs/api/set-errors.md",
+      "reviewed": true
+    },
+    {
+      "name": "FormController.clearErrors",
+      "kind": "method",
+      "entrypoint": ".",
+      "source": "src/core/types.ts",
+      "destination": "docs/src/content/docs/api/clear-errors.md",
+      "reviewed": true
+    },
+    {
+      "name": "FormController.setValue",
+      "kind": "method",
+      "entrypoint": ".",
+      "source": "src/core/types.ts",
+      "destination": "docs/src/content/docs/api/set-value.md",
+      "reviewed": true
+    },
+    {
+      "name": "FormController.validate",
+      "kind": "method",
+      "entrypoint": ".",
+      "source": "src/core/types.ts",
+      "destination": "docs/src/content/docs/api/validate.md",
+      "reviewed": true
+    },
+    {
+      "name": "FormController.revalidate",
+      "kind": "method",
+      "entrypoint": ".",
+      "source": "src/core/types.ts",
+      "destination": "docs/src/content/docs/api/revalidate.md",
+      "reviewed": true
+    },
+    {
+      "name": "FormController.format",
+      "kind": "method",
+      "entrypoint": ".",
+      "source": "src/core/types.ts",
+      "destination": "docs/src/content/docs/api/format.md",
+      "reviewed": true
+    },
+    {
+      "name": "FormController.formatAll",
+      "kind": "method",
+      "entrypoint": ".",
+      "source": "src/core/types.ts",
+      "destination": "docs/src/content/docs/api/format.md",
+      "reviewed": true
+    },
+    {
+      "name": "FormController.reset",
+      "kind": "method",
+      "entrypoint": ".",
+      "source": "src/core/types.ts",
+      "destination": "docs/src/content/docs/api/reset.md",
+      "reviewed": true
+    },
+    {
+      "name": "FormController.autoSubmit",
+      "kind": "method",
+      "entrypoint": ".",
+      "source": "src/core/types.ts",
+      "destination": "docs/src/content/docs/api/auto-submit.md",
+      "reviewed": true
+    },
+    {
+      "name": "FormController.disableAutoSubmit",
+      "kind": "method",
+      "entrypoint": ".",
+      "source": "src/core/types.ts",
+      "destination": "docs/src/content/docs/api/disable-auto-submit.md",
+      "reviewed": true
+    },
+    {
+      "name": "FormController.getValue",
+      "kind": "method",
+      "entrypoint": ".",
+      "source": "src/core/types.ts",
+      "destination": "docs/src/content/docs/api/get-value.md",
+      "reviewed": true
+    },
+    {
+      "name": "FormController.getField",
+      "kind": "method",
+      "entrypoint": ".",
+      "source": "src/core/types.ts",
+      "destination": "docs/src/content/docs/api/get-field.md",
+      "reviewed": true
+    },
+    {
+      "name": "FormController.getData",
+      "kind": "method",
+      "entrypoint": ".",
+      "source": "src/core/types.ts",
+      "destination": "docs/src/content/docs/api/get-data.md",
+      "reviewed": true
+    },
+    {
+      "name": "FormController.getState",
+      "kind": "method",
+      "entrypoint": ".",
+      "source": "src/core/types.ts",
+      "destination": "docs/src/content/docs/api/get-state.md",
+      "reviewed": true
+    },
+    {
+      "name": "FormController.destroy",
+      "kind": "method",
+      "entrypoint": ".",
+      "source": "src/core/types.ts",
+      "destination": "docs/src/content/docs/api/destroy.md",
+      "reviewed": true
+    },
+    {
+      "name": "FormController.element",
+      "kind": "method",
+      "entrypoint": ".",
+      "source": "src/core/types.ts",
+      "destination": "docs/src/content/docs/api/element.md",
+      "reviewed": true
+    },
+    {
+      "name": "FormController.f",
+      "kind": "method",
+      "entrypoint": ".",
+      "source": "src/core/types.ts",
+      "destination": "docs/src/content/docs/api/element.md",
+      "reviewed": true
+    },
+    {
+      "name": "FormController.options",
+      "kind": "method",
+      "entrypoint": ".",
+      "source": "src/core/types.ts",
+      "destination": "docs/src/content/docs/api/element.md",
+      "reviewed": true
+    },
+    {
+      "name": "FormControllerOptions.attributes",
+      "kind": "option",
+      "entrypoint": ".",
+      "source": "src/core/types.ts",
+      "destination": "docs/src/content/docs/reference/configuration.mdx",
+      "reviewed": true
+    },
+    {
+      "name": "FormControllerOptions.autoValidate",
+      "kind": "option",
+      "entrypoint": ".",
+      "source": "src/core/types.ts",
+      "destination": "docs/src/content/docs/reference/configuration.mdx",
+      "reviewed": true
+    },
+    {
+      "name": "FormControllerOptions.autoSubmit",
+      "kind": "option",
+      "entrypoint": ".",
+      "source": "src/core/types.ts",
+      "destination": "docs/src/content/docs/reference/configuration.mdx",
+      "reviewed": true
+    },
+    {
+      "name": "FormControllerOptions.clearManualErrorsOnChange",
+      "kind": "option",
+      "entrypoint": ".",
+      "source": "src/core/types.ts",
+      "destination": "docs/src/content/docs/reference/configuration.mdx",
+      "reviewed": true
+    },
+    {
+      "name": "FormControllerOptions.clearErrorsOnSubmit",
+      "kind": "option",
+      "entrypoint": ".",
+      "source": "src/core/types.ts",
+      "destination": "docs/src/content/docs/reference/configuration.mdx",
+      "reviewed": true
+    },
+    {
+      "name": "FormControllerOptions.validators",
+      "kind": "option",
+      "entrypoint": ".",
+      "source": "src/core/types.ts",
+      "destination": "docs/src/content/docs/reference/configuration.mdx",
+      "reviewed": true
+    },
+    {
+      "name": "FormControllerOptions.formats",
+      "kind": "option",
+      "entrypoint": ".",
+      "source": "src/core/types.ts",
+      "destination": "docs/src/content/docs/reference/configuration.mdx",
+      "reviewed": true
+    }
+  ],
+  "notes": "Reviewed 2026-11-06 against src at 2.8.0. Retired docs/ and example/ sources remain in Git at 612ac51 and are redirected through site-tools/doc-migration.json.",
+  "iconReview": {
+    "kept": [],
+    "notes": "All six Overview icons redrawn: form, alert, power, checklist, pulse and card."
+  }
+}

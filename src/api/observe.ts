@@ -8,6 +8,7 @@ import type { FormFieldWatcher } from '../core/types'
 export const createObserve =
   (state: FormControllerState, helpers: FormControllerHelpers) =>
   (field: string, callback: FormFieldWatcher) => {
+    if (state.isDestroyed) return () => undefined
     const callbacks = state.watchedFields.get(field) ?? new Set<FormFieldWatcher>()
     callbacks.add(callback)
     state.watchedFields.set(field, callbacks)

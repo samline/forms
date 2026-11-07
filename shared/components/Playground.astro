@@ -1,0 +1,280 @@
+---
+import type { HTMLAttributes } from 'astro/types'
+import DemoStudio from './DemoStudio.astro'
+import DemoPanel from './DemoPanel.astro'
+import DemoFooter from './DemoFooter.astro'
+import DemoForm from './DemoForm.astro'
+import Button from './Button.astro'
+import Disclosure from './Disclosure.astro'
+import DemoCode from './DemoCode.astro'
+import t, {
+  scenarios,
+  homePresets,
+  type DemoPreset,
+  type Scenario,
+} from '../i18n/translations/en/demo'
+interface Props extends HTMLAttributes<'div'> {
+  preset?: DemoPreset
+  showCode?: boolean
+  /** False inside a parent DemoStudio, such as Home's scenario tabs. */
+  framed?: boolean
+}
+const {
+  id = `demo-${crypto.randomUUID()}`,
+  preset = homePresets[0],
+  showCode = false,
+  framed = true,
+  class: className,
+  ...attributes
+} = Astro.props
+const item: Scenario = scenarios[preset]
+const Frame = framed ? DemoStudio : 'div'
+---
+
+<div {...attributes} data-ui class:list={['playground', className]}>
+  <package-site-demo data-preset={preset} role="group" aria-labelledby={`${id}-label`}>
+    <Frame>
+      <DemoPanel label={item.tab} tagline={t.previewTagline}>
+        <div class:list={['specimen']}>
+          <div class:list={['form-column']}>
+            <p id={`${id}-label`} class:list={['sr-only']}>
+              {item.title}
+            </p>
+            <code class:list={['signature']}>{item.call}</code>
+            <DemoForm item={item} prefix={`${id}-`} labelledby={`${id}-label`} />
+          </div>
+          <div class:list={['result-column']}>
+            <dl class:list={['readout']} aria-live="polite">
+              {item.readouts.map(readout => (
+                <div>
+                  <dt>{readout.label}</dt>
+                  <dd>
+                    <output data-readout={readout.id}>{t.empty}</output>
+                  </dd>
+                </div>
+              ))}
+            </dl>
+            <p class:list={['preview-description']}>{item.description}</p>
+          </div>
+        </div>
+      </DemoPanel>
+      <DemoFooter note={item.hint}>
+        <div class:list={['samples']}>
+          <span class:list={['samples-label']}>{t.samplesLabel}</span>
+          {item.samples.map((sample, index) => (
+            <Button variant="secondary" data-sample={index} disabled>
+              {sample.label}
+            </Button>
+          ))}
+          <Button variant="secondary" data-reset disabled>
+            {t.reset}
+          </Button>
+        </div>
+      </DemoFooter>
+      <noscript>
+        <p class:list={['noscript']}>{t.noscript}</p>
+      </noscript>
+    </Frame>
+  </package-site-demo>
+  {showCode && (
+    <Disclosure class:list={['code-disclosure']}>
+      <span slot="summary">{t.openCode}</span>
+      <div class:list={['code-body']}>
+        <DemoCode preset={preset} />
+      </div>
+    </Disclosure>
+  )}
+</div>
+
+<script>
+  import { mountElements } from '../lib/mount-elements'
+  import { scenarios, type DemoPreset, type Scenario } from '../i18n/translations/en/demo'
+  import * as behaviors from '../lib/demo-behavior.js'
+
+  type Controller = { destroy: () => void; setValue: (name: string, value: unknown) => unknown }
+  type Behavior = (element: HTMLFormElement, show: (id: string, text: string) => void) => Controller
+
+  // Formatting binds after the optional formatter loads; wait one task.
+  const nextTask = () => new Promise<void>(resolve => setTimeout(resolve, 0))
+
+  mountElements('package-site-demo', element => {
+    const item: Scenario | undefined = scenarios[element.dataset.preset as DemoPreset]
+    const formElement = element.querySelector<HTMLFormElement>('form[data-demo-form]')
+    if (!item || !formElement) return
+    const setup = behaviors[item.behavior] as Behavior
+    const outputs = element.querySelectorAll<HTMLOutputElement>('output[data-readout]')
+    const empty = outputs[0]?.value ?? ''
+    // Gallery behavior: Reset and every sample start from the authored form,
+    // like a fresh page, so a previous attempt never leaks into the next.
+    const markup = formElement.innerHTML
+
+    const start = () => {
+      let live = true
+      const show = (id: string, text: string) => {
+        if (!live) return
+        const output = element.querySelector<HTMLOutputElement>(`output[data-readout="${id}"]`)
+        if (output) output.value = text
+      }
+      const controller = setup(formElement, show)
+      return {
+        controller,
+        stop: () => {
+          live = false
+          controller.destroy()
+        },
+      }
+    }
+    let current = start()
+    const restart = () => {
+      current.stop()
+      formElement.innerHTML = markup
+      for (const output of outputs) output.value = empty
+      current = start()
+    }
+
+    const lifecycle = new AbortController()
+    const { signal } = lifecycle
+    const buttons = element.querySelectorAll<HTMLButtonElement>('[data-sample], [data-reset]')
+    let run = 0
+    for (const button of buttons) {
+      button.disabled = false
+      button.addEventListener(
+        'click',
+        async () => {
+          const attempt = ++run
+          restart()
+          const sample = item.samples[Number(button.dataset.sample)]
+          if (!sample) return
+          await nextTask()
+          if (attempt !== run) return
+          for (const [name, value] of Object.entries(sample.values))
+            current.controller.setValue(name, value)
+          if (sample.press)
+            formElement.querySelector<HTMLButtonElement>(`[${sample.press}]`)?.click()
+          else if (sample.submit)
+            formElement.requestSubmit(
+              formElement.querySelector<HTMLButtonElement>('button[type="submit"]')
+            )
+        },
+        { signal }
+      )
+    }
+    return () => {
+      run += 1
+      lifecycle.abort()
+      current.stop()
+      for (const button of buttons) button.disabled = true
+    }
+  })
+</script>
+
+<style>
+  .playground {
+    display: grid;
+    grid-template-columns: minmax(0, 1fr);
+    gap: var(--space-lg);
+    min-width: 0;
+  }
+  package-site-demo {
+    display: block;
+    min-width: 0;
+  }
+  .specimen {
+    display: grid;
+    grid-template-columns: minmax(0, 1.1fr) minmax(0, 1fr);
+    gap: 1.75rem;
+    align-items: start;
+    min-height: 15rem;
+  }
+  .form-column,
+  .result-column {
+    display: grid;
+    gap: 0.875rem;
+    align-content: start;
+    min-width: 0;
+  }
+  .signature {
+    justify-self: start;
+    max-width: 100%;
+    padding: 0.25rem 0.5rem;
+    border-radius: 0.375rem;
+    background: var(--theme-accent-soft);
+    color: var(--color-text);
+    font: 0.75rem/1.5 var(--font-mono);
+    overflow-wrap: anywhere;
+  }
+  .preview-description {
+    margin: 0;
+    font-size: 0.875rem;
+    line-height: 1.65;
+    color: var(--color-text-muted);
+  }
+  .readout {
+    display: grid;
+    margin: 0;
+    border: 0.0625rem solid var(--color-border);
+    border-radius: 0.875rem;
+    background: var(--color-bg);
+    overflow: hidden;
+  }
+  .readout > div {
+    display: grid;
+    gap: 0.25rem;
+    padding: 0.875rem 1rem;
+    min-width: 0;
+  }
+  .readout > div + div {
+    border-top: 0.0625rem solid var(--color-border);
+  }
+  .readout > div:first-child {
+    background: var(--theme-accent-soft);
+  }
+  .readout dt {
+    font: 0.62rem/1.6 var(--font-mono);
+    letter-spacing: 0.1em;
+    text-transform: uppercase;
+    color: var(--color-text-subtle);
+    overflow-wrap: anywhere;
+  }
+  .readout dd {
+    margin: 0;
+    font-family: var(--font-mono);
+    font-size: 0.95rem;
+    color: var(--color-text);
+    overflow-wrap: anywhere;
+  }
+  .samples {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    gap: var(--space-sm);
+  }
+  .samples-label {
+    font: 0.62rem/1.6 var(--font-mono);
+    letter-spacing: 0.1em;
+    text-transform: uppercase;
+    margin-right: 0.25rem;
+  }
+  .noscript {
+    padding: 1rem 1.5rem;
+    margin: 0;
+    font-size: var(--text-small);
+  }
+  .code-body {
+    display: grid;
+    grid-template-columns: minmax(0, 1fr);
+    gap: var(--space-md);
+    padding: var(--space-sm);
+  }
+  .code-disclosure {
+    margin-top: var(--space-lg);
+    padding-block: var(--space-xs);
+  }
+  @media (width < 48rem) {
+    .specimen {
+      grid-template-columns: minmax(0, 1fr);
+      gap: 1.25rem;
+      min-height: 0;
+    }
+  }
+</style>

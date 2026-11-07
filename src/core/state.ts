@@ -39,6 +39,12 @@ export interface FormControllerState {
   submitCount: number
   pendingSubmitCount: number
   autoSubmitTimer: ReturnType<typeof setTimeout> | null
+  /** True while an automatic `requestSubmit()` is dispatching `submit`. */
+  isAutoSubmitting: boolean
+  /** Batches several programmatic writes (`prefill`) into one auto-submit. */
+  autoSubmitSuspended: boolean
+  /** True while `reset()` runs the native reset it already handles. */
+  isResetting: boolean
   isDestroyed: boolean
   listeners: Array<{
     element: EventTarget
@@ -86,6 +92,7 @@ export interface FormControllerHelpers {
   validateNames: (names?: string[]) => ValidationResult
   emitFieldWatchers: (name: string) => void
   scheduleAutoSubmit: () => void
+  applyReset: () => void
 }
 
 export const createEmptyFormState = (): FormStateSnapshot => ({

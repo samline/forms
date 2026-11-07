@@ -9,6 +9,7 @@ import { cloneErrors } from '../core/state'
 export const createSetErrors =
   (state: FormControllerState, helpers: FormControllerHelpers) =>
   (fields: string[] | FormErrors) => {
+    if (state.isDestroyed) return state.api!
     if (Array.isArray(fields)) {
       state.manualErrors = {
         ...state.manualErrors,
