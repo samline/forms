@@ -11,15 +11,16 @@ Completed locally:
 - site:check:release, frozen Bun install and bun audit --production. Vite, undici and source-map-js overrides were updated to remove the audit blockers; direct Vite and its override share the same specifier so npm pack accepts them. No runtime output changed.
 - The exact generated Newsletter.jsx was bundled against dist; Newsletter.vue was compiled with Vue 3.5.44, and Newsletter.svelte with Svelte 5.57.2. Dependencies were installed externally for this optional check. This is compiler evidence, not real hosted CMS validation.
 
-Remaining closure steps:
+Release and deployment closure:
 
-1. Commit and push main now that the npm release is available; confirm CI, the exact Pages head and live artifact.
-2. Record the first deployed performance baseline for Home, Examples and a representative Docs article under the PageSpeed contract in AGENTS.md.
+- main was pushed only after npm 2.8.0 became available. Runtime/site migration commit e049d4c passed CI and Pages; the live Home, Examples and Docs returned HTTP 200 and their 1024px headers were verified.
+- The first production HTTPS Lighthouse baseline is recorded in SITE.md: three cold mobile runs per route (medians 100 Home, 95 Examples, 100 Docs) and one desktop run per route (all 100). Accessibility, best practices and SEO scored 100 throughout. Conditions, FCP/LCP/TBT/CLS/Speed Index, network transfers and limitations are recorded there; raw reports stay outside Git.
+- Google-hosted PageSpeed was attempted but returned HTTP 429 with zero/exhausted daily quota. The Lighthouse results are explicitly local measurements of the deployed site, not Google-hosted scores or field Core Web Vitals evidence. A Google-hosted measurement can be repeated when the service has quota; no package publication is outstanding.
 
 Cross-repo closure authorized by the maintainer in this session:
 
 - Template: local main is clean at 61cc0d8, with the original fixes already committed.
-- Ticker, Drawer, Notify and Formatter: port the compact landing header (icon-only GitHub and hidden version badge from 64rem to 75rem) and its regression to each main. Formatter's checks and 30 browser tests passed; CI and Pages for ba167b2 passed. Ticker passed 100 Landing tests and 35 Docs tests, plus its five optional framework/CMS cases separately. Notify passed its full 78-test browser suite and release evidence. Drawer is finishing its full suite; its five optional framework/CMS cases passed separately.
+- Compact landing headers (icon-only GitHub and hidden version badge from 64rem to 75rem) and their regressions were committed and pushed on all four sibling main branches: Ticker 3f1a1e8, Drawer dbb74bd, Notify 291c05d and Formatter ba167b2. Ticker passed 100 Landing tests and 35 Docs tests plus its five optional framework/CMS cases separately. Drawer passed 60 broad cases plus its five optional integration cases separately. Notify passed all 78 browser tests and release evidence. Formatter passed all 30 browser tests and release evidence. Deployment/CI follow-ups are recorded in each owning repository; Notify's pre-existing pointer-reset flake has its own test follow-up.
 - Notify also includes the earlier in-Docs example/source change and refreshed review hash for docs/recipes.md.
 - Only Forms needed npm publication for this work; the four siblings' changes are website-only.
 

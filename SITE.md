@@ -59,4 +59,56 @@ Adapted from <https://github.com/samline/package-landing-docs.git> at `6b3209e43
 
 ## Performance validation
 
-The [PageSpeed performance contract](AGENTS.md#pagespeed-performance-contract) governs Home, Examples and Docs: 95+ mobile performance, 100 desktop and 100 accessibility, best practices and SEO are goals, not measured results. No Lighthouse or PageSpeed run has been recorded for this site yet; measure the deployed artifact before reporting scores.
+The [PageSpeed performance contract](AGENTS.md#pagespeed-performance-contract) governs Home, Examples and Docs: 95+ mobile performance, 100 desktop and 100 accessibility, best practices and SEO are goals, not measured results. The first measured baseline is recorded below; targets and observations remain separate.
+
+### Deployed baseline — 2026-11-06
+
+Measured the HTTPS production site after Pages successfully published
+`e049d4cc209aadd53b8aa4c91ae30d8658ad145d`; the local checkout was clean.
+The published npm 2.8.0 distribution matches all 19 local dist files byte for
+byte. Home, Examples and Docs returned HTTP 200 and their live headers were
+checked at 1024px before measurement.
+
+These are **local Lighthouse 13.6.0 measurements of the deployed HTTPS site**,
+not Google-hosted PageSpeed results. The PageSpeed API returned HTTP 429 with
+an exhausted/zero daily quota, so no Google-hosted score is claimed. Node
+26.13.0, macOS 26.5.2 arm64 and Chromium 151.0.7922.34 were used. Runs were
+sequential without local builds/tests competing for resources. Each run used
+a new Chrome process with the default storage/cache reset. Reports include
+all four requested categories and contain no audit errors or run warnings.
+
+Mobile uses Lighthouse's default 412×823, DPR 1.75 phone emulation and simulated
+throttling: 150ms RTT, 1,638.4 Kbit/s throughput and 4× CPU slowdown. The table
+shows the median of three cold runs per route. A/BP/SEO means accessibility,
+best practices and SEO; automated accessibility scores do not establish
+complete accessibility.
+
+| Route                                         | Performance | A/BP/SEO    |   FCP |   LCP |    TBT |   CLS | Speed Index |
+| --------------------------------------------- | ----------: | ----------- | ----: | ----: | -----: | ----: | ----------: |
+| Home (`/forms/`)                              |         100 | 100/100/100 | 0.94s | 0.94s | 13.5ms | 0.000 |       1.18s |
+| Examples (`/forms/examples/`)                 |          95 | 100/100/100 | 2.30s | 2.30s |   69ms | 0.000 |       2.30s |
+| Docs (`/forms/docs/reference/configuration/`) |         100 | 100/100/100 | 0.93s | 1.50s |    9ms | 0.001 |       0.93s |
+
+Desktop uses the built-in desktop preset (40ms simulated RTT, 10,240 Kbit/s,
+1× CPU). These are single cold runs per route, not medians: all three returned
+100 performance and 100 accessibility/best-practices/SEO. Home FCP/LCP were
+0.34/0.34s, TBT 0ms, CLS 0 and Speed Index 0.69s; Examples 0.56/0.56s, 0ms,
+0 and 0.79s; Docs 0.52/0.52s, 0ms, 0.006 and 0.63s.
+
+Observed mobile network transfer, median KiB including response headers
+(compressed where the server compresses the response):
+
+| Route    |  HTML |  CSS | JavaScript | Fonts | Requests |
+| -------- | ----: | ---: | ---------: | ----: | -------: |
+| Home     |  19.7 | 11.7 |       76.9 |  96.9 |       16 |
+| Examples | 289.2 | 11.6 |       77.0 |  96.9 |       16 |
+| Docs     |  25.1 |  0.0 |       21.8 |  96.9 |       15 |
+
+Docs CSS is included in its HTML. This is a first baseline, without a controlled
+before/after comparison or changes to caching. Examples has the largest HTML
+transfer because it retains twelve live scenarios and their complete/split
+CDN/ESM code; that is an observation, not a proposal to remove content. Raw
+JSON/HTML reports are retained locally outside Git as
+`<route>-<mobile|desktop>-<run>.report.{json,html}`. There is no field INP or
+real-user Core Web Vitals evidence; Lighthouse TBT is a lab metric. A future
+Google-hosted PageSpeed run remains dependent on service availability.
