@@ -63,6 +63,7 @@ test('configuration inventories real evidence and never executes or modifies sou
       'site-tools/configure.mjs',
       'shared/lib/project.mjs',
       'site-tools/package-skill-template.md',
+      'site-tools/package-readme-template.md',
     ]) {
       await mkdir(join(isolated, path, '..'), { recursive: true })
       await cp(new URL('../' + path, import.meta.url), join(isolated, path))

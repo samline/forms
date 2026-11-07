@@ -1,4 +1,5 @@
 import sections from './sections'
+import { footerCredit } from '../../../../../shared/lib/site-identity.mjs'
 import common from '../../../../../shared/i18n/translations/en/common'
 import controls from '../../../../../shared/i18n/translations/en/controls'
 import { project } from '../../../../../shared/lib/project.mjs'
@@ -27,7 +28,7 @@ export default {
       skill: `${project.name} skill for AI agents`,
       changelog: 'Changelog',
       backToTop: 'Back to top',
-      credit: `${project.author} · Made for the open web.`,
+      credit: footerCredit(project.credit),
     },
     items: [
       {
@@ -64,7 +65,7 @@ export default {
     eyebrow: 'Examples',
     title: `${project.name} examples.`,
     // Document metadata is separate from the display heading and its period.
-    seoTitle: `${project.name} examples — live forms with copyable code`,
+    seoTitle: 'Examples',
     seoDescription:
       'Twelve live forms: validation, steps, conditional rules, formatting, auto-submit, state, server errors and more, each with copyable HTML, CSS and JavaScript.',
     accent: 'examples.',

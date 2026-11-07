@@ -3,6 +3,7 @@ import { execFileSync } from 'node:child_process'
 import { join } from 'node:path'
 import { fileURLToPath } from 'node:url'
 import { realpathSync } from 'node:fs'
+import { README_SECTIONS, proseLines } from './lib/identity-checks.mjs'
 
 /**
  * Content and convention checks that structural checks (links, axe, design
@@ -83,18 +84,7 @@ export const DEFAULT_ICONS = {
   wrench: 'M14.7 6.3a1 1 0 0 0 0 1.4',
 }
 /** Root README H2 order shared by Ticker, Drawer, Notify and Formatter. */
-export const README_HEADINGS = [
-  'Table of contents',
-  'Installation',
-  'Quick start',
-  'HTML / CDN',
-  'Capabilities',
-  'API at a glance',
-  'Documentation',
-  'Changelog',
-  'AI agent skill',
-  'License',
-]
+export const README_HEADINGS = README_SECTIONS
 export const LIMITS = { title: 20, descriptionMin: 70, descriptionMax: 160, faq: 8 }
 
 const decode = value =>
@@ -124,9 +114,7 @@ async function pages(directory, prefix = '') {
 
 /** README H2 headings, ignoring fenced code. */
 export const readmeHeadings = markdown =>
-  markdown
-    .replace(/```[\s\S]*?```/g, '')
-    .split('\n')
+  proseLines(markdown)
     .filter(line => /^## /.test(line))
     .map(line => line.slice(3).trim())
 

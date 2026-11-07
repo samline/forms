@@ -24,7 +24,8 @@
     "url": "https://samline.github.io/forms/",
     "repository": "https://github.com/samline/forms",
     "namespace": "pkg-samline-forms",
-    "template": false
+    "template": false,
+    "credit": "samline"
   },
   "theme": {
     "accentLight": "#0369a1",

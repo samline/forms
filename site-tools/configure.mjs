@@ -22,6 +22,10 @@ export async function prepareConfiguration(sourceDirectory, current, options = {
   const repository = options.repository ?? normalizeRepository(manifest.repository)
   if (!url) throw new Error('Provide --site-url; the package has no homepage.')
   if (!repository) throw new Error('Provide --repository; the package has no repository URL.')
+  const owner = new URL(repository).pathname.split('/').filter(Boolean)[0]
+  const previousOwner = new URL(current.site.repository).pathname.split('/').filter(Boolean)[0]
+  const credit = options.credit ?? (owner === previousOwner ? current.site.credit : null) ?? owner
+  if (!credit) throw new Error('Provide --credit for the public footer identity.')
   const next = {
     ...current,
     package: {
@@ -40,6 +44,7 @@ export async function prepareConfiguration(sourceDirectory, current, options = {
       ...current.site,
       url,
       repository,
+      credit,
       namespace:
         'pkg-' +
         manifest.name
@@ -147,6 +152,7 @@ export async function configure(args = process.argv.slice(2)) {
       package: { type: 'string' },
       'site-url': { type: 'string' },
       repository: { type: 'string' },
+      credit: { type: 'string' },
       'accent-light': { type: 'string' },
       'accent-dark': { type: 'string' },
       'cdn-script': { type: 'string' },
@@ -183,6 +189,27 @@ export async function configure(args = process.argv.slice(2)) {
   // Preserve a maintained skill; otherwise scaffold the starter, which
   // check:release rejects until it is rewritten from verified APIs.
   const { npmName, name, version } = prepared.config.package
+  // Draft the shared structure without overwriting the source package README.
+  const siteUrl = prepared.config.site.url.replace(/\/?$/, '/')
+  const skillName = npmName.replace(/^@[^/]+\//, '')
+  const cdn = prepared.config.delivery.cdnScript
+  const fields = {
+    npmName,
+    name,
+    version,
+    siteUrl,
+    skill: skillName,
+    description: prepared.config.package.description,
+    license: prepared.config.package.license,
+    cdnToc: cdn ? '- [HTML / CDN](#html--cdn)\n' : '',
+    cdnSection: cdn
+      ? '## HTML / CDN\n\nUse the verified pinned standalone build and document its real global, required markup/styles and cleanup.\n\n'
+      : '',
+  }
+  const readmeDraft = (
+    await readFile(new URL('./package-readme-template.md', import.meta.url), 'utf8')
+  ).replace(/\{\{(\w+)\}\}/g, (_, key) => fields[key] ?? '')
+  await writeFile(join(root, 'brief/readme-proposal.md'), readmeDraft)
   const skill = npmName.replace(/^@[^/]+\//, '')
   const skillPath = join(root, 'skills', skill, 'SKILL.md')
   let skillState = 'kept'

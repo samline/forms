@@ -66,7 +66,7 @@ filters.prefill()`
 export default {
   hero: {
     // The document <title> for Home: a descriptive phrase, never the bare package name.
-    seoTitle: `${project.name} — Validation and state for native HTML forms`,
+    seoTitle: 'Native form validation and state',
     // 70–160 characters.
     seoDescription:
       'Validate, format, serialize and auto-submit native HTML forms with one typed, framework-free controller for JavaScript and TypeScript.',

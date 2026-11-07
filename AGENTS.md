@@ -144,3 +144,14 @@ Ticker measurements belong to the upstream repository and are not a score for th
 - Search uses local Pagefind and the native top Drawer: compact initial height, CSS growth with results, fixed close/input/intro, separately scrolling results and native upward handle. Debounce 300ms, retain old results while typing/loading, discard stale requests and clear immediately on empty input. Do not add height measurement, gestures or a second focus trap.
 - The ToC tracks one current heading across nested headings, clicks, initial fragments, upward scroll and document end. Keep desktop/mobile instances synchronized without stealing focus or rewriting history on scroll.
 - Preserve source documentation until a semantic audit establishes its new destination. Export-name checks, automated axe and screenshots are useful evidence, not proof of complete API docs or accessibility. Execute copied code and review actual package behavior.
+
+## Identity convention — 2026-11-06
+
+README structure follows the canonical template proposal, including TOC/resource
+roles, installation blocks, API/guide tables, entrypoints and skill source/download.
+Shared site-identity.mjs composes `<subject> — <npm name>` once for document and
+social titles. Footer display credit is explicitly samline, independent of npm
+author metadata. Keep the identity check in verify/release/CI, and test the real
+configured header name before a substituted sibling. The maintained policy is
+https://github.com/samline/package-landing-docs/blob/main/.agents/identity.md;
+package-specific API content and runtime publication remain separate.

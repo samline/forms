@@ -112,3 +112,24 @@ JSON/HTML reports are retained locally outside Git as
 `<route>-<mobile|desktop>-<run>.report.{json,html}`. There is no field INP or
 real-user Core Web Vitals evidence; Lighthouse TBT is a lab metric. A future
 Google-hosted PageSpeed run remains dependent on service availability.
+
+## Shared identity convention — 2026-11-06
+
+The canonical convention lives in the template's .agents/identity.md. Runtime
+READMEs share section order, manager installation blocks, API/entrypoint and
+guide table roles, resource links and the maintained skill source/download.
+The scaffold at site-tools/package-readme-template.md supplies the common structure;
+package-specific examples and API claims remain grounded in this package.
+
+Document, Open Graph and Twitter titles compose an unbranded subject with
+` — @samline/forms` once. Docs index uses Documentation and Examples uses Examples.
+The footer credits samline explicitly, separately from npm author metadata.
+Run site:check:identity against the combined artifact; keep the helper, checker/library
+and scaffold synchronized when porting template changes. Browser regressions
+cover title/social agreement, footer links and the real configured header name.
+These changes affect website/documentation only and require no npm release.
+
+Validation of this identity update: full site:verify passed both Astro checks,
+formatting, all 45 tooling tests, both alternate-package builds, the 6,013-link
+audit and all 35 browser tests. site:check:release passed. Runtime dist remains
+unchanged from the already published 2.8.0 artifact.

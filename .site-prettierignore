@@ -15,3 +15,4 @@ skills-lock.json
 
 # Placeholder syntax ({{skill}}) is not YAML; the importer substitutes it.
 site-tools/package-skill-template.md
+site-tools/package-readme-template.md
