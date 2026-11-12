@@ -30,7 +30,7 @@ jobs:
       - name: Check release documentation evidence
         run: bun run site:check:release
       - name: Upload combined Pages artifact
-        uses: actions/upload-pages-artifact@v3
+        uses: actions/upload-pages-artifact@v5
         with:
           path: landing/dist
 
