@@ -32,4 +32,9 @@ declare module '@samline/formatter' {
   export const FORMAT_TYPES: readonly FormatType[]
   export const isFormatType: (value: unknown) => value is FormatType
   export const regex: Record<string, { pattern: RegExp; errorMessage: string }>
+  export const isPhoneRegistered: () => boolean
+}
+
+declare module '@samline/formatter/phone' {
+  export const registerPhone: () => void
 }

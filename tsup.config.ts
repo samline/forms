@@ -41,7 +41,7 @@ export default defineConfig([
     target: 'es2020',
     outDir: 'dist',
     // Consumer's bundler resolves the peer; we do not pre-bundle it here.
-    external: ['@samline/formatter']
+    external: [/^@samline\/formatter(\/|$)/]
   },
   {
     entry: {

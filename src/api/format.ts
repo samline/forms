@@ -196,7 +196,7 @@ const applyFormat = async (
   }
 
   // Phase 2: load the peer, bind listeners, and normalize initial values.
-  const formatter = await loadFormatter()
+  const formatter = await loadFormatter({ phone: formatType === 'phone' })
   if (state.isDestroyed) {
     rollbackPhase1(phase1Entries, bucket, state.formattedFields)
     return

@@ -113,6 +113,10 @@ checkout.format({
 | `@samline/forms/browser` | Same optional-peer requirement; importing also installs `globalThis.Forms`. |
 | Global IIFE              | Formatter is bundled; no separate peer installation is needed.              |
 
+### Phones with formatter 3
+
+`@samline/formatter` 3.0.0 makes phones opt-in so that forms without a phone field do not ship libphonenumber-js (about 140 KB). You do not need to do anything: the first time a field is formatted with `type: 'phone'`, forms loads `@samline/formatter/phone` and calls `registerPhone()` for you. Bundlers put that subpath in its own lazy chunk. If your app already called `registerPhone()`, forms reuses it. With formatter 2.x phones are always included. The global IIFE bundles phone support.
+
 The IIFE does not expose the formatter's `regex` object on `window.Forms`; import `regex` from the peer in module builds or provide your own global.
 
 ## Related

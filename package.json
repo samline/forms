@@ -1,6 +1,6 @@
 {
   "name": "@samline/forms",
-  "version": "2.9.0",
+  "version": "2.10.0",
   "description": "TypeScript-first, framework-free form controller with validation, reactive state, serialization, auto-submit, and input formatting.",
   "keywords": [
     "forms",
@@ -94,7 +94,7 @@
     "site:check:identity": "node site-tools/check-identity.mjs"
   },
   "peerDependencies": {
-    "@samline/formatter": "^2.1.0"
+    "@samline/formatter": "^2.1.0 || ^3.0.0"
   },
   "peerDependenciesMeta": {
     "@samline/formatter": {
@@ -113,7 +113,7 @@
   },
   "devDependencies": {
     "@playwright/test": "1.62.1",
-    "@samline/formatter": "^2.1.0",
+    "@samline/formatter": "^3.0.0",
     "@types/node": "^26.6.2",
     "@vitest/coverage-v8": "^5.0.1",
     "axe-core": "^4.14.0",

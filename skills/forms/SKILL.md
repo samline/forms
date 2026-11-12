@@ -3,17 +3,17 @@ name: forms
 description: Add validation, reactive state, serialization, auto-submit and optional input formatting to native HTML forms with @samline/forms, in plain pages, CMS templates or framework components. Use for Forms installation, rules, error messages, submission, lifecycle and formatting; not for other form libraries or repository maintenance.
 metadata:
   package: '@samline/forms'
-  package-version: '2.9.0'
+  package-version: '2.10.0'
 ---
 
 # Forms
 
-Build against the installed `@samline/forms` version. This skill describes v2.9.0. Check the dependency version and exports before applying it to another release, and read `CHANGELOG.md` when upgrading. Keep the host's markup, components and styling: the package adds a controller to a native `<form>`; it never renders inputs or messages.
+Build against the installed `@samline/forms` version. This skill describes v2.10.0. Check the dependency version and exports before applying it to another release, and read `CHANGELOG.md` when upgrading. Keep the host's markup, components and styling: the package adds a controller to a native `<form>`; it never renders inputs or messages.
 
 ## Choose loading, then keep the controller
 
 - **Package / ESM:** `npm install @samline/forms` (or pnpm, yarn, bun). Import `{ form }` from `@samline/forms`. CommonJS is also exported. The root entry does not set a global.
-- **HTML / CDN:** load `https://unpkg.com/@samline/forms@2.9.0/dist/browser/global.global.js` with a classic `<script>` and use `window.Forms.form(...)`. The global has exactly `form`, `newForm`, `destroyForm` and `available`. This file already bundles `@samline/formatter`. Self-hosting the same file uses the same API.
+- **HTML / CDN:** load `https://unpkg.com/@samline/forms@2.10.0/dist/browser/global.global.js` with a classic `<script>` and use `window.Forms.form(...)`. The global has exactly `form`, `newForm`, `destroyForm` and `available`. This file already bundles `@samline/formatter`. Self-hosting the same file uses the same API.
 - **Registry helpers:** `browser` from the root entry (or the `@samline/forms/browser` subpath, which also sets `globalThis.Forms`) provides `newForm({ id, options })`, `destroyForm(id)` and the `available` map, one controller per form id.
 
 Verify the release exists on npm before using a CDN URL; a repository version does not prove publication. Load one copy of the runtime per page.
@@ -90,7 +90,7 @@ Rules run on load and on input with the default `autoValidate: true`; with `fals
 
 ## Formatting (optional peer)
 
-With npm installs, add `@samline/formatter` to use `format({ type, field, displayField?, options? })`, `formatAll()` or the `formats` option. Types: `general`, `phone`, `numeral`, `date`, `time`, `creditCard`, `creditCardType`. The visible input is renamed to `<name>_displayed` and a hidden input named `<name>` carries the raw value that is submitted. Formatting binds after the peer loads (asynchronously). Without the peer, the call logs one error and the form keeps working. The CDN script includes the formatter.
+With npm installs, add `@samline/formatter` to use `format({ type, field, displayField?, options? })`, `formatAll()` or the `formats` option. Types: `general`, `phone`, `numeral`, `date`, `time`, `creditCard`, `creditCardType`. The visible input is renamed to `<name>_displayed` and a hidden input named `<name>` carries the raw value that is submitted. Formatting binds after the peer loads (asynchronously). Without the peer, the call logs one error and the form keeps working. The CDN script includes the formatter. With `@samline/formatter` 3, phones are opt-in: forms loads `@samline/formatter/phone` and registers it automatically the first time a `phone` field is formatted, so no extra call is needed.
 
 ## Lifecycle
 

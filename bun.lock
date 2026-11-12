@@ -6,7 +6,7 @@
       "name": "@samline/forms",
       "devDependencies": {
         "@playwright/test": "1.62.1",
-        "@samline/formatter": "^2.1.0",
+        "@samline/formatter": "^3.0.0",
         "@types/node": "^26.6.2",
         "@vitest/coverage-v8": "^5.0.1",
         "axe-core": "^4.14.0",
@@ -19,7 +19,7 @@
         "vitest": "^5.0.1",
       },
       "peerDependencies": {
-        "@samline/formatter": "^2.1.0",
+        "@samline/formatter": "^2.1.0 || ^3.0.0",
       },
       "optionalPeers": [
         "@samline/formatter",
@@ -468,7 +468,7 @@
 
     "@samline/drawer": ["@samline/drawer@5.1.2", "", {}, "sha512-sTjWF80KRLWNmphkhpddAC4s93LKcQBSn/+gn89NxEbmjgGCSEwbif5fWlDpyBl3tqG3afKvt6RBIJwh2MI+pw=="],
 
-    "@samline/formatter": ["@samline/formatter@2.1.0", "", { "dependencies": { "cleave-zen": "^0.0.17", "libphonenumber-js": "^1.13.7" } }, "sha512-zpk8rEqthDKIt/ciYPog3+/aiGDPCe9bJNxTDEuw3ZtCxBoBwdPB0Guldv5jelQwkD3JVeAqcTu68N9eKlvwJA=="],
+    "@samline/formatter": ["@samline/formatter@3.0.0", "", { "dependencies": { "libphonenumber-js": "^1.13.7" } }, "sha512-lGPc5tU1h2TZbuFOgZX4A2P1ZMRt3CKJ4rK+xdWOhnHxAoVtjtnF6URTI9u8Mr7ue+MqaJTyCV43vciwSfeGGg=="],
 
     "@shikijs/core": ["@shikijs/core@4.6.0", "", { "dependencies": { "@shikijs/primitive": "4.6.0", "@shikijs/types": "4.6.0", "@shikijs/vscode-textmate": "^10.1.0", "@types/hast": "^3.0.5", "hast-util-to-html": "^9.0.6" } }, "sha512-bfd4OKgvoyXYiYmMRuleA656P4V7M/Du9lcTl38Ngm6KszMj7bq4J1IGZwSYR4c95Tv5UQALtYNWUwaI9UT3xw=="],
 
@@ -635,8 +635,6 @@
     "chokidar": ["chokidar@4.0.3", "", { "dependencies": { "readdirp": "^4.0.1" } }, "sha512-Qgzu8kfBvo+cA4962jnP1KkS6Dop5NS6g7R5LFYJr4b8Ub94PPQXUksCw9PvXoeXPRRddRNC5C1JQUR2SMGtnA=="],
 
     "ci-info": ["ci-info@4.4.0", "", {}, "sha512-77PSwercCZU2Fc4sX94eF8k8Pxte6JAwL4/ICZLFjJLqegs7kCuAsqqj/70NQF6TvDpgFjkubQB2FW2ZZddvQg=="],
-
-    "cleave-zen": ["cleave-zen@0.0.17", "", {}, "sha512-SLuad6RaACsONu3Fr4F3sE9YXxMlMv6AiaZ8qkwfdV9Ex+TJ+ip3rLFsdrqvnp0YGlslfzAfw8q8MwQJW3yHdg=="],
 
     "cliui": ["cliui@9.0.1", "", { "dependencies": { "string-width": "^7.2.0", "strip-ansi": "^7.1.0", "wrap-ansi": "^9.0.0" } }, "sha512-k7ndgKhwoQveBL+/1tqGJYNz097I7WOvwbmmU2AR5+magtbjPWQTS1C5vzGkBC8Ym8UWRzfKUzUUqFLypY4Q+w=="],
 

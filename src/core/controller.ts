@@ -519,6 +519,13 @@ export const createFormController = (
   const handleSubmitEvent = (event: Event) => {
     if (!state.element || state.isDestroyed || !state.api) return
 
+    // A submission the user started supersedes a pending debounced
+    // auto-submit; letting the timer run would submit the form twice.
+    if (!state.isAutoSubmitting && state.autoSubmitTimer) {
+      clearTimeout(state.autoSubmitTimer)
+      state.autoSubmitTimer = null
+    }
+
     if (normalizedOptions.clearErrorsOnSubmit) state.manualErrors = {}
 
     const validation = state.api.validate()

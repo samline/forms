@@ -15,6 +15,17 @@ export interface FormatterModule {
   FORMAT_TYPES?: readonly string[]
   isFormatType?: (value: unknown) => boolean
   regex?: Record<string, { pattern: RegExp; errorMessage: string }>
+  /** Present since @samline/formatter 3.0.0, where phones are opt-in. */
+  isPhoneRegistered?: () => boolean
+}
+
+interface PhoneModule {
+  registerPhone: () => void
+}
+
+export interface LoadFormatterOptions {
+  /** Also make sure phone formatting is registered (formatter >= 3.0.0). */
+  phone?: boolean
 }
 
 type LoaderState =
@@ -29,6 +40,11 @@ const MISSING_MESSAGE =
   '(or pnpm/bun/yarn equivalent).'
 
 let warned = false
+let phonePromise: Promise<boolean> | null = null
+
+const PHONE_MESSAGE =
+  '[samline/forms] Phone formatting needs `@samline/formatter/phone` ' +
+  '(@samline/formatter >= 3.0.0 makes phones opt-in) and it could not be loaded.'
 
 const warnOnce = () => {
   if (warned) return
@@ -36,7 +52,39 @@ const warnOnce = () => {
   console.error(MISSING_MESSAGE)
 }
 
-export const loadFormatter = (): Promise<FormatterModule | null> => {
+// Formatter 3 makes phones opt-in to keep libphonenumber-js (~140 KB) out of
+// forms that never format a phone. Forms registers it on demand, the first
+// time a phone field is formatted, so consumers do not have to. The subpath is
+// a separate dynamic import: bundlers split it into its own lazy chunk.
+const ensurePhone = (formatter: FormatterModule): Promise<boolean> => {
+  // Formatter 2.x always includes phones.
+  if (typeof formatter.isPhoneRegistered !== 'function') return Promise.resolve(true)
+  if (formatter.isPhoneRegistered()) return Promise.resolve(true)
+  if (!phonePromise) {
+    phonePromise = (async () => {
+      try {
+        const mod = (await import('@samline/formatter/phone')) as PhoneModule
+        mod.registerPhone()
+        return true
+      } catch {
+        console.error(PHONE_MESSAGE)
+        phonePromise = null
+        return false
+      }
+    })()
+  }
+  return phonePromise
+}
+
+export const loadFormatter = async (
+  options: LoadFormatterOptions = {}
+): Promise<FormatterModule | null> => {
+  const formatter = await loadFormatterModule()
+  if (!formatter || !options.phone) return formatter
+  return (await ensurePhone(formatter)) ? formatter : null
+}
+
+const loadFormatterModule = (): Promise<FormatterModule | null> => {
   if (state && state.status === 'resolved') {
     if (!state.module) warnOnce()
     return Promise.resolve(state.module)
@@ -74,6 +122,7 @@ export const loadFormatter = (): Promise<FormatterModule | null> => {
 export const __resetFormatterLoaderForTests = (): void => {
   state = null
   warned = false
+  phonePromise = null
 }
 
 // Test-only helper: inject a formatter implementation directly,

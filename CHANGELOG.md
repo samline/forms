@@ -4,6 +4,19 @@ All notable changes to `@samline/forms` are documented in this file. The format 
 
 ## [Unreleased]
 
+## [2.10.0] - 2026-11-12
+
+No breaking API changes.
+
+### Added
+
+- Support for `@samline/formatter` 3.0.0. The optional peer now accepts `^2.1.0 || ^3.0.0`. Formatter 3 makes phones opt-in, so forms loads `@samline/formatter/phone` and calls `registerPhone()` the first time a field is formatted with `type: 'phone'`. Forms without phone fields never load libphonenumber-js, and bundlers put the phone subpath in its own lazy chunk. If the subpath cannot be loaded, forms logs one `console.error` and leaves the field unformatted.
+- The standalone script bundles formatter 3.0.0, with phone support included.
+
+### Fixed
+
+- A submit the user starts while a debounced auto-submit is pending cancels the pending one. Before, the form was submitted twice.
+
 ## [2.9.0] - 2026-11-12
 
 No breaking API changes.
@@ -290,7 +303,8 @@ No breaking API changes. The behavior changes below fix incorrect or surprising 
 
 - Initial release of `@samline/forms`. Vanilla JS form controller with framework-specific variants (React, Vue, Svelte) initially included; bundled `.local/` agent docs at the repo root.
 
-[Unreleased]: https://github.com/samline/forms/compare/v2.9.0...HEAD
+[Unreleased]: https://github.com/samline/forms/compare/v2.10.0...HEAD
+[2.10.0]: https://github.com/samline/forms/compare/v2.9.0...v2.10.0
 [2.9.0]: https://github.com/samline/forms/compare/v2.8.0...v2.9.0
 [2.8.0]: https://github.com/samline/forms/compare/v2.7.2...v2.8.0
 [2.7.2]: https://github.com/samline/forms/compare/v2.7.1...v2.7.2

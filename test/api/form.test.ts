@@ -643,6 +643,28 @@ describe('form controller (integration)', () => {
     submitSpy.mockRestore()
   })
 
+  it('a manual submit cancels a pending debounced auto-submit', async () => {
+    const submitSpy = vi
+      .spyOn(HTMLFormElement.prototype, 'requestSubmit')
+      .mockImplementation(() => undefined)
+    const onSubmit = vi.fn()
+    const api = form('contact-form', {
+      autoValidate: false,
+      autoSubmit: { debounce: 30 }
+    })
+    api.onSubmit(onSubmit, true)
+
+    api.setValue('name', 'Sam')
+    document
+      .getElementById('contact-form')!
+      .dispatchEvent(new Event('submit', { bubbles: true, cancelable: true }))
+    await new Promise(resolve => setTimeout(resolve, 50))
+
+    expect(submitSpy).not.toHaveBeenCalled()
+    api.destroy()
+    submitSpy.mockRestore()
+  })
+
   it('destroy removes listeners and stops further notifications', () => {
     const listener = vi.fn()
     const api = form('contact-form')
