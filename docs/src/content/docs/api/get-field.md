@@ -2,7 +2,7 @@
 locale: en
 sidebar:
   group: api
-  order: 15
+  order: 16
 title: 'Find controls with getField()'
 titleAccent: 'getField()'
 description: 'Returns the DOM control or controls for a field name: null, one element, or an array for radios, checkbox groups and repeated fields.'

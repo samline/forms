@@ -4,6 +4,14 @@ All notable changes to `@samline/forms` are documented in this file. The format 
 
 ## [Unreleased]
 
+### Added
+
+- `setOptions(name, options, config?)` replaces the options of a `<select>` with strings, numbers, `{ value, label, disabled, selected }` objects or `{ label, options }` groups. Labels are written as text. The current value is kept when it is still listed (`keepValue: true` by default), and the change pipeline runs once, only when the selected value changes ([#13](https://github.com/samline/forms/issues/13)). New exported types: `SelectOption`, `SelectOptionGroup`, `SelectOptionInput` and `SetOptionsConfig`.
+
+### Fixed
+
+- Adding or removing `<option>` elements outside the controller is no longer ignored. When it changes a select's value, the controller revalidates, updates `css-filled` / `css-error`, fires watchers and notifies subscribers.
+
 ## [2.8.0] - 2026-11-06
 
 No breaking API changes. The behavior changes below fix incorrect or surprising results; review them if your code relied on the old behavior.

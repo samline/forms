@@ -21,3 +21,5 @@
 - Docs examples show each preview with its code (`<Playground preset showCode />`); never send readers to the landing to copy code.
 - `validate()` does not notify subscribers: render messages from its returned `errors` when calling it outside a submit.
 - npm rejects an override of a direct dependency unless its specifier matches the direct dependency exactly; keep both Vite ranges aligned and verify with test:package after changing tooling overrides.
+- `<option>` / `<optgroup>` are not form controls, so the field-only `MutationObserver` filter ignored option-list changes and a select's value could change silently. Option mutations are tracked separately against a per-select selection snapshot; api methods that rewrite options call `commitOwnMutations` so the observer does not process them twice.
+- Prettier only owns the paths listed in `site:format`. Never run it over `src/`, `test/` or `README.md`: it rewrites unrelated union types and signatures in the runtime source.

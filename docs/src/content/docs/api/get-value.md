@@ -2,7 +2,7 @@
 locale: en
 sidebar:
   group: api
-  order: 14
+  order: 15
 title: 'Read a field with getValue()'
 titleAccent: 'getValue()'
 description: 'Reads the current value of a field, normalized for its type: text, select, multiple select, checkbox group, radio group, file or repeated [] fields.'

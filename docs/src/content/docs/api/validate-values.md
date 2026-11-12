@@ -2,7 +2,7 @@
 locale: en
 sidebar:
   group: api
-  order: 26
+  order: 27
 title: 'Validate plain objects with validateValues()'
 titleAccent: 'validateValues()'
 description: 'Pure schema validator. Runs every field in the schema against a values map and returns the aggregated result. Does not require a controller.'

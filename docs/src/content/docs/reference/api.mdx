@@ -50,6 +50,7 @@ Methods that return data (rather than the controller) end in a different return 
 ## Field values
 
 - [`setValue(name, value)`](#setvaluename-value) — write a value into a field.
+- [`setOptions(name, options, config?)`](#setoptionsname-options-config) — replace the options of a select.
 - [`getValue(name)`](#getvaluename) — read the current value of a field.
 - [`getField(name)`](#getfieldname) — read the underlying DOM element(s).
 - [`prefill(fieldName?)`](#prefillfieldname) — populate the form from `window.location.search`.
@@ -169,7 +170,7 @@ Turns auto-submit off and cancels any pending debounce timer. Equivalent to `aut
 
 #### `watch(field, callback)`
 
-Chainable field observer. When a form is bound, the callback fires immediately and after matching handled input events; an inert controller stores the callback without an initial call. DOM mutations alone do not invoke field watchers. `watch()` returns the controller instead of an unsubscribe function.
+Chainable field observer. When a form is bound, the callback fires immediately and after matching handled input events; an inert controller stores the callback without an initial call. DOM mutations alone do not invoke field watchers, except an option-list change that changes a select's value. `watch()` returns the controller instead of an unsubscribe function.
 
 #### `observe(field, callback)`
 
@@ -181,7 +182,7 @@ Removes watched callbacks. Three overloads: no args (clear all), `field` only (c
 
 #### `subscribe(listener)`
 
-Registers a listener that always fires immediately and returns an unsubscribe function. Notifications occur for handled input, `setValue`, manual-error changes, reset, auto-submit toggles, submit attempts, and observed DOM mutations. Direct `validate()` / `revalidate()` calls update validation state but do not independently notify subscribers.
+Registers a listener that always fires immediately and returns an unsubscribe function. Notifications occur for handled input, `setValue`, manual-error changes, reset, auto-submit toggles, submit attempts, and observed DOM mutations, including option-list changes that change a select's value. Direct `validate()` / `revalidate()` calls update validation state but do not independently notify subscribers.
 
 ### Field values
 
@@ -190,6 +191,10 @@ Registers a listener that always fires immediately and returns an unsubscribe fu
 Writes a value and dispatches one bubbling `input` event from the first matching field, so the controller pipeline runs once. Returns the controller unchanged when the field does not exist.
 
 Control-specific checkbox, radio, file, multi-select, repeated-name, and `[]` behavior is specified in the [form-control matrix](../../guides/controls/#writing-values).
+
+#### `setOptions(name, options, config?)`
+
+Replaces the `<option>` / `<optgroup>` children of every `<select>` named `name`. Entries are strings, numbers, `{ value, label?, disabled?, selected? }` or `{ label, options }` groups; labels are written as text. The current selection is kept when its value is still listed (`keepValue: true` by default) unless an option has `selected: true`. One bubbling `input` event runs the pipeline only when the selected value changes. See [`setOptions()`](../../api/set-options/).
 
 #### `getValue(name)`
 

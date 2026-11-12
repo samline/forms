@@ -2,7 +2,7 @@
 locale: en
 sidebar:
   group: api
-  order: 17
+  order: 18
 title: 'Fill fields from the URL with prefill()'
 titleAccent: 'prefill()'
 description: 'Populates the form or one field from the URL query string. Repeated keys become arrays, and auto-submit runs once after the batch.'

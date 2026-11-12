@@ -125,14 +125,14 @@ One controller owns one form's listeners, `MutationObserver` and auto-submit tim
 
 ### Controller methods
 
-| Group      | Methods                                                           |
-| ---------- | ----------------------------------------------------------------- |
-| Submission | `onSubmit`, `autoSubmit`, `disableAutoSubmit`                     |
-| Validation | `validate`, `revalidate`, `setErrors`, `clearErrors`              |
-| State      | `subscribe`, `observe`, `watch`, `unwatch`, `getState`            |
-| Values     | `setValue`, `getValue`, `getField`, `getData`, `prefill`, `reset` |
-| Formatting | `format`, `formatAll`                                             |
-| Lifecycle  | `element`, `f`, `options`, `append`, `addCleanup`, `destroy`      |
+| Group      | Methods                                                                         |
+| ---------- | ------------------------------------------------------------------------------- |
+| Submission | `onSubmit`, `autoSubmit`, `disableAutoSubmit`                                   |
+| Validation | `validate`, `revalidate`, `setErrors`, `clearErrors`                            |
+| State      | `subscribe`, `observe`, `watch`, `unwatch`, `getState`                          |
+| Values     | `setValue`, `setOptions`, `getValue`, `getField`, `getData`, `prefill`, `reset` |
+| Formatting | `format`, `formatAll`                                                           |
+| Lifecycle  | `element`, `f`, `options`, `append`, `addCleanup`, `destroy`                    |
 
 ### Options
 

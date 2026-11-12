@@ -2,7 +2,7 @@
 locale: en
 sidebar:
   group: api
-  order: 23
+  order: 24
 title: 'Tie teardown to addCleanup()'
 titleAccent: 'addCleanup()'
 description: 'Registers teardown work owned by the controller. The callback runs when destroy() tears the controller down, unless that registration is removed first.'

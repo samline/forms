@@ -684,6 +684,12 @@
       "reviewed": true
     },
     {
+      "source": "src/api/set-options.ts",
+      "sha256": "492cd51fc800b2600c81ef4aeb4379526726f2908489f5fe574168c9e17495e0",
+      "destination": "docs/src/content/docs/api/set-options.md",
+      "reviewed": true
+    },
+    {
       "source": "src/api/set-value.ts",
       "sha256": "1660ec7d4a061d96206d7701284e2ed44d573ab2a33569cc2675db622ce8e62f",
       "destination": "docs/src/content/docs/api/set-value.md",
@@ -1212,6 +1218,14 @@
       "reviewed": true
     },
     {
+      "name": "FormController.setOptions",
+      "kind": "method",
+      "entrypoint": ".",
+      "source": "src/core/types.ts",
+      "destination": "docs/src/content/docs/api/set-options.md",
+      "reviewed": true
+    },
+    {
       "name": "FormController.validate",
       "kind": "method",
       "entrypoint": ".",
@@ -1385,6 +1399,38 @@
       "entrypoint": ".",
       "source": "src/core/types.ts",
       "destination": "docs/src/content/docs/reference/configuration.mdx",
+      "reviewed": true
+    },
+    {
+      "name": "SelectOption",
+      "kind": "type",
+      "entrypoint": ".",
+      "source": "src/index.ts",
+      "destination": "docs/src/content/docs/reference/typescript.mdx",
+      "reviewed": true
+    },
+    {
+      "name": "SelectOptionGroup",
+      "kind": "type",
+      "entrypoint": ".",
+      "source": "src/index.ts",
+      "destination": "docs/src/content/docs/reference/typescript.mdx",
+      "reviewed": true
+    },
+    {
+      "name": "SelectOptionInput",
+      "kind": "type",
+      "entrypoint": ".",
+      "source": "src/index.ts",
+      "destination": "docs/src/content/docs/reference/typescript.mdx",
+      "reviewed": true
+    },
+    {
+      "name": "SetOptionsConfig",
+      "kind": "type",
+      "entrypoint": ".",
+      "source": "src/index.ts",
+      "destination": "docs/src/content/docs/reference/typescript.mdx",
       "reviewed": true
     }
   ],

@@ -2,7 +2,7 @@
 locale: en
 sidebar:
   group: api
-  order: 25
+  order: 26
 title: 'Serialize any form with parseFormData()'
 titleAccent: 'parseFormData()'
 description: 'Pure serializer that returns a plain object mirror of a form plus a fresh FormData, skipping empty file inputs and honoring the submitter.'

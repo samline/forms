@@ -145,6 +145,35 @@ export interface AppendContentOptions {
   atStart?: boolean
 }
 
+/** One `<option>` written by `setOptions()`. */
+export interface SelectOption {
+  value: string | number
+  /** Visible text. Defaults to `String(value)`. Written as text, never HTML. */
+  label?: string
+  disabled?: boolean
+  /** Selects the option and makes it the default restored by `reset()`. */
+  selected?: boolean
+}
+
+/** One `<optgroup>` written by `setOptions()`. */
+export interface SelectOptionGroup {
+  label: string
+  options: Array<string | number | SelectOption>
+  disabled?: boolean
+}
+
+/** A plain string or number is shorthand for `{ value, label: String(value) }`. */
+export type SelectOptionInput = string | number | SelectOption | SelectOptionGroup
+
+export interface SetOptionsConfig {
+  /**
+   * Keep the current selection when its value is still in the new list.
+   * Ignored for a select when any new option has `selected: true`.
+   * Defaults to `true`.
+   */
+  keepValue?: boolean
+}
+
 export type FormFieldWatcher = (
   value: FormFieldValue,
   field: FormFieldElement | FormFieldElement[] | null,
@@ -176,6 +205,16 @@ export interface FormController {
   setErrors: (fields: string[] | FormErrors) => FormController
   clearErrors: (fields?: string[]) => FormController
   setValue: (name: string, value: unknown) => FormController
+  /**
+   * Replace the `<option>` / `<optgroup>` children of every `<select>`
+   * named `name`. Fires the normal change pipeline only when the
+   * selected value changes. Chainable.
+   */
+  setOptions: (
+    name: string,
+    options: SelectOptionInput[],
+    config?: SetOptionsConfig
+  ) => FormController
   validate: (fields?: string[]) => ValidationResult
   revalidate: (fields?: string[]) => ValidationResult
   /**

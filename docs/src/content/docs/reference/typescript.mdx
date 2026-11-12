@@ -68,6 +68,11 @@ interface FormController {
   setErrors: (fields: string[] | FormErrors) => FormController
   clearErrors: (fields?: string[]) => FormController
   setValue: (name: string, value: unknown) => FormController
+  setOptions: (
+    name: string,
+    options: SelectOptionInput[],
+    config?: SetOptionsConfig
+  ) => FormController
   validate: (fields?: string[]) => ValidationResult
   revalidate: (fields?: string[]) => ValidationResult
   format: (config: FieldFormatConfig) => FormController
@@ -123,6 +128,41 @@ type FormFieldElement = HTMLInputElement | HTMLSelectElement | HTMLTextAreaEleme
 ```
 
 Returned by [`getField`](../../reference/api/#getfieldname).
+
+## `SelectOptionInput`
+
+One entry of the list passed to [`setOptions`](../../api/set-options/).
+
+```ts
+type SelectOptionInput = string | number | SelectOption | SelectOptionGroup
+
+interface SelectOption {
+  value: string | number
+  label?: string // defaults to String(value); written as text, never HTML
+  disabled?: boolean
+  selected?: boolean // selects the option and makes it the reset default
+}
+
+interface SelectOptionGroup {
+  label: string
+  options: Array<string | number | SelectOption>
+  disabled?: boolean
+}
+```
+
+A string or number is shorthand for `{ value, label: String(value) }`. `SelectOption` and `SelectOptionGroup` are exported too.
+
+## `SetOptionsConfig`
+
+The third argument to [`setOptions`](../../api/set-options/).
+
+```ts
+interface SetOptionsConfig {
+  keepValue?: boolean // default true
+}
+```
+
+With `keepValue: true`, a select keeps its current value when that value is still listed. It is ignored for a select when any new option has `selected: true`.
 
 ## `FormFieldValue`
 

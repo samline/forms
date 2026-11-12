@@ -2,7 +2,7 @@
 locale: en
 sidebar:
   group: api
-  order: 27
+  order: 28
 title: 'Validate one value with validateFieldValue()'
 titleAccent: 'validateFieldValue()'
 description: 'Pure validator that runs one rule set against a single value without a controller or DOM, useful for server-side and custom checks.'
