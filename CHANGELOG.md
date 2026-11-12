@@ -4,6 +4,10 @@ All notable changes to `@samline/forms` are documented in this file. The format 
 
 ## [Unreleased]
 
+## [2.9.0] - 2026-11-12
+
+No breaking API changes.
+
 ### Added
 
 - `setOptions(name, options, config?)` replaces the options of a `<select>` with strings, numbers, `{ value, label, disabled, selected }` objects or `{ label, options }` groups. Labels are written as text. The current value is kept when it is still listed (`keepValue: true` by default), and the change pipeline runs once, only when the selected value changes ([#13](https://github.com/samline/forms/issues/13)). New exported types: `SelectOption`, `SelectOptionGroup`, `SelectOptionInput` and `SetOptionsConfig`.
@@ -286,7 +290,8 @@ No breaking API changes. The behavior changes below fix incorrect or surprising 
 
 - Initial release of `@samline/forms`. Vanilla JS form controller with framework-specific variants (React, Vue, Svelte) initially included; bundled `.local/` agent docs at the repo root.
 
-[Unreleased]: https://github.com/samline/forms/compare/v2.8.0...HEAD
+[Unreleased]: https://github.com/samline/forms/compare/v2.9.0...HEAD
+[2.9.0]: https://github.com/samline/forms/compare/v2.8.0...v2.9.0
 [2.8.0]: https://github.com/samline/forms/compare/v2.7.2...v2.8.0
 [2.7.2]: https://github.com/samline/forms/compare/v2.7.1...v2.7.2
 [2.7.1]: https://github.com/samline/forms/compare/v2.7.0...v2.7.1

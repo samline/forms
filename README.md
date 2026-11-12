@@ -78,7 +78,7 @@ Invalid submits are always prevented and focus moves to the first invalid field.
 The standalone build defines `window.Forms` and already includes `@samline/formatter`. Pin the version.
 
 ```html
-<script src="https://unpkg.com/@samline/forms@2.8.0/dist/browser/global.global.js"></script>
+<script src="https://unpkg.com/@samline/forms@2.9.0/dist/browser/global.global.js"></script>
 <script>
   const signup = window.Forms.form('signup', {
     validators: { email: { required: true, pattern: /^[^\s@]+@[^\s@]+\.[^\s@]+$/ } },

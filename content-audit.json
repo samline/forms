@@ -143,7 +143,7 @@
     "accentDark": "#38bdf8"
   },
   "status": "verified",
-  "packageVersion": "2.8.0",
+  "packageVersion": "2.9.0",
   "sources": [
     {
       "source": "CHANGELOG.md",
@@ -1442,7 +1442,7 @@
       "reviewed": true
     }
   ],
-  "notes": "Reviewed 2026-11-06 against src at 2.8.0. Retired docs/ and example/ sources remain in Git at 612ac51 and are redirected through site-tools/doc-migration.json.",
+  "notes": "Reviewed 2026-11-12 against src at 2.9.0. Retired docs/ and example/ sources remain in Git at 612ac51 and are redirected through site-tools/doc-migration.json.",
   "iconReview": {
     "kept": [],
     "notes": "All six Overview icons redrawn: form, alert, power, checklist, pulse and card."

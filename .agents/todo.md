@@ -1,5 +1,19 @@
 # Project Todo
 
+## Handoff — 2026-11-12 (2.9.0 prepared, not published)
+
+2.9.0 adds `setOptions()` (#13, PR #28) and array support in `watch()` / `observe()` / `unwatch()` (#10, PR #29), plus the fix for option-list mutations being ignored by the observer. Both PRs are squash-merged and pushed to main; their branches are deleted and both issues are closed.
+
+The release commit (`release: v2.9.0`: version references, CDN URLs, CHANGELOG section) is on local main only. It is deliberately not pushed: pushing main deploys the website, whose CDN URLs would point at a 2.9.0 that npm does not have yet.
+
+Verified locally on the release commit: frozen Bun install, typecheck, 146 tests with coverage, build, test:package (23 files), npm pack --dry-run, bun audit --production, site:verify (35 browser tests) and site:check:release.
+
+Remaining, maintainer only:
+
+1. `npm publish` from the clean worktree (prepublishOnly re-runs the checks).
+2. `git push origin main` after npm serves 2.9.0, then confirm CI and the Pages deployment.
+3. Optional: tag `v2.9.0`. No `v2.8.0` tag exists locally although the CHANGELOG compare links reference it.
+
 ## Handoff — 2026-11-06
 
 The cancelled verification from the earlier session has been completed. Runtime 2.8.0, the embedded Landing/Examples/Docs migration and template 61cc0d8 fixes are verified together. The maintainer published @samline/forms@2.8.0 on npm during this session; all 19 published dist files match this checkout byte for byte, including after the tooling dependency updates.

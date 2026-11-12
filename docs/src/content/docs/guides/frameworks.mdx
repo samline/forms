@@ -100,9 +100,9 @@ Register the standalone script once and enqueue a small integration that depends
 add_action('wp_enqueue_scripts', function () {
   wp_register_script(
     'samline-forms',
-    'https://unpkg.com/@samline/forms@2.8.0/dist/browser/global.global.js',
+    'https://unpkg.com/@samline/forms@2.9.0/dist/browser/global.global.js',
     [],
-    '2.8.0',
+    '2.9.0',
     ['strategy' => 'defer']
   );
   wp_enqueue_script(
