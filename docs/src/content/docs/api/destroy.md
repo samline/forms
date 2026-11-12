@@ -2,7 +2,7 @@
 locale: en
 sidebar:
   group: api
-  order: 24
+  order: 25
 title: 'Tear down with destroy()'
 titleAccent: 'destroy()'
 description: 'Tears the controller down: removes listeners, disconnects the observer, runs registered cleanups and makes later calls inert. Safe to call twice.'

@@ -54,6 +54,7 @@ export default {
     'api/reset': 'reset()',
     'api/revalidate': 'revalidate()',
     'api/set-errors': 'setErrors()',
+    'api/set-options': 'setOptions()',
     'api/set-value': 'setValue()',
     'api/subscribe': 'subscribe()',
     'api/unwatch': 'unwatch()',

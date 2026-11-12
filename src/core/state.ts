@@ -93,6 +93,7 @@ export interface FormControllerHelpers {
   emitFieldWatchers: (name: string) => void
   scheduleAutoSubmit: () => void
   applyReset: () => void
+  commitOwnMutations: (selects: HTMLSelectElement[]) => void
 }
 
 export const createEmptyFormState = (): FormStateSnapshot => ({

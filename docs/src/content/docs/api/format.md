@@ -2,7 +2,7 @@
 locale: en
 sidebar:
   group: api
-  order: 21
+  order: 22
 title: 'Format fields with format() and formatAll()'
 titleAccent: 'format() and formatAll()'
 description: 'Apply an @samline/formatter pipeline to one or more fields inside the bound form. Chainable.'

@@ -2,7 +2,7 @@
 locale: en
 sidebar:
   group: api
-  order: 20
+  order: 21
 title: 'Stop auto-submit with disableAutoSubmit()'
 titleAccent: 'disableAutoSubmit()'
 description: 'Turns auto-submit off and cancels any pending debounce timer. Use it to pause automatic submission during a multi-step flow.'

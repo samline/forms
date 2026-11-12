@@ -2,7 +2,7 @@
 locale: en
 sidebar:
   group: api
-  order: 19
+  order: 20
 title: 'Submit on change with autoSubmit()'
 titleAccent: 'autoSubmit()'
 description: 'Enables native auto-submit. Every change to a tracked field triggers form.requestSubmit(). Optionally debounced.'

@@ -2,7 +2,7 @@
 locale: en
 sidebar:
   group: api
-  order: 18
+  order: 19
 title: 'Restore defaults with reset()'
 titleAccent: 'reset()'
 description: 'Restores the native form, clears manual and validation errors, resynchronizes visual state, re-emits field watchers and notifies subscribers.'

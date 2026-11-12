@@ -84,6 +84,7 @@ Rules run on load and on input with the default `autoValidate: true`; with `fals
 - `autoSubmit({ debounce })` (or the option) submits through the same pipeline after each change. `disableAutoSubmit()` stops it.
 - `prefill(name?)` writes URL query values with `setValue()`; repeated keys become arrays; auto-submit runs once.
 - `setValue(name, value)` writes and dispatches `input`, so rules, watchers and auto-submit run. Arrays check checkbox groups, select multiple options or fill `name[]` inputs in order.
+- `setOptions(name, options, { keepValue = true }?)` replaces a select's options. Entries: `'x'`, `{ value, label?, disabled?, selected? }` or `{ label, options }` for an optgroup; labels are text. Keeps the value if still listed; dispatches `input` only when the value changes. Use it for dependent or loaded dropdowns instead of `append()` or `innerHTML`.
 - `getValue`, `getField`, `getData` (`{ data, formData }`), `getState`, `validate(fields?)`, `revalidate(fields?)`, `clearErrors(fields?)`, `reset()`, `append({ tag, content, class?, atStart? })`.
 - `reset()` and native reset buttons restore defaults, clear errors and attributes and call watchers.
 

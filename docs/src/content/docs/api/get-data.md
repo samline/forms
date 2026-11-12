@@ -2,7 +2,7 @@
 locale: en
 sidebar:
   group: api
-  order: 16
+  order: 17
 title: 'Serialize the form with getData()'
 titleAccent: 'getData()'
 description: 'Returns the form serialized as both a plain object and a fresh FormData instance. Empty file inputs are filtered out.'

@@ -27,6 +27,7 @@ import { createPrefill } from '../api/prefill'
 import { createReset } from '../api/reset'
 import { createRevalidate } from '../api/revalidate'
 import { createSetErrors } from '../api/set-errors'
+import { createSetOptions } from '../api/set-options'
 import { createSetValue } from '../api/set-value'
 import { createSubscribe } from '../api/subscribe'
 import { createUnwatch } from '../api/unwatch'
@@ -361,6 +362,24 @@ export const createFormController = (
     runAutoSubmit()
   }
 
+  // Last selection seen for every <select>, so option-list mutations made
+  // outside the controller fire watchers only when the selection changed.
+  const selectSnapshots = new WeakMap<HTMLSelectElement, string>()
+
+  const readSelectSnapshot = (select: HTMLSelectElement) =>
+    Array.from(select.selectedOptions, option => option.value).join('\u0000')
+
+  const snapshotSelect = (select: HTMLSelectElement) => {
+    selectSnapshots.set(select, readSelectSnapshot(select))
+  }
+
+  const snapshotAllSelects = () => {
+    if (!state.element) return
+    for (const field of getNamedFields(state.element)) {
+      if (field instanceof HTMLSelectElement) snapshotSelect(field)
+    }
+  }
+
   const emitAllFieldWatchers = () => {
     for (const name of Array.from(state.watchedFields.keys())) emitFieldWatchers(name)
   }
@@ -377,6 +396,7 @@ export const createFormController = (
     state.validationElementErrors.clear()
     clearAttributes(state.element, [attributes.error, attributes.filled, 'aria-invalid'])
     syncVisualState()
+    snapshotAllSelects()
     emitAllFieldWatchers()
     notifySubscribers()
   }
@@ -392,7 +412,8 @@ export const createFormController = (
     validateNames,
     emitFieldWatchers,
     scheduleAutoSubmit,
-    applyReset
+    applyReset,
+    commitOwnMutations: selects => commitOwnMutations(selects)
   }
 
   // ------- DOM event wiring ---------------------------------------------
@@ -404,6 +425,7 @@ export const createFormController = (
     if (!name) return
 
     clearFieldCache()
+    if (target instanceof HTMLSelectElement) snapshotSelect(target)
 
     // A formatted field is exposed under two names: the canonical
     // (e.g. `phone`, on the hidden raw mirror) and the display
@@ -540,29 +562,90 @@ export const createFormController = (
     state.cleanups.add(cancel)
   }
 
+  const touchesFields = (node: Node) =>
+    node instanceof Element &&
+    (isFieldElement(node) || node.querySelector('input, select, textarea') !== null)
+
+  // Error messages or other markup rendered into the form by a subscriber
+  // must not re-enter validation; that would notify the same subscriber
+  // again and loop. Only control additions/removals and renames count.
+  const isStructural = (record: MutationRecord) =>
+    record.type === 'attributes' ||
+    Array.from(record.addedNodes).some(touchesFields) ||
+    Array.from(record.removedNodes).some(touchesFields)
+
+  const isOptionNode = (node: Node) =>
+    node instanceof HTMLOptionElement || node instanceof HTMLOptGroupElement
+
+  // The <select> whose option list a childList record changed, if any.
+  const optionListOwner = (record: MutationRecord): HTMLSelectElement | null => {
+    if (record.type !== 'childList') return null
+    const touchesOptions =
+      Array.from(record.addedNodes).some(isOptionNode) ||
+      Array.from(record.removedNodes).some(isOptionNode)
+    if (!touchesOptions) return null
+    const target = record.target
+    if (target instanceof HTMLSelectElement) return target
+    if (
+      target instanceof HTMLOptGroupElement &&
+      target.parentElement instanceof HTMLSelectElement
+    ) {
+      return target.parentElement
+    }
+    return null
+  }
+
+  const handleMutations = (records: MutationRecord[]) => {
+    if (state.isDestroyed) return
+    const structural = records.some(isStructural)
+    const changedNames = new Set<string>()
+
+    for (const record of records) {
+      const select = optionListOwner(record)
+      if (!select || !select.name) continue
+      const next = readSelectSnapshot(select)
+      if (selectSnapshots.get(select) !== next) changedNames.add(select.name)
+      selectSnapshots.set(select, next)
+    }
+
+    if (!structural && changedNames.size === 0) return
+    clearFieldCache()
+
+    if (structural) {
+      snapshotAllSelects()
+      if (state.isValidated) validateNames()
+      else syncVisualState()
+    } else {
+      const affected = new Set<string>()
+      for (const name of changedNames) {
+        for (const field of getAffectedValidationNames(name)) affected.add(field)
+      }
+      const names = Array.from(affected)
+      syncVisualState(Array.from(changedNames))
+      if (state.isValidated && names.some(field => state.validators[field] !== undefined)) {
+        validateNames(names)
+      }
+    }
+
+    for (const name of changedNames) emitFieldWatchers(name)
+    notifySubscribers()
+  }
+
+  // Called by api methods that rewrite option lists themselves: drop the
+  // records those writes produced, keep processing everything else.
+  const commitOwnMutations = (selects: HTMLSelectElement[]) => {
+    selects.forEach(snapshotSelect)
+    const pending = state.mutationObserver?.takeRecords() ?? []
+    const foreign = pending.filter(
+      record => !selects.some(select => select.contains(record.target))
+    )
+    if (foreign.length > 0) handleMutations(foreign)
+  }
+
   const startMutationObserver = () => {
     if (!state.element || typeof MutationObserver === 'undefined') return
 
-    const touchesFields = (node: Node) =>
-      node instanceof Element &&
-      (isFieldElement(node) || node.querySelector('input, select, textarea') !== null)
-
-    // Error messages or other markup rendered into the form by a subscriber
-    // must not re-enter validation; that would notify the same subscriber
-    // again and loop. Only control additions/removals and renames count.
-    const isRelevant = (record: MutationRecord) =>
-      record.type === 'attributes' ||
-      Array.from(record.addedNodes).some(touchesFields) ||
-      Array.from(record.removedNodes).some(touchesFields)
-
-    state.mutationObserver = new MutationObserver(records => {
-      if (state.isDestroyed || !records.some(isRelevant)) return
-      clearFieldCache()
-      if (state.isValidated) {
-        validateNames()
-      } else syncVisualState()
-      notifySubscribers()
-    })
+    state.mutationObserver = new MutationObserver(handleMutations)
 
     state.mutationObserver.observe(state.element, {
       childList: true,
@@ -595,6 +678,7 @@ export const createFormController = (
     setErrors: createSetErrors(state, helpers),
     clearErrors: createClearErrors(state, helpers),
     setValue: createSetValue(state, helpers),
+    setOptions: createSetOptions(state, helpers),
     getValue: createGetValue(state, helpers),
     getField: createGetField(state, helpers),
     validate: createValidate(state, helpers),
@@ -618,6 +702,7 @@ export const createFormController = (
     addListener(document, 'input', handleExternalDelegatedEvent)
     addListener(state.element, 'submit', handleSubmitEvent)
     addListener(state.element, 'reset', handleResetEvent)
+    snapshotAllSelects()
     startMutationObserver()
   }
 

@@ -51,6 +51,8 @@ Bare repeated text fields keep legacy behavior: `getValue()` reads the first and
 
 After writing, `setValue()` dispatches one bubbling `input` event from the first matching field. That single event enters error clearing, validation, watchers, subscribers, visual sync, and auto-submit once.
 
+To change which options a `<select>` offers, use [`setOptions()`](../../api/set-options/) instead of rewriting its markup. It keeps the current value when it is still listed and runs the same pipeline only when the selected value changes. Options added or removed by your own code are detected too: if the selected value changes, the controller revalidates, fires watchers and notifies subscribers.
+
 ## DOM lookup and external controls
 
 `getField(name)` returns one element, an array for repeated names, or `null`. It uses `form.elements`, so controls associated through `form="id"` are included even when they sit outside the form subtree. Delegated input handling also listens for those controls.

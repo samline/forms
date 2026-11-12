@@ -2,7 +2,7 @@
 locale: en
 sidebar:
   group: api
-  order: 22
+  order: 23
 title: 'Insert content with append()'
 titleAccent: 'append()'
 description: 'Inserts an element into the bound form, replacing an earlier node with the same first class name. Useful for banners, hints and summaries.'
