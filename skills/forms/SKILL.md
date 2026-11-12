@@ -79,7 +79,7 @@ Rules run on load and on input with the default `autoValidate: true`; with `fals
 ## State and submission
 
 - `subscribe(state => …)` runs immediately and after every change; returns an unsubscribe. `state` has `values`, `errors`, `filledFields`, `isValid`, `isValidated`, `autoSubmit`, `isSubmitting` and `submitCount`.
-- `observe(name, (value, field, form, state) => …)` runs immediately and on changes, returns an unsubscribe; `watch()` is the chainable variant, `unwatch()` removes callbacks.
+- `observe(name, (value, field, form, state) => …)` runs immediately and on changes, returns an unsubscribe; `watch()` is the chainable variant, `unwatch()` removes callbacks. Pass an array (`watch(['qty', 'price'], (values, changed, form, state) => …)`) for one callback over several fields; `changed` is `null` on registration and reset, and `unwatch(['qty', 'price'], cb?)` removes it.
 - `onSubmit(handler, preventDefault = true)` runs only for valid submits with `(form, data, formData, state)`. Pass `false` to keep native navigation. Returned promises keep `isSubmitting` true; a rejection is logged, so catch it to show a message.
 - `autoSubmit({ debounce })` (or the option) submits through the same pipeline after each change. `disableAutoSubmit()` stops it.
 - `prefill(name?)` writes URL query values with `setValue()`; repeated keys become arrays; auto-submit runs once.

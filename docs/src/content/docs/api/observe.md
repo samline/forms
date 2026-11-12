@@ -13,10 +13,8 @@ Registers a callback that fires immediately with the current value and on every 
 ## Signature
 
 ```ts
-observe(
-  field: string,
-  callback: FormFieldWatcher
-): () => void
+observe(field: string, callback: FormFieldWatcher): () => void
+observe(fields: string[], callback: FormFieldsWatcher): () => void
 ```
 
 ## Parameters
@@ -25,6 +23,8 @@ observe(
 | ---------- | ------------------------------------------------------------------ | -------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
 | `field`    | `string`                                                           | yes      | The `name` attribute of the field to observe.                                                                                                                                                           |
 | `callback` | [`FormFieldWatcher`](../../reference/typescript/#formfieldwatcher) | yes      | Invoked with `(value, field, form, state)`. Fires immediately with the current value, then on every change. `field` is the observed DOM element(s) (same shape as [`getField`](../get-field/) returns). |
+
+Pass an array of names to observe several fields with one callback. It receives `(values, changed, form, state)`, typed as [`FormFieldsWatcher`](../../reference/typescript/#formfieldswatcher): `values` has one entry per field, and `changed` is the field that triggered the call, or `null` on registration and after [`reset`](../reset/). See [`watch`](../watch/#parameters) for the details.
 
 ## Returns
 
@@ -38,6 +38,20 @@ A function. Calling it removes the observer for this field.
 - The unsubscribe function is idempotent — calling it more than once is safe.
 
 ## Examples
+
+### Observe several fields
+
+```ts
+import { form } from '@samline/forms'
+
+const order = form('order-form')
+
+const stop = order.observe(['quantity', 'price'], ({ quantity, price }) => {
+  document.querySelector('#total')!.textContent = String(Number(quantity) * Number(price))
+})
+
+stop()
+```
 
 ### Observe and unsubscribe later
 

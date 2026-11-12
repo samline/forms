@@ -42,7 +42,7 @@ Methods that return data (rather than the controller) end in a different return 
 
 ## Field observation
 
-- [`watch(field, callback)`](#watchfield-callback) — chainable field observation.
+- [`watch(field, callback)`](#watchfield-callback) — chainable field observation; `field` can be a list of names.
 - [`observe(field, callback)`](#observefield-callback) — like `watch`, but returns an unsubscribe function.
 - [`unwatch(field?, callback?)`](#unwatchfield-callback) — remove watched callbacks.
 - [`subscribe(listener)`](#subscribelistener) — react to controller notification points.
@@ -172,13 +172,15 @@ Turns auto-submit off and cancels any pending debounce timer. Equivalent to `aut
 
 Chainable field observer. When a form is bound, the callback fires immediately and after matching handled input events; an inert controller stores the callback without an initial call. DOM mutations alone do not invoke field watchers, except an option-list change that changes a select's value. `watch()` returns the controller instead of an unsubscribe function.
 
+Pass an array of names to watch several fields with one callback, which receives `(values, changed, form, state)` ([`FormFieldsWatcher`](../typescript/#formfieldswatcher)). `values` has one entry per listed field; `changed` names the field that triggered the call, or is `null` on registration and after `reset()`. It fires once per change of any listed field.
+
 #### `observe(field, callback)`
 
-Like `watch`, but returns an idempotent unsubscribe function. The callback receives `(value, field, form, state)` after error clearing, validation, and visual synchronization for the input event, but before whole-form subscribers are notified.
+Like `watch` (including the array form), but returns an idempotent unsubscribe function. The callback receives `(value, field, form, state)` after error clearing, validation, and visual synchronization for the input event, but before whole-form subscribers are notified.
 
 #### `unwatch(field?, callback?)`
 
-Removes watched callbacks. Three overloads: no args (clear all), `field` only (clear all for that field), or `field` + `callback` (clear one specific watcher).
+Removes watched callbacks: no args (clear all), `field` only (clear all for that field), or `field` + `callback` (clear one specific watcher). An array of names removes watchers registered with that same list, optionally only one `callback`; a single name never removes list watchers.
 
 #### `subscribe(listener)`
 

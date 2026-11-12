@@ -43,6 +43,7 @@ export const createDestroy =
     }
 
     state.watchedFields.clear()
+    state.groupWatchers.clear()
     state.subscribers.clear()
     state.submitHandlers.clear()
     state.fieldCache.clear()

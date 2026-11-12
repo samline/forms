@@ -26,6 +26,7 @@ export type {
   FormErrors,
   FormFieldElement,
   FormFieldWatcher,
+  FormFieldsWatcher,
   FormFieldValue,
   FormStateListener,
   FormStateSnapshot,
