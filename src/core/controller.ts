@@ -91,6 +91,7 @@ export const createFormController = (
     attributes,
     validators: normalizedOptions.validators ?? {},
     watchedFields: new Map(),
+    groupWatchers: new Set(),
     subscribers: new Set(),
     submitHandlers: new Set(),
     fieldCache: new Map(),
@@ -327,7 +328,7 @@ export const createFormController = (
     return affected
   }
 
-  const emitFieldWatchers = (name: string) => {
+  const emitSingleWatchers = (name: string) => {
     if (!state.element || !state.api) return
     const callbacks = state.watchedFields.get(name)
     if (!callbacks || callbacks.size === 0) return
@@ -335,6 +336,28 @@ export const createFormController = (
     const fieldElement = state.api.getField(name)
     const snapshot = state.api.getState()
     callbacks.forEach(callback => callback(value, fieldElement, state.element!, snapshot))
+  }
+
+  // Calls every multi-field watcher that lists one of `names`, once, with
+  // the first matching name as `changed`. `null` calls every one of them
+  // with `changed: null` (reset).
+  const emitGroupWatchers = (names: string[] | null) => {
+    if (!state.element || !state.api || state.groupWatchers.size === 0) return
+    let snapshot: ReturnType<FormController['getState']> | undefined
+    for (const entry of Array.from(state.groupWatchers)) {
+      const changed = names ? names.find(name => entry.fields.includes(name)) : null
+      if (changed === undefined) continue
+      snapshot ??= state.api.getState()
+      const values = Object.fromEntries(
+        entry.fields.map(field => [field, state.api!.getValue(field)])
+      )
+      entry.callback(values, changed, state.element, snapshot)
+    }
+  }
+
+  const emitFieldWatchers = (name: string) => {
+    emitSingleWatchers(name)
+    emitGroupWatchers([name])
   }
 
   // `requestSubmit()` dispatches `submit` synchronously, so the flag tells
@@ -381,7 +404,8 @@ export const createFormController = (
   }
 
   const emitAllFieldWatchers = () => {
-    for (const name of Array.from(state.watchedFields.keys())) emitFieldWatchers(name)
+    for (const name of Array.from(state.watchedFields.keys())) emitSingleWatchers(name)
+    emitGroupWatchers(null)
   }
 
   // Shared by `reset()` and native reset buttons: values are already back
@@ -456,8 +480,9 @@ export const createFormController = (
       validateNames(affectedValidationNames)
     }
 
-    emitFieldWatchers(canonical)
-    if (canonical !== name) emitFieldWatchers(name)
+    emitSingleWatchers(canonical)
+    if (canonical !== name) emitSingleWatchers(name)
+    emitGroupWatchers(canonical !== name ? [canonical, name] : [canonical])
     notifySubscribers()
     scheduleAutoSubmit()
   }

@@ -1026,6 +1026,14 @@
       "reviewed": true
     },
     {
+      "name": "FormFieldsWatcher",
+      "kind": "type",
+      "entrypoint": ".",
+      "source": "src/index.ts",
+      "destination": "docs/src/content/docs/reference/typescript.mdx",
+      "reviewed": true
+    },
+    {
       "name": "FormFieldValue",
       "kind": "type",
       "entrypoint": ".",

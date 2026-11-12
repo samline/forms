@@ -30,6 +30,7 @@ import type {
   FormFieldElement,
   FormFieldValue,
   FormFieldWatcher,
+  FormFieldsWatcher,
   FormsApi,
   FormsAvailable,
   FormStateListener,
@@ -59,9 +60,18 @@ interface FormController {
   readonly options: FormControllerOptions
   onSubmit: (callback: FormSubmitHandler, preventDefault?: boolean) => FormController
   addCleanup: (cleanup: FormCleanup) => () => void
-  watch: (field: string, callback: FormFieldWatcher) => FormController
-  observe: (field: string, callback: FormFieldWatcher) => () => void
-  unwatch: (field?: string, callback?: FormFieldWatcher) => FormController
+  watch: {
+    (field: string, callback: FormFieldWatcher): FormController
+    (fields: string[], callback: FormFieldsWatcher): FormController
+  }
+  observe: {
+    (field: string, callback: FormFieldWatcher): () => void
+    (fields: string[], callback: FormFieldsWatcher): () => void
+  }
+  unwatch: {
+    (field?: string, callback?: FormFieldWatcher): FormController
+    (fields: string[], callback?: FormFieldsWatcher): FormController
+  }
   subscribe: (listener: FormStateListener) => () => void
   prefill: (fieldName?: string) => FormController
   append: (options: AppendContentOptions) => HTMLElement | null
@@ -299,6 +309,24 @@ type FormFieldWatcher = (
 - `state` — a snapshot of the whole controller state.
 
 `observe` and `watch` fire once immediately with the current value, then on every matching `input` event. `observe` returns an unsubscribe function; `watch` returns the controller.
+
+## `FormFieldsWatcher`
+
+The callback passed to [`watch`](../../api/watch/) and [`observe`](../../api/observe/) with an array of field names.
+
+```ts
+type FormFieldsWatcher = (
+  values: FormValues,
+  changed: string | null,
+  form: HTMLFormElement,
+  state: FormStateSnapshot
+) => void
+```
+
+- `values` — one entry per watched field.
+- `changed` — the field that triggered the call; `null` on registration and after `reset()`.
+- `form` — the bound `HTMLFormElement`.
+- `state` — a snapshot of the whole controller state.
 
 ## `SerializedFormResult`
 

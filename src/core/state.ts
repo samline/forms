@@ -9,6 +9,7 @@ import type {
   FormErrors,
   FormFieldElement,
   FormFieldWatcher,
+  FormFieldsWatcher,
   FormStateListener,
   FormStateSnapshot,
   FormValues,
@@ -23,6 +24,9 @@ export interface FormControllerState {
   attributes: Required<VisualAttributes>
   validators: ValidationSchema
   watchedFields: Map<string, Set<FormFieldWatcher>>
+  // Watchers registered with a list of fields. `fields` is deduplicated
+  // and keeps the order the caller passed.
+  groupWatchers: Set<{ fields: string[]; callback: FormFieldsWatcher }>
   subscribers: Set<FormStateListener>
   submitHandlers: Set<{
     callback: import('./types').FormSubmitHandler

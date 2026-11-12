@@ -181,6 +181,18 @@ export type FormFieldWatcher = (
   state: FormStateSnapshot
 ) => void
 
+/**
+ * Callback for `watch()` / `observe()` with a list of fields. `values` has
+ * one entry per watched field. `changed` is the field that triggered the
+ * call, or `null` on registration and after `reset()`.
+ */
+export type FormFieldsWatcher = (
+  values: FormValues,
+  changed: string | null,
+  form: HTMLFormElement,
+  state: FormStateSnapshot
+) => void
+
 export type FormSubmitHandler = (
   form: HTMLFormElement,
   data: Record<string, SerializedFormValue>,
@@ -196,9 +208,18 @@ export interface FormController {
   readonly options: FormControllerOptions
   onSubmit: (callback: FormSubmitHandler, preventDefault?: boolean) => FormController
   addCleanup: (cleanup: FormCleanup) => () => void
-  watch: (field: string, callback: FormFieldWatcher) => FormController
-  observe: (field: string, callback: FormFieldWatcher) => () => void
-  unwatch: (field?: string, callback?: FormFieldWatcher) => FormController
+  watch: {
+    (field: string, callback: FormFieldWatcher): FormController
+    (fields: string[], callback: FormFieldsWatcher): FormController
+  }
+  observe: {
+    (field: string, callback: FormFieldWatcher): () => void
+    (fields: string[], callback: FormFieldsWatcher): () => void
+  }
+  unwatch: {
+    (field?: string, callback?: FormFieldWatcher): FormController
+    (fields: string[], callback?: FormFieldsWatcher): FormController
+  }
   subscribe: (listener: FormStateListener) => () => void
   prefill: (fieldName?: string) => FormController
   append: (options: AppendContentOptions) => HTMLElement | null

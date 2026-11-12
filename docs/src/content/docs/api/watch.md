@@ -13,10 +13,8 @@ Registers a callback that fires every time a field changes. Chainable alias of [
 ## Signature
 
 ```ts
-watch(
-  field: string,
-  callback: FormFieldWatcher
-): FormController
+watch(field: string, callback: FormFieldWatcher): FormController
+watch(fields: string[], callback: FormFieldsWatcher): FormController
 ```
 
 ## Parameters
@@ -26,6 +24,15 @@ watch(
 | `field`    | `string`                                                           | yes      | The `name` attribute of the field to watch.                                                                                                                                                                                                             |
 | `callback` | [`FormFieldWatcher`](../../reference/typescript/#formfieldwatcher) | yes      | Invoked with `(value, field, form, state)` on every change. `field` is the observed DOM element(s) (same shape as [`getField`](../get-field/) returns), handy for manipulating the actual `<input>` / `<select>` / `<textarea>` without re-querying it. |
 
+Pass an array of names to watch several fields with one callback. The callback then receives `(values, changed, form, state)` instead, typed as [`FormFieldsWatcher`](../../reference/typescript/#formfieldswatcher):
+
+| Argument  | Description                                                                                              |
+| --------- | -------------------------------------------------------------------------------------------------------- |
+| `values`  | One entry per watched field, read with [`getValue`](../get-value/).                                      |
+| `changed` | The name of the field that triggered the call, or `null` on registration and after [`reset`](../reset/). |
+| `form`    | The bound `HTMLFormElement`.                                                                             |
+| `state`   | A snapshot of the whole controller state.                                                                |
+
 ## Returns
 
 The same [`FormController`](../../reference/typescript/#formcontroller) — chainable.
@@ -34,6 +41,7 @@ The same [`FormController`](../../reference/typescript/#formcontroller) — chai
 
 - The callback fires immediately on registration and after every change, matching `observe()`; only the return type differs.
 - A field can have multiple watchers.
+- With an array, the callback fires once on registration (`changed: null`), once per change of any listed field, and once after `reset()`. Changes to fields that are not listed do not call it. Duplicate names are ignored and an empty array registers nothing.
 - Watchers persist for the lifetime of the controller. Use [`unwatch`](../unwatch/) to remove them, or [`observe`](../observe/) if you need explicit unsubscribe semantics.
 - The callback fires after the controller has processed the change — manual errors are cleared (when applicable), validation has run for fields with rules, visual state has been re-synced, and subscribers have been notified.
 
@@ -81,6 +89,20 @@ const logField = (value: unknown, field: HTMLInputElement | HTMLInputElement[] |
 }
 
 search.watch('q', logField).watch('category', logField)
+```
+
+### Watch several fields with one callback
+
+```ts
+import { form } from '@samline/forms'
+
+const order = form('order-form')
+
+order.watch(['quantity', 'price'], ({ quantity, price }, changed) => {
+  const total = Number(quantity) * Number(price)
+  document.querySelector('#total')!.textContent = total.toFixed(2)
+  if (changed) console.log(`${changed} changed`)
+})
 ```
 
 ### Interact with the field element directly

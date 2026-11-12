@@ -7,6 +7,7 @@ All notable changes to `@samline/forms` are documented in this file. The format 
 ### Added
 
 - `setOptions(name, options, config?)` replaces the options of a `<select>` with strings, numbers, `{ value, label, disabled, selected }` objects or `{ label, options }` groups. Labels are written as text. The current value is kept when it is still listed (`keepValue: true` by default), and the change pipeline runs once, only when the selected value changes ([#13](https://github.com/samline/forms/issues/13)). New exported types: `SelectOption`, `SelectOptionGroup`, `SelectOptionInput` and `SetOptionsConfig`.
+- `watch()` and `observe()` accept an array of field names. The callback receives `(values, changed, form, state)`: one value per listed field and the name of the field that changed (`null` on registration and after `reset()`). It fires once per change of any listed field. `unwatch(fields, callback?)` removes these watchers. New exported type: `FormFieldsWatcher` ([#10](https://github.com/samline/forms/issues/10)).
 
 ### Fixed
 
