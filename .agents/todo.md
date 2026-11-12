@@ -1,18 +1,15 @@
 # Project Todo
 
-## Handoff — 2026-11-12 (2.9.0 prepared, not published)
+## Handoff — 2026-11-12 (2.9.0 released)
 
-2.9.0 adds `setOptions()` (#13, PR #28) and array support in `watch()` / `observe()` / `unwatch()` (#10, PR #29), plus the fix for option-list mutations being ignored by the observer. Both PRs are squash-merged and pushed to main; their branches are deleted and both issues are closed.
+2.9.0 adds `setOptions()` (#13, PR #28) and array support in `watch()` / `observe()` / `unwatch()` (#10, PR #29), plus the fix for option-list mutations being ignored by the observer. Both PRs are squash-merged; their branches are deleted and both issues are closed.
 
-The release commit (`release: v2.9.0`: version references, CDN URLs, CHANGELOG section) is on local main only. It is deliberately not pushed: pushing main deploys the website, whose CDN URLs would point at a 2.9.0 that npm does not have yet.
+Release closure:
 
-Verified locally on the release commit: frozen Bun install, typecheck, 146 tests with coverage, build, test:package (23 files), npm pack --dry-run, bun audit --production, site:verify (35 browser tests) and site:check:release.
-
-Remaining, maintainer only:
-
-1. `npm publish` from the clean worktree (prepublishOnly re-runs the checks).
-2. `git push origin main` after npm serves 2.9.0, then confirm CI and the Pages deployment.
-3. Optional: tag `v2.9.0`. No `v2.8.0` tag exists locally although the CHANGELOG compare links reference it.
+- The maintainer published @samline/forms@2.9.0 on npm (`latest`). main was pushed only after npm served it; the release commit is 7c1c468 and the lightweight tag `v2.9.0` points at it.
+- Verified locally on the release commit before publishing: frozen Bun install, typecheck, 146 tests with coverage, build, test:package (23 files), npm pack --dry-run, bun audit --production, site:verify (35 browser tests) and site:check:release.
+- After the push, the Pages deployment of 7c1c468 succeeded, the live getting-started page references `@samline/forms@2.9.0` and the unpkg standalone script for 2.9.0 returns HTTP 200. CI for 7c1c468 was still running when this was written; confirm it if in doubt.
+- No `v2.8.0` tag exists although the CHANGELOG compare links reference it.
 
 ## Handoff — 2026-11-06
 
