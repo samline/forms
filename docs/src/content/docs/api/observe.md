@@ -33,7 +33,7 @@ A function. Calling it removes the observer for this field.
 ## Behaviour
 
 - On registration, the callback is invoked once synchronously with the current value, the bound form, and a state snapshot.
-- Subsequent user `input` events and programmatic [`setValue`](../set-value/) calls invoke the callback again. DOM mutations alone do not fire field watchers.
+- Subsequent user `input` events and programmatic [`setValue`](../set-value/) calls invoke the callback again. DOM mutations alone do not fire field watchers, with one exception: adding or removing `<option>` elements in a way that changes a select's value fires that field's watchers.
 - A field can have multiple observers.
 - The unsubscribe function is idempotent — calling it more than once is safe.
 

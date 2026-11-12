@@ -103,6 +103,7 @@ address.setOptions('city', ['Monterrey', 'Guadalajara'], { keepValue: false })
 ## Edge cases
 
 - **Changing options by hand also works.** If your code adds or removes `<option>` elements directly, the controller notices. When that changes the selected value, it revalidates, updates visual state, fires watchers and notifies subscribers. It does not clear manual errors or schedule auto-submit, because no one edited the field. Prefer `setOptions()`: it runs the full pipeline, including auto-submit.
+- **A select outside the form subtree** (associated through `form="id"`) is not covered by the observer, so hand-made option changes there go unnoticed. `setOptions()` works for it as usual.
 - **`keepValue` compares values, not labels.** An option with the same `value` and a new label keeps the selection.
 - **After `destroy()`, `setOptions()` is a no-op.**
 

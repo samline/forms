@@ -170,7 +170,7 @@ Turns auto-submit off and cancels any pending debounce timer. Equivalent to `aut
 
 #### `watch(field, callback)`
 
-Chainable field observer. When a form is bound, the callback fires immediately and after matching handled input events; an inert controller stores the callback without an initial call. DOM mutations alone do not invoke field watchers. `watch()` returns the controller instead of an unsubscribe function.
+Chainable field observer. When a form is bound, the callback fires immediately and after matching handled input events; an inert controller stores the callback without an initial call. DOM mutations alone do not invoke field watchers, except an option-list change that changes a select's value. `watch()` returns the controller instead of an unsubscribe function.
 
 #### `observe(field, callback)`
 

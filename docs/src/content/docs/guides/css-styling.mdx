@@ -26,7 +26,7 @@ The attributes are added and removed on:
 - Construction for `css-filled`, regardless of `autoValidate`. Initial `css-error` requires validation and therefore follows `autoValidate`.
 - Every delegated `input` event, including controls associated through `form="id"`.
 - Every explicit call to [`validate`](../../reference/api/#validatefields), [`revalidate`](../../reference/api/#revalidatefields), [`setErrors`](../../reference/api/#seterrorsfields), or [`clearErrors`](../../reference/api/#clearerrorsfields).
-- DOM mutations detected by the controller's `MutationObserver` (new fields, changed `name` / `type` attributes).
+- DOM mutations detected by the controller's `MutationObserver` (new fields, changed `name` / `type` attributes, option-list changes that change a select's value).
 
 [`reset()`](../../reference/api/#reset) clears the visual and accessibility attributes first. If the controller has already validated, it then recalculates `css-filled` from native default values; error attributes remain absent until rules or manual errors add them again.
 
