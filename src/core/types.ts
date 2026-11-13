@@ -9,6 +9,8 @@ export type FormatType =
   | 'time'
   | 'creditCard'
   | 'creditCardType'
+  | 'text'
+  | 'slug'
 
 export interface FieldFormatConfig {
   /** One of the supported `@samline/formatter` `FormatType` values. */

@@ -2,6 +2,15 @@
 
 All notable changes to `@samline/forms` are documented in this file. The format follows [Keep a Changelog](https://keepachangelog.com/en/1.1.0/) and the project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [2.11.0] - 2026-11-13
+
+No breaking API changes.
+
+### Added
+
+- `FormatType` accepts `'text'` and `'slug'`, the format types added in `@samline/formatter` 3.1.0. `text` applies a casing mode (`options.case`: `'upper'`, `'lower'`, `'title'`, `'sentence'` or `'capitalize'`); `slug` keeps a trailing separator in the visible input while the user types and submits the trimmed slug in the hidden input. Both need formatter 3.1.0 or newer; the optional peer range stays `^2.1.0 || ^3.0.0`.
+- The standalone script bundles formatter 3.1.0.
+
 ## [2.10.0] - 2026-11-12
 
 No breaking API changes.

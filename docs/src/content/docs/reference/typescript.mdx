@@ -549,7 +549,15 @@ interface FieldFormatConfig {
 }
 
 type FormatType =
-  'general' | 'phone' | 'numeral' | 'date' | 'time' | 'creditCard' | 'creditCardType'
+  | 'general'
+  | 'phone'
+  | 'numeral'
+  | 'date'
+  | 'time'
+  | 'creditCard'
+  | 'creditCardType'
+  | 'text' // formatter >= 3.1.0
+  | 'slug' // formatter >= 3.1.0
 
 type FieldFormatConfigMap = Record<string, FieldFormatConfig>
 ```

@@ -6,7 +6,7 @@
       "name": "@samline/forms",
       "devDependencies": {
         "@playwright/test": "1.62.1",
-        "@samline/formatter": "^3.0.0",
+        "@samline/formatter": "^3.1.0",
         "@types/node": "^26.6.2",
         "@vitest/coverage-v8": "^5.0.1",
         "axe-core": "^4.14.0",
@@ -468,7 +468,7 @@
 
     "@samline/drawer": ["@samline/drawer@5.1.2", "", {}, "sha512-sTjWF80KRLWNmphkhpddAC4s93LKcQBSn/+gn89NxEbmjgGCSEwbif5fWlDpyBl3tqG3afKvt6RBIJwh2MI+pw=="],
 
-    "@samline/formatter": ["@samline/formatter@3.0.0", "", { "dependencies": { "libphonenumber-js": "^1.13.7" } }, "sha512-lGPc5tU1h2TZbuFOgZX4A2P1ZMRt3CKJ4rK+xdWOhnHxAoVtjtnF6URTI9u8Mr7ue+MqaJTyCV43vciwSfeGGg=="],
+    "@samline/formatter": ["@samline/formatter@3.1.0", "", { "dependencies": { "libphonenumber-js": "^1.13.7" } }, "sha512-yKg1v+Nv0XyASX6QFdda7HYyuN7XoITgpxPy+z71GB2Dv8u78NgEcejUgmCux/usV/gyYY735pAgYd0Q6aK4iA=="],
 
     "@shikijs/core": ["@shikijs/core@4.6.0", "", { "dependencies": { "@shikijs/primitive": "4.6.0", "@shikijs/types": "4.6.0", "@shikijs/vscode-textmate": "^10.1.0", "@types/hast": "^3.0.5", "hast-util-to-html": "^9.0.6" } }, "sha512-bfd4OKgvoyXYiYmMRuleA656P4V7M/Du9lcTl38Ngm6KszMj7bq4J1IGZwSYR4c95Tv5UQALtYNWUwaI9UT3xw=="],
 

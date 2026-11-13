@@ -16,6 +16,8 @@ declare module '@samline/formatter' {
     | 'time'
     | 'creditCard'
     | 'creditCardType'
+    | 'text'
+    | 'slug'
 
   export interface FormatterResult {
     readonly formatted: string
