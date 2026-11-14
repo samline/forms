@@ -13,3 +13,5 @@ Interactive roots register arrow functions through lib/mount-elements.ts and ret
 Follow the root [PageSpeed performance contract](../AGENTS.md#pagespeed-performance-contract) for targets, asset/loading conventions, layout stability, measurement evidence and publication verification. Keep this policy linked when replicating the theme.
 
 Custom accents are resolved once by lib/accent-theme.mjs through SiteHead. Preserve reference defaults when unchanged; non-default colors must recolor the entire semantic accent hierarchy and survive later base stylesheet delivery. Development routes isolate the Docs compiler origin, and docs landingHref returns Home/Examples links to Landing. Production remains one combined static artifact. The maintainer's preference is recorded in content-audit.json.themeReview before release.
+
+Copied examples place the loading-mode tabs directly above the file tabs, with no installation or delivery explanation between them. Keep setup instructions in the installation guide.
