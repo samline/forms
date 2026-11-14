@@ -121,6 +121,24 @@ All configured rules run and their messages accumulate. Custom validators still 
 
 Numeric validation is intentionally strict. After trimming surrounding whitespace it accepts signed decimal forms such as `-12`, `+3.5`, `4.`, and `.75`. It rejects exponent notation (`1e3`), hexadecimal (`0x10`), `Infinity`, separators, and partial numbers. `min` and `max` imply numeric parsing, use inclusive comparisons, and report a numeric error for a non-empty non-number before checking the bound.
 
+## Formatter patterns and check digits
+
+With the optional `@samline/formatter` 3.2.0 peer you can reuse its `regex` catalog in `pattern` and its check-digit validators in `validate`. The pattern gives the message for a malformed value; the check digit catches a typo that still has the right shape:
+
+```ts
+import { isValidCurp, regex } from '@samline/formatter'
+
+const schema = {
+  curp: {
+    required: true,
+    pattern: { value: regex.curp.pattern, message: regex.curp.errorMessage },
+    validate: ({ value }) => isValidCurp(value) || 'The CURP check digit does not match.',
+  },
+}
+```
+
+The [regex presets](../../reference/regex/) page lists the validators and explains which value a formatted field validates.
+
 ## Cross-field equality with `sameAs`
 
 Use `sameAs` for password, email, PIN, or account-number confirmation:
@@ -233,3 +251,4 @@ Direct `validate()` and `revalidate()` calls update validation state and visual 
 - [Control behavior](../../guides/controls/)
 - [CSS and accessibility hooks](../../guides/css-styling/#accessibility)
 - [Validation types](../../reference/typescript/#validationschema)
+- [Formatter regex presets](../../reference/regex/)

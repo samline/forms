@@ -2,6 +2,23 @@
 
 All notable changes to `@samline/forms` are documented in this file. The format follows [Keep a Changelog](https://keepachangelog.com/en/1.1.0/) and the project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [2.11.1] - 2026-11-13
+
+No API changes.
+
+### Changed
+
+- The standalone script bundles `@samline/formatter` 3.2.0. The optional peer range stays `^2.1.0 || ^3.0.0`.
+
+### Documentation
+
+- The [regex presets](https://samline.github.io/forms/docs/reference/regex/) page covers formatter 3.2.0: the Mexican, US and European entries, the builders that follow a `format()` mask (`regex.date()`, `regex.numeral()`), and the check-digit validators (`isValidCurp`, `isValidIban`, `isValidCard`…) used in `validate`. It explains which value a formatted field validates (the hidden raw value under the canonical name) and how to load `window.Formatter.regex` and `window.Formatter.checks` next to the standalone script.
+- The validation and formatting guides, the API reference and the agent skill link to it. Links to formatter's retired `docs/options.md` now point to its website.
+
+### Tests
+
+- End-to-end tests run formatter 3.2.0 patterns and check-digit validators through the controller, including formatted IBAN, date and numeral fields.
+
 ## [2.11.0] - 2026-11-13
 
 No breaking API changes.
@@ -310,6 +327,8 @@ No breaking API changes. The behavior changes below fix incorrect or surprising 
 
 - Initial release of `@samline/forms`. Vanilla JS form controller with framework-specific variants (React, Vue, Svelte) initially included; bundled `.local/` agent docs at the repo root.
 
+[2.11.1]: https://github.com/samline/forms/compare/v2.11.0...v2.11.1
+[2.11.0]: https://github.com/samline/forms/compare/v2.10.0...v2.11.0
 [2.10.0]: https://github.com/samline/forms/compare/v2.9.0...v2.10.0
 [2.9.0]: https://github.com/samline/forms/compare/v2.8.0...v2.9.0
 [2.8.0]: https://github.com/samline/forms/compare/v2.7.2...v2.8.0

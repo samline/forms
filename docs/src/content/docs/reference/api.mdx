@@ -349,7 +349,7 @@ For an equivalent surface in a no-bundler setup, see the [Browser global referen
 
 <Callout title='Exported by the formatter peer'>
 
-Exported by [`@samline/formatter`](https://github.com/samline/formatter), not by `@samline/forms`. Install the peer before importing.
+Exported by [`@samline/formatter`](https://samline.github.io/formatter/), not by `@samline/forms`. Install the peer before importing.
 
 </Callout>
-A named dictionary of common regular expressions and their default error messages, intended to feed the `pattern` rule of any field validator. Full reference, examples, and edge cases live in the dedicated [`regex`](../../reference/regex/) page — do not redeclare hand-rolled patterns when the peer is on disk.
+A catalog of validation patterns, each paired with an error message, for the `pattern` rule. Since formatter 3.2.0 it covers Mexican, US and European identifiers and has builders that follow a `format()` mask (`regex.date(options)`), and the peer exports check-digit validators (`isValidCurp`, `isValidIban`, `isValidCard`…) for the `validate` rule. The dedicated [`regex`](../../reference/regex/) page shows how each one fits forms, including which value a formatted field validates.

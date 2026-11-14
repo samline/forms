@@ -5,25 +5,23 @@ sidebar:
   order: 6
 title: 'Formatter regex presets'
 titleAccent: 'regex presets'
-description: 'Named regular expressions and default error messages from the optional @samline/formatter peer.'
+description: 'Validation patterns and check-digit validators from the optional @samline/formatter peer, wired into forms validators.'
 ---
 
 import Callout from '../../../../../shared/components/Callout.astro'
 
 <Callout title='Optional peer dependency'>
 
-`regex` is exported by [`@samline/formatter`](https://github.com/samline/formatter), **not** by `@samline/forms`. It only exists when the `@samline/formatter` peer is installed in your project. The forms package does not bundle it, ship it, or declare it as a hard dependency — it is an optional peer. Importing it without installing the peer will throw a module-not-found error at build / runtime, and this page is only meaningful when the peer is on disk.
+`regex` and the check-digit validators (`isValidCurp`, `isValidIban`, `isValidCard`…) are exported by [`@samline/formatter`](https://samline.github.io/formatter/), **not** by `@samline/forms`. Install the peer to import them; without it the import fails with a module-not-found error at build or run time. The forms runtime never imports them for you.
 
 </Callout>
-A named dictionary of common regular expressions and their default error messages. Use it to feed the `pattern` rule of any field validator without hand-rolling a `RegExp` and a string for every form.
+`@samline/formatter` ships a catalog of validation patterns, each paired with an error message, and functions that verify check digits. Feed them to the [`pattern`](../../reference/configuration/#validators) and [`validate`](../../guides/validation/) rules instead of writing a `RegExp` and a message for every form. This page covers how they fit forms; the [formatter regex reference](https://samline.github.io/formatter/docs/reference/regex/) is the canonical list of keys, builders and validators.
 
 ## Import
 
 ```ts
-import { regex } from '@samline/formatter'
+import { isValidCurp, regex } from '@samline/formatter'
 ```
-
-`@samline/formatter` is listed as an optional peer in `package.json`. If you already have it installed for the `format()` / `formatAll()` masks, the import works out of the box. If you do not, install it with:
 
 ```bash
 npm install @samline/formatter
@@ -37,56 +35,22 @@ pnpm add @samline/formatter
 bun add @samline/formatter
 ```
 
-## Signature
+Forms accepts the peer as `^2.1.0 || ^3.0.0`. This page describes formatter **3.2.0** and newer: the country entries, the callable builders and the check-digit validators do not exist in older versions.
 
-```ts
-const regex: Record<string, { pattern: RegExp; errorMessage: string }>
-```
+## What the peer provides
 
-Each entry is keyed by a short name (`'email'`, `'url'`, `'phone'`, …) and exposes:
+| Export                                        | Shape                                                       | Use it in               |
+| --------------------------------------------- | ----------------------------------------------------------- | ----------------------- |
+| `regex.<key>`                                 | `{ pattern: RegExp; errorMessage: string }`                 | `pattern`               |
+| `regex.phone()`, `date()`, `numeral()`, …     | Function returning `{ pattern, errorMessage }` from options | `pattern` or `validate` |
+| `regex.custom(pattern, message?)`             | Your own pattern with the same shape                        | `pattern`               |
+| `isValidCurp`, `isValidRfc`, `isValidIban`, … | `(value: unknown) => boolean`                               | `validate`              |
 
-| Field          | Type     | Description                                                                                              |
-| -------------- | -------- | -------------------------------------------------------------------------------------------------------- |
-| `pattern`      | `RegExp` | The expression to test the value against.                                                                |
-| `errorMessage` | `string` | A human-readable message describing the failure. Use it as the default `message` for the `pattern` rule. |
+Static entries cover Mexican identity (`curp`, `rfc`, `ine`, `nss`, `clabe`, `cp`), the United States (`ssn`, `itin`, `ein`, `passportUs`, `routingNumber`), Europe (`iban`, `bic`, `vatEu`, `dniEs`), web values (`email`, `url`, `domain`, `ipv4`, `uuid`, `slug`…) and dates, times and numbers. `phone`, `creditCard`, `url`, `uuid`, `date`, `numeral` and `postalCode` are also callable and keep their static `.pattern`; `digits`, `time`, `password` and `custom` are only callable. `regex.postalCode({ country })` knows 24 countries and throws a `RangeError` for any other; use `regex.custom()` for those.
 
-The exact key set lives in the `@samline/formatter` package and can grow over time — refer to its [options reference](https://github.com/samline/formatter/blob/main/docs/options.md) for the full list. Common entries include `email`, `url`, `phone`, and `slug`.
+## Pattern rule
 
-## Parameters
-
-None — `regex` is a plain object, not a function.
-
-## Returns
-
-A plain `Record<string, { pattern: RegExp; errorMessage: string }>` that you can index by name.
-
-## Behaviour
-
-`regex` is purely declarative data. The forms package does not call it for you — you opt in by passing `regex.<key>.pattern` (and optionally `regex.<key>.errorMessage`) into a field's `validators` config. The controller's built-in `pattern` rule then runs the expression and pushes the message when the value does not match.
-
-`regex` works the same whether you read it directly, destructure the entries you need, or merge it into a project-wide constant. The patterns are owned by `@samline/formatter`; treat the object as read-only.
-
-## Examples
-
-### Validate an email with the built-in pattern
-
-```ts
-import { form } from '@samline/forms'
-import { regex } from '@samline/formatter'
-
-const contact = form('contact-form', {
-  validators: {
-    email: {
-      required: true,
-      pattern: regex.email.pattern,
-    },
-  },
-})
-```
-
-This is the same `pattern` you'd write by hand (`/^[^\s@]+@[^\s@]+\.[^\s@]+$/`); the only difference is that it ships with the formatter peer.
-
-### Pair the pattern with the default error message
+Pass the entry's `pattern` and `errorMessage` to the `pattern` rule. The rule skips empty values, so pair it with `required` when the field is mandatory:
 
 ```ts
 import { form } from '@samline/forms'
@@ -96,41 +60,128 @@ const signup = form('signup-form', {
   validators: {
     email: {
       required: true,
-      pattern: {
-        value: regex.email.pattern,
-        message: regex.email.errorMessage,
-      },
+      pattern: { value: regex.email.pattern, message: regex.email.errorMessage },
     },
   },
 })
 ```
 
-When the value fails the pattern, the controller pushes `regex.email.errorMessage` into `state.errors.email` and applies the `css-error` attribute to the field — see [Configuration](../../reference/configuration/#validators) and [CSS styling](../../guides/css-styling/).
+When the value does not match, the controller pushes `regex.email.errorMessage` into `state.errors.email` and applies `css-error` to the field — see [Configuration](../../reference/configuration/#validators) and [CSS styling](../../guides/css-styling/). Without a `message`, the rule pushes the forms default, `Value does not match the required pattern.`
 
-### Use it without a controller
+Some entries use the `u` flag (`email`, `url`, `domain`, `personName`, `onlyLetters`…); the `pattern` rule runs them as they are. `regex.email` accepts accents in the domain (`ana@correo.méx`) but not before the `@`.
 
-The patterns and messages are plain values, so they work the same in any validation pipeline:
+## Check digits with `validate`
+
+A pattern checks the shape of a value. A check digit also catches most typos: one wrong digit or two swapped. Keep the pattern for the message and add the validator in `validate`, which treats a string as the error and `false` as `Validation failed.`:
+
+```ts
+import { form } from '@samline/forms'
+import { isValidCurp, isValidIban, regex } from '@samline/formatter'
+
+const profile = form('profile-form', {
+  validators: {
+    curp: {
+      required: true,
+      pattern: { value: regex.curp.pattern, message: regex.curp.errorMessage },
+      validate: ({ value }) => isValidCurp(value) || 'The CURP check digit does not match.',
+    },
+    iban: {
+      validate: ({ value }) => !value || isValidIban(value) || 'Check the IBAN.',
+    },
+  },
+})
+```
+
+`GODE561231HDFRRN00` passes both rules; `GODE561231HDFRRN01` has the right shape, so only `validate` reports it. `validate` also runs on empty values, which is why the optional `iban` returns early.
+
+| Validator                     | Checks                                                       |
+| ----------------------------- | ------------------------------------------------------------ |
+| `isValidCard(value)`          | 12–19 digits and the Luhn checksum                           |
+| `isLuhn(value)`               | Luhn checksum of any 2+ digits (IMEI, custom IDs)            |
+| `isValidClabe(value)`         | Mexican CLABE: 18 digits and the Banco de México check digit |
+| `isValidNss(value)`           | Mexican NSS (IMSS): 11 digits and its Luhn check digit       |
+| `isValidCurp(value)`          | Mexican CURP and its RENAPO check digit                      |
+| `isValidRfc(value)`           | Mexican RFC and its SAT check digit                          |
+| `isValidIban(value)`          | IBAN length for its country and the mod-97 checksum          |
+| `isValidRoutingNumber(value)` | US ABA routing number and its checksum                       |
+| `isValidDniEs(value)`         | Spanish DNI or NIE and its control letter                    |
+
+Every validator ignores spaces and hyphens, upper-cases letters and returns `false` for non-strings, so it works on the raw or the displayed value. A valid check digit proves the value is well formed, not that it exists: confirm it with the issuer when that matters, and validate again on the server.
+
+## Formatted fields
+
+A validator keyed by the canonical name reads the hidden raw mirror that [`format()`](../../guides/formatting/#the-mirror-convention) keeps. What that raw value contains depends on the format type:
+
+| Format type                                    | Visible value         | Canonical raw value |
+| ---------------------------------------------- | --------------------- | ------------------- |
+| `phone`, `creditCard`, `general` (with blocks) | `4111 1111 1111 1111` | `4111111111111111`  |
+| `numeral`                                      | `€ 1.234,5`           | `1234.5`            |
+| `date`, `time`                                 | `30/04/2026`          | `30/04/2026`        |
+
+Digit-only rules (`regex.creditCard`, `regex.clabe`, `regex.digits()`) and every check-digit validator fit the raw value of `phone`, `creditCard` and `general` fields.
+
+`regex.date()` and `regex.time()` take the same options as `format()` and match the visible value, which a date or time raw value keeps. Use them in `pattern` directly:
+
+```ts
+import { form } from '@samline/forms'
+import { regex } from '@samline/formatter'
+
+const dateOptions = { datePattern: ['d', 'm', 'Y'], delimiter: '/' }
+const birthday = regex.date(dateOptions)
+
+const booking = form('booking-form', {
+  formats: { birthday: { type: 'date', field: 'birthday', options: dateOptions } },
+  validators: {
+    birthday: { pattern: { value: birthday.pattern, message: birthday.errorMessage } },
+  },
+})
+```
+
+The date mask lets a half-typed value through (`30/04/202`); the rule reports it until the date is complete and real.
+
+A numeral raw value drops the prefix and delimiters, so `regex.numeral(options)` only matches the visible value. Read it from `values` in `validate`:
+
+```ts
+import { form } from '@samline/forms'
+import { regex } from '@samline/formatter'
+
+const priceOptions = { delimiter: '.', numeralDecimalMark: ',', prefix: '€ ' }
+const price = regex.numeral(priceOptions)
+
+const order = form('order-form', {
+  formats: { price: { type: 'numeral', field: 'price', options: priceOptions } },
+  validators: {
+    price: {
+      validate: ({ values }) =>
+        price.pattern.test(String(values.price_displayed ?? '')) || price.errorMessage,
+    },
+  },
+})
+```
+
+## Without a controller
+
+The patterns and validators are plain values, so they work with the pure helper too:
 
 ```ts
 import { regex } from '@samline/formatter'
 import { validateFieldValue } from '@samline/forms'
 
-const errors = validateFieldValue('email', 'not-an-email', { pattern: regex.email.pattern }, {})
-
-// errors = ['<default pattern message, sourced from @samline/formatter>']
+validateFieldValue('email', 'ana..lopez@correo.mx', { pattern: regex.email.pattern }, {})
+// ['Value does not match the required pattern.']
 ```
 
-See [`validateFieldValue`](../../reference/api/#validatefieldvaluefield-value-rules-values) for the pure helper signature.
+See [`validateFieldValue`](../../reference/api/#validatefieldvaluefield-value-rules-values) for the signature.
 
-### Spread `regex` into a browser global alongside `browser`
+## Browser globals
 
-The vanilla entrypoint exposes a `browser` singleton with `form`, `newForm`, `destroyForm`, and `available`. The most common pattern is to spread it together with `regex` into a single project global — see the [Browser registry helpers](../../getting-started/#browser-registry-helpers-bundler) section in the getting-started guide:
+In a bundled app, spread `regex` and the validators you need next to the `browser` registry:
 
 ```ts
 import { browser } from '@samline/forms'
-import { regex } from '@samline/formatter' // optional, from your project
+import { isValidCurp, regex } from '@samline/formatter'
 
-window.Form = { ...browser, regex }
+window.Form = { ...browser, regex, isValidCurp }
 
 window.Form.newForm({
   id: 'contact-form',
@@ -138,26 +189,37 @@ window.Form.newForm({
     validators: {
       email: {
         required: true,
-        pattern: regex.email.pattern,
+        pattern: { value: regex.email.pattern, message: regex.email.errorMessage },
       },
     },
   },
 })
 ```
 
-The `/browser` module installs the same registry shape on `globalThis.Forms`, so module consumers can spread it the same way. The standalone IIFE bundles formatter behavior for `format()`, but does not expose `regex`; provide your own patterns or use a module build when you need the peer's `regex` object.
+The `/browser` module installs the same registry on `globalThis.Forms`. The standalone forms IIFE bundles what `format()` needs, but not `regex` or the validators. On a page without a bundler, also load the formatter global, which exposes `window.Formatter.regex` and `window.Formatter.checks`:
+
+```html
+<script src="https://cdn.jsdelivr.net/npm/@samline/formatter@3/dist/browser/formatter.global.js"></script>
+<script>
+  const { regex, checks } = window.Formatter
+  // regex.curp.pattern, checks.isValidCurp(value)
+</script>
+```
+
+The formatter global repeats formatting code the forms IIFE already contains (about 13 KB gzip), so add it only when the page needs the patterns.
 
 ## Edge cases
 
-- **Missing peer.** `import { regex } from '@samline/formatter'` throws a module-not-found error when the peer is not installed. `@samline/forms` does not catch this — install the peer before you import the symbol.
-- **No types are shipped by `@samline/forms` for `regex`.** The shim declares the type as `Record<string, { pattern: RegExp; errorMessage: string }>` for projects that do not yet have the peer on disk, but the real types come from the installed peer at compile time.
-- **`regex` is not enumerated at runtime.** The key set lives in `@samline/formatter`; iterate with `Object.keys(regex)` if you need a dynamic listing.
-- **The controller never reads `regex` for you.** You opt in per field via the `pattern` rule. There is no global switch that turns on `regex.email` for every `email` field.
-- **Browser global key collision.** Spreading `{ ...browser, regex }` into `window.Form` is the documented pattern; assigning `window.Forms.regex` directly is fine too — the registry is shared across spreads.
+- **Missing peer.** Importing from `@samline/formatter` without the peer installed fails; `@samline/forms` does not catch it.
+- **Formatter 2.x or 3.0–3.1.** `regex` exists but has fewer keys, no builders such as `regex.date()` or `regex.postalCode()`, and no check-digit validators.
+- **Stricter patterns since 3.2.0.** Formatter audited the catalog: `email`, `phone`, `rfc`, `curp`, `date` and others reject values they used to accept. Keep an old behavior with `regex.custom()`; the [formatter changelog](https://samline.github.io/formatter/docs/changelog/) lists each change.
+- **The controller never reads `regex` for you.** You opt in per field; nothing turns on `regex.email` for every `email` field.
+- **Types.** The installed peer provides the real types (`Regex`, `RegexKey`, `PostalCountry`). The shim inside `@samline/forms` only keeps its own build compiling without the peer.
 
 ## Related
 
-- [`validators`](../../reference/configuration/#validators) — the option that consumes `regex.<key>.pattern`.
-- [`validateFieldValue`](../../reference/api/#validatefieldvaluefield-value-rules-values) — the pure helper that runs the `pattern` rule.
-- [`format`](../../reference/api/#formatconfig) — also depends on `@samline/formatter` being installed.
-- [`@samline/formatter` options reference](https://github.com/samline/formatter/blob/main/docs/options.md) — the canonical list of `regex` keys.
+- [`validators`](../../reference/configuration/#validators) — the option that receives the rules.
+- [Validation guide](../../guides/validation/) — `pattern`, `validate`, `dependsOn` and `each`.
+- [Formatting guide](../../guides/formatting/) — the raw mirror that canonical-name rules read.
+- [`validateFieldValue`](../../reference/api/#validatefieldvaluefield-value-rules-values) — the pure helper.
+- [Formatter regex reference](https://samline.github.io/formatter/docs/reference/regex/) — every key, builder and validator.

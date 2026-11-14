@@ -130,9 +130,13 @@ const post = form('post', {
 })
 ```
 
-The global IIFE bundles formatter 3.1.0, so both types work from the CDN script too.
+The global IIFE bundles formatter 3.2.0, so both types work from the CDN script too.
 
-The IIFE does not expose the formatter's `regex` object on `window.Forms`; import `regex` from the peer in module builds or provide your own global.
+The IIFE does not expose the formatter's `regex` object or its check-digit validators on `window.Forms`. Import them from the peer in module builds, or load the formatter global next to the forms script; see [Browser globals](../../reference/regex/#browser-globals).
+
+## Validating formatted fields
+
+Rules keyed by the canonical name read the hidden raw value. A `phone`, `creditCard` or `general` raw value has no delimiters, a `numeral` raw value has no prefix or group separators, and a `date` or `time` raw value keeps the visible text. Pick the rule for that value, or read `values.<name>_displayed` in `validate` to test what the user sees; the [regex page](../../reference/regex/#formatted-fields) has examples with `regex.date()` and `regex.numeral()`.
 
 ## Related
 
