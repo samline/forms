@@ -647,12 +647,10 @@ export const loadingModes = {
   cdn: {
     label: 'HTML / CDN',
     importLine: 'const { form } = window.Forms' as string | null,
-    note: 'Save these files in one folder and open index.html. The CDN script defines window.Forms before main.js runs; it already includes the formatter, so no build step is needed.',
   },
   esm: {
     label: 'Package / ESM',
     importLine: `import { form } from '${project.npmName}'` as string | null,
-    note: `Install ${project.npmName} and serve these files with your bundler or dev server. The package import replaces the CDN script.`,
   },
 }
 export type DemoMode = keyof typeof loadingModes
