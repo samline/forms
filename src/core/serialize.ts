@@ -16,7 +16,7 @@ const appendValue = (
       value,
       writable: true,
       enumerable: true,
-      configurable: true
+      configurable: true,
     })
     return
   }
@@ -32,9 +32,7 @@ export const parseFormData = (
   formElement: HTMLFormElement,
   submitter?: HTMLElement | null
 ): SerializedFormResult => {
-  const raw = submitter
-    ? new FormData(formElement, submitter)
-    : new FormData(formElement)
+  const raw = submitter ? new FormData(formElement, submitter) : new FormData(formElement)
   const formData = new FormData()
   const data: Record<string, SerializedFormValue> = {}
 

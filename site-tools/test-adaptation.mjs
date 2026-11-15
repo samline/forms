@@ -95,7 +95,7 @@ try {
   for (const base of ['/', '/tools/widget/']) {
     config.site.url = 'https://example.com' + base
     await writeFile(join(temporary, 'project.config.json'), JSON.stringify(config))
-    execFileSync('npm', ['run', 'site:build'], { cwd: temporary, stdio: 'pipe' })
+    execFileSync('bun', ['run', 'site:build'], { cwd: temporary, stdio: 'pipe' })
     for (const route of [
       'index.html',
       'examples/index.html',

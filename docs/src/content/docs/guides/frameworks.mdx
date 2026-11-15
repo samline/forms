@@ -56,7 +56,7 @@ With view transitions (`<ClientRouter />`), set up on `astro:page-load` and call
 
 ## Shopify
 
-Upload `dist/browser/global.global.js` from the release you use as `assets/forms.global.js`, load it once in `layout/theme.liquid`, and bind each section's form in a small theme script. The standalone file already includes the formatter.
+Upload `dist/browser/forms.global.js` from the release you use as `assets/forms.global.js`, load it once in `layout/theme.liquid`, and bind each section's form in a small theme script. The standalone file already includes the formatter.
 
 ```liquid title="layout/theme.liquid"
 <script src="{{ 'forms.global.js' | asset_url }}" defer></script>
@@ -100,7 +100,7 @@ Register the standalone script once and enqueue a small integration that depends
 add_action('wp_enqueue_scripts', function () {
   wp_register_script(
     'samline-forms',
-    'https://unpkg.com/@samline/forms@2.11.1/dist/browser/global.global.js',
+    'https://cdn.jsdelivr.net/npm/@samline/forms@3.0.0/dist/browser/forms.global.js',
     [],
     '2.11.1',
     ['strategy' => 'defer']

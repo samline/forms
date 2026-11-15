@@ -7,8 +7,7 @@ import type { SerializedFormResult } from '../core/types'
 import { parseFormData } from '../core/serialize'
 
 export const createGetData =
-  (_state: FormControllerState, _helpers: FormControllerHelpers) =>
-  (): SerializedFormResult => {
+  (_state: FormControllerState, _helpers: FormControllerHelpers) => (): SerializedFormResult => {
     if (!_state.element) return { data: {}, formData: new FormData() }
     return parseFormData(_state.element)
   }

@@ -7,8 +7,7 @@ import type { FormStateSnapshot } from '../core/types'
 import { cloneErrors, createEmptyFormState } from '../core/state'
 
 export const createGetState =
-  (state: FormControllerState, helpers: FormControllerHelpers) =>
-  (): FormStateSnapshot => {
+  (state: FormControllerState, helpers: FormControllerHelpers) => (): FormStateSnapshot => {
     const values = helpers.getValues()
     const errors = cloneErrors(helpers.getMergedErrors())
     const filledFields = Object.keys(values).filter(name => {
@@ -27,6 +26,6 @@ export const createGetState =
       isValidated: state.isValidated,
       autoSubmit: state.autoSubmitEnabled,
       isSubmitting: state.pendingSubmitCount > 0,
-      submitCount: state.submitCount
+      submitCount: state.submitCount,
     }
   }

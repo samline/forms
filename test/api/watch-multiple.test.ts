@@ -4,7 +4,7 @@ import { form } from '../../src/api/form'
 import {
   __resetFormatterLoaderForTests,
   __setFormatterModuleForTests,
-  type FormatterModule
+  type FormatterModule,
 } from '../../src/core/formatter-loader'
 
 const flush = () => new Promise<void>(resolve => setTimeout(resolve, 0))
@@ -87,7 +87,10 @@ describe('watching several fields', () => {
     const first = vi.fn()
     const second = vi.fn()
     const single = vi.fn()
-    api.watch(['quantity', 'price'], first).watch(['price', 'quantity'], second).watch('price', single)
+    api
+      .watch(['quantity', 'price'], first)
+      .watch(['price', 'quantity'], second)
+      .watch('price', single)
     first.mockClear()
     second.mockClear()
     single.mockClear()
@@ -158,7 +161,7 @@ describe('watching several fields: formatted fields and option lists', () => {
     format: value => {
       const digits = String(value ?? '').replace(/\D/g, '')
       return { formatted: digits.replace(/(\d{2})(?=\d)/g, '$1 '), raw: digits, type: 'phone' }
-    }
+    },
   }
 
   beforeEach(() => {
@@ -195,7 +198,7 @@ describe('watching several fields: formatted fields and option lists', () => {
     expect(watcher.mock.calls[0]![0]).toEqual({
       phone: '5512',
       phone_displayed: '55 12',
-      size: 'm'
+      size: 'm',
     })
     expect(watcher.mock.calls[0]![1]).toBe('phone')
   })

@@ -15,9 +15,7 @@ export const createAppend =
 
     if (className) {
       const classSelector = className.trim().split(/\s+/)[0]
-      const existing = classSelector
-        ? state.element.getElementsByClassName(classSelector)[0]
-        : null
+      const existing = classSelector ? state.element.getElementsByClassName(classSelector)[0] : null
       existing?.remove()
     }
 

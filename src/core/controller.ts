@@ -15,7 +15,7 @@ import {
   createFormatAll,
   resolveCanonicalForName,
   resolveDisplayNameForName,
-  resetFormattedFields
+  resetFormattedFields,
 } from '../api/format'
 import { createGetData } from '../api/get-data'
 import { createGetField } from '../api/get-field'
@@ -45,7 +45,7 @@ import {
   readFieldValue,
   resolveFormElement,
   submitForm,
-  writeFieldValue
+  writeFieldValue,
 } from './dom'
 import { cloneErrors, mergeErrors } from './state'
 import type {
@@ -55,19 +55,19 @@ import type {
   FormFieldValue,
   FormTarget,
   ValidationResult,
-  VisualAttributes
+  VisualAttributes,
 } from './types'
 import type { FormControllerHelpers, FormControllerState } from './state'
 
 const DEFAULT_ATTRIBUTES: Required<VisualAttributes> = {
   filled: 'css-filled',
-  error: 'css-error'
+  error: 'css-error',
 }
 
 const DEFAULT_OPTIONS = {
   autoValidate: true,
   clearErrorsOnSubmit: true,
-  clearManualErrorsOnChange: true
+  clearManualErrorsOnChange: true,
 } satisfies Pick<
   FormControllerOptions,
   'autoValidate' | 'clearErrorsOnSubmit' | 'clearManualErrorsOnChange'
@@ -82,7 +82,7 @@ export const createFormController = (
   const normalizedOptions: FormControllerOptions = {
     ...DEFAULT_OPTIONS,
     ...options,
-    attributes
+    attributes,
   }
 
   const state: FormControllerState = {
@@ -113,7 +113,7 @@ export const createFormController = (
     mutationObserver: null,
     cleanups: new Set(),
     formattedFields: new Map(),
-    api: null
+    api: null,
   }
 
   // Reverse cross-field references once so source changes can revalidate
@@ -280,7 +280,7 @@ export const createFormController = (
       const displayFields = getFieldsByName(resolveDisplayNameForName(state, name))
       const items = fields.map((field, index) => ({
         value: readFieldValue([field]),
-        element: displayFields[index] ?? field
+        element: displayFields[index] ?? field,
       }))
       const result = validateFieldValueDetailed(name, values[name], rules, values, items)
       const messages = [...result.groupErrors, ...result.itemErrors.flatMap(item => item.messages)]
@@ -305,7 +305,7 @@ export const createFormController = (
 
     return {
       isValid: Object.keys(getMergedErrors()).length === 0,
-      errors: cloneErrors(getMergedErrors())
+      errors: cloneErrors(getMergedErrors()),
     }
   }
 
@@ -437,7 +437,7 @@ export const createFormController = (
     emitFieldWatchers,
     scheduleAutoSubmit,
     applyReset,
-    commitOwnMutations: selects => commitOwnMutations(selects)
+    commitOwnMutations: selects => commitOwnMutations(selects),
   }
 
   // ------- DOM event wiring ---------------------------------------------
@@ -545,9 +545,7 @@ export const createFormController = (
     }
 
     const candidate = event as Event & { submitter?: unknown }
-    const submitter = candidate.submitter instanceof HTMLElement
-      ? candidate.submitter
-      : null
+    const submitter = candidate.submitter instanceof HTMLElement ? candidate.submitter : null
     const { data, formData } = parseFormData(state.element, submitter)
     const snapshot = state.api.getState()
     const pending: Promise<void>[] = []
@@ -683,7 +681,7 @@ export const createFormController = (
       childList: true,
       subtree: true,
       attributes: true,
-      attributeFilter: ['name', 'type']
+      attributeFilter: ['name', 'type'],
     })
   }
 
@@ -722,7 +720,7 @@ export const createFormController = (
     getState: createGetState(state, helpers),
     format: createFormat(state, helpers),
     formatAll: createFormatAll(state, helpers),
-    destroy: createDestroy(state, helpers)
+    destroy: createDestroy(state, helpers),
   }
 
   state.api = api

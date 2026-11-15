@@ -5,7 +5,5 @@
 import { createFormController } from '../core/controller'
 import type { FormControllerOptions, FormTarget } from '../core/types'
 
-export const form = (
-  target: FormTarget,
-  options: FormControllerOptions = {}
-) => createFormController(target, options)
+export const form = (target: FormTarget, options: FormControllerOptions = {}) =>
+  createFormController(target, options)

@@ -7,8 +7,7 @@ import { cleanupFormatRegistry } from './format'
 import type { FormControllerHelpers, FormControllerState } from '../core/state'
 
 export const createDestroy =
-  (state: FormControllerState, _helpers: FormControllerHelpers) =>
-  () => {
+  (state: FormControllerState, _helpers: FormControllerHelpers) => () => {
     if (state.isDestroyed) return
 
     state.isDestroyed = true

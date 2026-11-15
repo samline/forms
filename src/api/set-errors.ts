@@ -13,12 +13,12 @@ export const createSetErrors =
     if (Array.isArray(fields)) {
       state.manualErrors = {
         ...state.manualErrors,
-        ...Object.fromEntries(fields.map(field => [field, ['Invalid value.']]))
+        ...Object.fromEntries(fields.map(field => [field, ['Invalid value.']])),
       }
     } else {
       state.manualErrors = {
         ...state.manualErrors,
-        ...cloneErrors(fields)
+        ...cloneErrors(fields),
       }
     }
 

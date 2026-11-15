@@ -2,7 +2,7 @@
   "package": {
     "name": "Forms",
     "npmName": "@samline/forms",
-    "version": "2.11.1",
+    "version": "3.0.0",
     "description": "Forms that check themselves. Validation, reactive state, serialization and auto-submit for native HTML forms, with a typed, framework-free API.",
     "author": "Samuel Olvera (samline)",
     "license": "MIT",
@@ -32,7 +32,7 @@
     "accentDark": "#38bdf8"
   },
   "delivery": {
-    "cdnScript": "https://unpkg.com/@samline/forms@2.11.1/dist/browser/global.global.js",
+    "cdnScript": "https://cdn.jsdelivr.net/npm/@samline/forms@3.0.0/dist/browser/forms.global.js",
     "cdnStylesheet": null
   },
   "dev": {

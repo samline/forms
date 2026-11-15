@@ -5,17 +5,15 @@
 
 import type { FormControllerHelpers, FormControllerState } from '../core/state'
 
-export const createReset =
-  (state: FormControllerState, helpers: FormControllerHelpers) =>
-  () => {
-    if (!state.element || state.isDestroyed) return state.api!
+export const createReset = (state: FormControllerState, helpers: FormControllerHelpers) => () => {
+  if (!state.element || state.isDestroyed) return state.api!
 
-    state.isResetting = true
-    try {
-      state.element.reset()
-    } finally {
-      state.isResetting = false
-    }
-    helpers.applyReset()
-    return state.api!
+  state.isResetting = true
+  try {
+    state.element.reset()
+  } finally {
+    state.isResetting = false
   }
+  helpers.applyReset()
+  return state.api!
+}

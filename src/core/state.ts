@@ -15,7 +15,7 @@ import type {
   FormValues,
   ValidationResult,
   ValidationSchema,
-  VisualAttributes
+  VisualAttributes,
 } from './types'
 
 export interface FormControllerState {
@@ -108,13 +108,11 @@ export const createEmptyFormState = (): FormStateSnapshot => ({
   isValidated: false,
   autoSubmit: false,
   isSubmitting: false,
-  submitCount: 0
+  submitCount: 0,
 })
 
 export const cloneErrors = (errors: FormErrors): FormErrors =>
-  Object.fromEntries(
-    Object.entries(errors).map(([field, messages]) => [field, [...messages]])
-  )
+  Object.fromEntries(Object.entries(errors).map(([field, messages]) => [field, [...messages]]))
 
 export const mergeErrors = (left: FormErrors, right: FormErrors): FormErrors => {
   const merged: FormErrors = { ...left }

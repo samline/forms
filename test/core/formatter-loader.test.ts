@@ -29,13 +29,9 @@ describe('formatter-loader source', () => {
     // Strip prose comments (// ... and /* ... */) so warning text like
     // "Do NOT re-add /* @vite-ignore */" in a JSDoc doesn't trip the test.
     // We only care about the directive as a hint inside the actual import().
-    const stripped = source
-      .replace(/\/\*[\s\S]*?\*\//g, '')
-      .replace(/\/\/[^\n]*/g, '')
+    const stripped = source.replace(/\/\*[\s\S]*?\*\//g, '').replace(/\/\/[^\n]*/g, '')
 
-    const block = stripped.match(
-      /loadFormatter[\s\S]*?export const __resetFormatterLoaderForTests/
-    )
+    const block = stripped.match(/loadFormatter[\s\S]*?export const __resetFormatterLoaderForTests/)
 
     expect(block, 'loadFormatter block should be present in source').not.toBeNull()
     expect(block?.[0]).not.toMatch(/@vite-ignore/)

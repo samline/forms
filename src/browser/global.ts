@@ -29,5 +29,3 @@ declare global {
 if (typeof globalThis !== 'undefined') {
   ;(globalThis as typeof globalThis & { Forms: FormsApi }).Forms = Forms
 }
-
-export default Forms

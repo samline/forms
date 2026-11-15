@@ -77,10 +77,7 @@ describe('form controller — name="foo[]" multi-value inputs', () => {
     inputs[0]!.value = 'a@example.com'
     inputs[1]!.value = 'b@example.com'
 
-    expect(api.getValue('docusign_email[]')).toEqual([
-      'a@example.com',
-      'b@example.com'
-    ])
+    expect(api.getValue('docusign_email[]')).toEqual(['a@example.com', 'b@example.com'])
   })
 
   it('getValue returns string[] of checked values for checkbox groups with name="foo[]"', () => {
@@ -93,9 +90,7 @@ describe('form controller — name="foo[]" multi-value inputs', () => {
     `
 
     const api = form('array-form')
-    const checkboxes = document.querySelectorAll<HTMLInputElement>(
-      'input[name="interests[]"]'
-    )
+    const checkboxes = document.querySelectorAll<HTMLInputElement>('input[name="interests[]"]')
     checkboxes[0]!.checked = true
     checkboxes[1]!.checked = true
     checkboxes[2]!.checked = false
@@ -116,10 +111,7 @@ describe('form controller — name="foo[]" multi-value inputs', () => {
     const api = form('array-form')
     const inputs = document.querySelectorAll<HTMLInputElement>('input[name="attachments[]"]')
 
-    setFiles(
-      inputs[0]!,
-      makeFileList(new File(['a'], 'a.txt', { type: 'text/plain' }))
-    )
+    setFiles(inputs[0]!, makeFileList(new File(['a'], 'a.txt', { type: 'text/plain' })))
     setFiles(
       inputs[1]!,
       makeFileList(
@@ -232,9 +224,9 @@ describe('form controller — name="foo[]" multi-value inputs', () => {
             observed.push(value)
             if (!Array.isArray(value)) return 'expected an array'
             return undefined
-          }
-        }
-      }
+          },
+        },
+      },
     })
 
     // Populate via setValue so the synthetic event reaches the
@@ -262,11 +254,11 @@ describe('form controller — name="foo[]" multi-value inputs', () => {
           each: {
             pattern: {
               value: /^[^\s@]+@[^\s@]+\.[^\s@]+$/,
-              message: 'Invalid email.'
-            }
-          }
-        }
-      }
+              message: 'Invalid email.',
+            },
+          },
+        },
+      },
     })
     const inputs = Array.from(
       document.querySelectorAll<HTMLInputElement>('input[name="docusign_email[]"]')
@@ -295,8 +287,8 @@ describe('form controller — name="foo[]" multi-value inputs', () => {
 
     const api = form('array-form', {
       validators: {
-        'tags[]': { validate: () => 'Group error.' }
-      }
+        'tags[]': { validate: () => 'Group error.' },
+      },
     })
 
     const inputs = Array.from(document.querySelectorAll<HTMLInputElement>('input[name="tags[]"]'))

@@ -4,11 +4,7 @@
 export { form } from './api/form'
 export { createFormController } from './core/controller'
 export { browser } from './browser/registry'
-export type {
-  FormsApi,
-  FormsAvailable,
-  NewFormInput
-} from './browser/registry'
+export type { FormsApi, FormsAvailable, NewFormInput } from './browser/registry'
 
 export type {
   AppendContentOptions,
@@ -43,7 +39,7 @@ export type {
   ValidationResult,
   ValidationSchema,
   ValueValidationRules,
-  VisualAttributes
+  VisualAttributes,
 } from './core/types'
 
 export { parseFormData } from './core/serialize'

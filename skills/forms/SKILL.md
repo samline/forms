@@ -13,7 +13,7 @@ Build against the installed `@samline/forms` version. This skill describes v2.11
 ## Choose loading, then keep the controller
 
 - **Package / ESM:** `npm install @samline/forms` (or pnpm, yarn, bun). Import `{ form }` from `@samline/forms`. CommonJS is also exported. The root entry does not set a global.
-- **HTML / CDN:** load `https://unpkg.com/@samline/forms@2.11.1/dist/browser/global.global.js` with a classic `<script>` and use `window.Forms.form(...)`. The global has exactly `form`, `newForm`, `destroyForm` and `available`. This file already bundles `@samline/formatter`. Self-hosting the same file uses the same API.
+- **HTML / CDN:** load `https://cdn.jsdelivr.net/npm/@samline/forms@3.0.0/dist/browser/forms.global.js` with a classic `<script>` and use `window.Forms.form(...)`. The global has exactly `form`, `newForm`, `destroyForm` and `available`. This file already bundles `@samline/formatter`. Self-hosting the same file uses the same API.
 - **Registry helpers:** `browser` from the root entry (or the `@samline/forms/browser` subpath, which also sets `globalThis.Forms`) provides `newForm({ id, options })`, `destroyForm(id)` and the `available` map, one controller per form id.
 
 Verify the release exists on npm before using a CDN URL; a repository version does not prove publication. Load one copy of the runtime per page.

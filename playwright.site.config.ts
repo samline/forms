@@ -16,7 +16,7 @@ export default defineConfig({
   timeout: 60000,
   use: { baseURL: origin + project.base, browserName: 'chromium' },
   webServer: {
-    command: `npm run preview --workspace landing -- --host 127.0.0.1 --port ${port} --ignore-lock`,
+    command: `bun run --cwd landing preview --host 127.0.0.1 --port ${port} --ignore-lock`,
     url: origin + project.base,
     reuseExistingServer: false,
   },

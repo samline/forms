@@ -13,8 +13,7 @@ export const createAutoSubmit =
       clearTimeout(state.autoSubmitTimer)
       state.autoSubmitTimer = null
     }
-    state.autoSubmitDebounce =
-      typeof next === 'object' && next ? next.debounce ?? 0 : 0
+    state.autoSubmitDebounce = typeof next === 'object' && next ? (next.debounce ?? 0) : 0
     helpers.notifySubscribers()
     return state.api!
   }

@@ -11,7 +11,12 @@ const observeField = (state: FormControllerState, field: string, callback: FormF
   state.watchedFields.set(field, callbacks)
 
   if (state.element) {
-    callback(state.api!.getValue(field), state.api!.getField(field), state.element, state.api!.getState())
+    callback(
+      state.api!.getValue(field),
+      state.api!.getField(field),
+      state.element,
+      state.api!.getState()
+    )
   }
 
   return () => {

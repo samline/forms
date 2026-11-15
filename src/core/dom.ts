@@ -31,14 +31,11 @@ export const resolveFormElement = (target: FormTarget): HTMLFormElement | null =
 
 export const getNamedFields = (form: HTMLFormElement): FormFieldElement[] =>
   Array.from(form.elements).filter(
-    (element): element is FormFieldElement =>
-      isFormFieldElement(element) && Boolean(element.name)
+    (element): element is FormFieldElement => isFormFieldElement(element) && Boolean(element.name)
   )
 
-export const queryNamedFields = (
-  form: HTMLFormElement,
-  name: string
-): FormFieldElement[] => getNamedFields(form).filter(field => field.name === name)
+export const queryNamedFields = (form: HTMLFormElement, name: string): FormFieldElement[] =>
+  getNamedFields(form).filter(field => field.name === name)
 
 export const isFieldElement = (value: Element): value is FormFieldElement =>
   isFormFieldElement(value)
@@ -84,8 +81,7 @@ export const readFieldValue = (fields: FormFieldElement[]): FormFieldValue => {
         // Radio groups stay single-valued even with the `[]` suffix —
         // they semantically mean "one of these". Find the checked one.
         const checked = fields.find(
-          (f): f is HTMLInputElement =>
-            f instanceof HTMLInputElement && f.checked
+          (f): f is HTMLInputElement => f instanceof HTMLInputElement && f.checked
         )
         return checked?.value ?? ''
       }
@@ -94,10 +90,7 @@ export const readFieldValue = (fields: FormFieldElement[]): FormFieldValue => {
         // Always return an array of checked values (no single-value
         // collapse) so `Array.isArray(value)` validators stay correct.
         return fields
-          .filter(
-            (f): f is HTMLInputElement =>
-              f instanceof HTMLInputElement && f.checked
-          )
+          .filter((f): f is HTMLInputElement => f instanceof HTMLInputElement && f.checked)
           .map(f => f.value)
       }
 
@@ -124,18 +117,14 @@ export const readFieldValue = (fields: FormFieldElement[]): FormFieldValue => {
   if (first instanceof HTMLInputElement) {
     if (first.type === 'radio') {
       const checked = fields.find(
-        (f): f is HTMLInputElement =>
-          f instanceof HTMLInputElement && f.checked
+        (f): f is HTMLInputElement => f instanceof HTMLInputElement && f.checked
       )
       return checked?.value ?? ''
     }
 
     if (first.type === 'checkbox') {
       const values = fields
-        .filter(
-          (f): f is HTMLInputElement =>
-            f instanceof HTMLInputElement && f.checked
-        )
+        .filter((f): f is HTMLInputElement => f instanceof HTMLInputElement && f.checked)
         .map(f => f.value)
       return values.length > 1 ? values : (values[0] ?? '')
     }
@@ -149,9 +138,7 @@ export const readFieldValue = (fields: FormFieldElement[]): FormFieldValue => {
 }
 
 export const writeFieldValue = (fields: FormFieldElement[], value: unknown): void => {
-  const normalizedArray = Array.isArray(value)
-    ? value.map(item => String(item))
-    : null
+  const normalizedArray = Array.isArray(value) ? value.map(item => String(item)) : null
   const normalizedValue = value === undefined || value === null ? '' : String(value)
 
   // For `name="foo[]"` fields receiving an array, distribute one element
@@ -221,9 +208,8 @@ export const submitForm = (form: HTMLFormElement): void => {
     form.requestSubmit()
     return
   }
-  const submitButton = form.querySelector(
-    'button[type="submit"], input[type="submit"]'
-  ) as HTMLButtonElement | HTMLInputElement | null
+  const submitButton = form.querySelector('button[type="submit"], input[type="submit"]') as
+    HTMLButtonElement | HTMLInputElement | null
   if (submitButton) {
     submitButton.click()
     return

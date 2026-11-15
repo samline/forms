@@ -2,6 +2,23 @@
 
 All notable changes to `@samline/forms` are documented in this file. The format follows [Keep a Changelog](https://keepachangelog.com/en/1.1.0/) and the project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [3.0.0] - 2026-11-15
+
+### Breaking changes
+
+- `@samline/forms/browser` no longer has a `default` export. Use the named exports (`form`, `newForm`, `destroyForm`, `available`) or `import * as Forms from '@samline/forms/browser'`. `window.Forms` is unchanged.
+- The standalone script is now `dist/browser/forms.global.js`, following the family naming, and `@samline/forms/browser/global` points to it. `dist/browser/global.global.js` is still shipped as an identical alias, so existing CDN URLs keep working.
+
+### Changed
+
+- Installs with pnpm and runs every script with Bun, with the @samline family CI, Prettier settings and gzip budgets for each public entry.
+- CDN examples use pinned jsDelivr URLs.
+
+### Tests
+
+- Coverage thresholds raised to 90 % branches and 95 % statements, functions and lines.
+- Playwright tests of the standalone script in Chromium, Firefox and WebKit.
+
 ## [2.11.1] - 2026-11-13
 
 No API changes.
@@ -327,6 +344,7 @@ No breaking API changes. The behavior changes below fix incorrect or surprising 
 
 - Initial release of `@samline/forms`. Vanilla JS form controller with framework-specific variants (React, Vue, Svelte) initially included; bundled `.local/` agent docs at the repo root.
 
+[3.0.0]: https://github.com/samline/forms/compare/v2.11.1...v3.0.0
 [2.11.1]: https://github.com/samline/forms/compare/v2.11.0...v2.11.1
 [2.11.0]: https://github.com/samline/forms/compare/v2.10.0...v2.11.0
 [2.10.0]: https://github.com/samline/forms/compare/v2.9.0...v2.10.0

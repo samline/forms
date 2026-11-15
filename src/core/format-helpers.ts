@@ -61,9 +61,7 @@ export const findVisibleField = (
   form: HTMLFormElement,
   displayName: string
 ): HTMLInputElement | HTMLTextAreaElement | null => {
-  const node = form.querySelector(
-    `[name="${cssEscape(displayName)}"]:not([type="hidden"])`
-  )
+  const node = form.querySelector(`[name="${cssEscape(displayName)}"]:not([type="hidden"])`)
   if (node instanceof HTMLInputElement || node instanceof HTMLTextAreaElement) {
     return node
   }
@@ -103,10 +101,7 @@ export const findHiddenMirror = (
 // suffix) so the value the backend reads sits at the developer's
 // natural name. The `data-formatter-raw-for` attribute is set so
 // `destroy()` can identify the mirror as owned and remove it.
-export const ensureHiddenMirror = (
-  form: HTMLFormElement,
-  fieldName: string
-): HTMLInputElement => {
+export const ensureHiddenMirror = (form: HTMLFormElement, fieldName: string): HTMLInputElement => {
   const existing = findHiddenMirror(form, fieldName)
   if (existing) return existing
 
@@ -181,11 +176,7 @@ export const applyFormattedValue = (
   // previous value would lose information when the user edits in the
   // middle of a masked field (deletion adjacent to delimiters, etc.).
   const rawInput = visible.value
-  const caret = clamp(
-    visible.selectionStart ?? rawInput.length,
-    0,
-    rawInput.length
-  )
+  const caret = clamp(visible.selectionStart ?? rawInput.length, 0, rawInput.length)
 
   if (mirror && mirror.value !== raw) mirror.value = raw
 
@@ -299,10 +290,7 @@ export const isFormatChar = (char: string): boolean => {
   return true
 }
 
-const restoreCursor = (
-  field: HTMLInputElement | HTMLTextAreaElement,
-  position: number
-): void => {
+const restoreCursor = (field: HTMLInputElement | HTMLTextAreaElement, position: number): void => {
   // Moving the selection of a control the user is not editing is never
   // wanted, and Safari focuses an input when its selection is set.
   if (field.ownerDocument.activeElement !== field) return

@@ -9,7 +9,7 @@ import type {
   RuleConfig,
   ValueValidationRules,
   ValidationResult,
-  ValidationSchema
+  ValidationSchema,
 } from './types'
 
 const resolveRule = <T>(rule: RuleConfig<T> | undefined) => {
@@ -37,9 +37,7 @@ const getValueLength = (value: FormFieldValue): number => {
 const toPatternTarget = (value: FormFieldValue): string => {
   if (typeof value === 'string') return value
   if (Array.isArray(value)) {
-    return value
-      .map(entry => (typeof entry === 'string' ? entry : entry.name))
-      .join(',')
+    return value.map(entry => (typeof entry === 'string' ? entry : entry.name)).join(',')
   }
   return ''
 }
@@ -87,7 +85,7 @@ const validateValue = (
     field,
     value,
     values,
-    ...contextOverrides
+    ...contextOverrides,
   }
   const required = resolveRule(rules.required)
   const minLength = resolveRule(rules.minLength)
@@ -167,20 +165,20 @@ export const validateFieldValueDetailed = (
       items ??
       (Array.isArray(value)
         ? value.map(entry => ({
-            value: typeof entry === 'string' ? entry : ([entry] as File[])
+            value: typeof entry === 'string' ? entry : ([entry] as File[]),
           }))
         : [{ value }])
 
     sourceItems.forEach((item, index) => {
       const overrides: Partial<Pick<FieldValidationContext, 'element' | 'index'>> = {
-        index
+        index,
       }
       if (item.element) overrides.element = item.element
       const messages = validateValue(field, item.value, rules.each!, values, overrides)
       if (messages.length === 0) return
       const error: DetailedValidationResult['itemErrors'][number] = {
         index,
-        messages
+        messages,
       }
       if (item.element) error.element = item.element
       itemErrors.push(error)
@@ -200,10 +198,7 @@ export const validateFieldValue = (
   return [...result.groupErrors, ...result.itemErrors.flatMap(item => item.messages)]
 }
 
-export const validateValues = (
-  values: FormValues,
-  schema: ValidationSchema
-): ValidationResult => {
+export const validateValues = (values: FormValues, schema: ValidationSchema): ValidationResult => {
   const errors: FormErrors = {}
   for (const [field, rules] of Object.entries(schema)) {
     const messages = validateFieldValue(field, values[field], rules, values)
@@ -211,6 +206,6 @@ export const validateValues = (
   }
   return {
     isValid: Object.keys(errors).length === 0,
-    errors
+    errors,
   }
 }

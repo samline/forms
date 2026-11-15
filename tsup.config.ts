@@ -32,7 +32,7 @@ export default defineConfig([
   {
     entry: {
       index: 'src/index.ts',
-      'browser/index': 'src/browser/index.ts'
+      'browser/index': 'src/browser/index.ts',
     },
     format: ['esm', 'cjs'],
     dts: true,
@@ -41,11 +41,14 @@ export default defineConfig([
     target: 'es2020',
     outDir: 'dist',
     // Consumer's bundler resolves the peer; we do not pre-bundle it here.
-    external: [/^@samline\/formatter(\/|$)/]
+    external: [/^@samline\/formatter(\/|$)/],
   },
   {
     entry: {
-      'browser/global': 'src/browser/iife.ts'
+      // forms.global.js is the family name; global.global.js stays as an
+      // identical alias for CDN URLs written before 3.0.0.
+      'browser/forms': 'src/browser/iife.ts',
+      'browser/global': 'src/browser/iife.ts',
     },
     format: ['iife'],
     dts: true,
@@ -56,8 +59,8 @@ export default defineConfig([
     globalName: 'Forms',
     // The IIFE is what CDN users download directly, with the formatter
     // bundled in, so it ships minified. Bundler entries stay readable.
-    minify: true
+    minify: true,
     // Intentionally NO `external`: the IIFE must self-contain the
     // formatter so it works when loaded from a CDN with `<script>`.
-  }
+  },
 ])

@@ -5,7 +5,7 @@ import { form } from '../../src/api/form'
 import {
   __resetFormatterLoaderForTests,
   __setFormatterModuleForTests,
-  type FormatterModule
+  type FormatterModule,
 } from '../../src/core/formatter-loader'
 
 // Uses the real @samline/formatter (>= 3.1.0), not a fixture, so the
@@ -37,9 +37,9 @@ describe('format() with formatter 3.1 text and slug types', () => {
         title: {
           type: 'text',
           field: 'title',
-          options: { case: 'title', smallWords: ['de', 'los'] }
-        }
-      }
+          options: { case: 'title', smallWords: ['de', 'los'] },
+        },
+      },
     })
     await flush()
 
@@ -53,8 +53,8 @@ describe('format() with formatter 3.1 text and slug types', () => {
   it('keeps a trailing separator while typing and submits the trimmed slug', async () => {
     const api = form('post', {
       formats: {
-        slug: { type: 'slug', field: 'slug', options: { replacements: { '&': 'y' } } }
-      }
+        slug: { type: 'slug', field: 'slug', options: { replacements: { '&': 'y' } } },
+      },
     })
     await flush()
 

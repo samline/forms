@@ -42,15 +42,18 @@ The AI must treat them as operational context of the project.
 ## Minimum Cases
 
 ### General task
+
 1. Query the graph with `codebase-memory-mcp`.
 2. Read `.agents/agent-index.md`.
 3. If applicable, review `.agents/todo.md` and `.agents/lessons.md`.
 
 ### New package or new scaffold
+
 1. Query the graph with `codebase-memory-mcp`.
 2. Read `.agents/agent-index.md`, `.agents/package-replication-guide.md`, `.agents/new-project.md`, `.agents/todo.md` and `.agents/lessons.md`.
 
 ### Release, deploy, or publish
+
 1. Query the graph with `codebase-memory-mcp`.
 2. Read `.agents/agent-index.md`, `.agents/deploy-and-release-guide.md`, `.agents/todo.md` and `.agents/lessons.md`.
 
@@ -91,9 +94,11 @@ The Markdown `docs/` folder that used to ship in the npm tarball and the Starlig
 
 - Previews import `@samline/forms` through Vite aliases and tsconfig paths to `src/index.ts`. Never copy runtime logic into the site.
 - One scenario catalog drives Home tabs, Examples, the Docs examples guide and the generated HTML / CDN and Package / ESM files. Behavior regions in `shared/lib/demo-behavior.js` are copied verbatim into `main.js`; keep them plain JavaScript that receives `(element, show)` and returns the controller.
-- `site-e2e/site.spec.ts` replays every sample against the built IIFE and an esbuild bundle of `dist/index.js`; run `npm run build` before the browser suite.
+- `site-e2e/site.spec.ts` replays every sample against the built IIFE and an esbuild bundle of `dist/index.js`; run `bun run build` before the browser suite.
 - Accent: sky blue chosen by the maintainer (`#0369a1` light, `#38bdf8` dark), recorded in `content-audit.json.themeReview`.
-- Bun resolution needs `overrides` for `parse5@^8.1.0` (hast-util-raw) and `@emnapi/runtime@1.11.3` (astro check). Keep them until upstream resolves.
+- Installs use pnpm (`pnpm-workspace.yaml` lists `landing`, `docs`, `shared`); scripts run with `bun run`, website scripts with `bun run --cwd <app>`. The overrides for `parse5@^8.1.0` (hast-util-raw), `@emnapi/runtime@1.11.3` (astro check) and the patched toolchain versions live in the `# Repository overrides` block of `pnpm-workspace.yaml`. Keep them until upstream resolves.
+- Since 3.0.0 the standalone script is `dist/browser/forms.global.js` (`global.global.js` stays as an identical alias) and `@samline/forms/browser` has no default export.
+- `scripts/check-size.mjs` treats peers as external, so the ESM budgets exclude `@samline/formatter`; the IIFE budget includes it because the standalone script bundles it.
 
 ## PageSpeed performance contract
 

@@ -11,9 +11,7 @@ describe('validation', () => {
         required: true,
         minLength: 3,
         validate: ({ value }) =>
-          typeof value === 'string' && value.startsWith('x')
-            ? 'Cannot start with x.'
-            : undefined
+          typeof value === 'string' && value.startsWith('x') ? 'Cannot start with x.' : undefined,
       },
       { name: 'ab' }
     )
@@ -25,23 +23,21 @@ describe('validation', () => {
     const result = validateValues(
       {
         email: 'invalid',
-        terms: ''
+        terms: '',
       },
       {
         email: {
           required: true,
-          pattern: /^[^\s@]+@[^\s@]+\.[^\s@]+$/
+          pattern: /^[^\s@]+@[^\s@]+\.[^\s@]+$/,
         },
         terms: {
-          required: { value: true, message: 'Accept the terms.' }
-        }
+          required: { value: true, message: 'Accept the terms.' },
+        },
       }
     )
 
     expect(result.isValid).toBe(false)
-    expect(result.errors.email).toEqual([
-      'Value does not match the required pattern.'
-    ])
+    expect(result.errors.email).toEqual(['Value does not match the required pattern.'])
     expect(result.errors.terms).toEqual(['Accept the terms.'])
   })
 
@@ -68,7 +64,7 @@ describe('validation', () => {
         'password_confirmation',
         'different',
         {
-          sameAs: { value: 'password', message: 'Passwords do not match.' }
+          sameAs: { value: 'password', message: 'Passwords do not match.' },
         },
         { password: 'secret123', password_confirmation: 'different' }
       )
@@ -122,13 +118,13 @@ describe('validation', () => {
 
     for (const value of ['12px', '1e3', '0x10', '1,000', 'Infinity', 'NaN']) {
       expect(validateFieldValue('amount', value, { numeric: true }, { amount: value })).toEqual([
-        'Value must be a number.'
+        'Value must be a number.',
       ])
     }
 
     expect(validateFieldValue('amount', '10', { min: 10, max: 20 }, { amount: '10' })).toEqual([])
     expect(validateFieldValue('amount', '21', { min: 10, max: 20 }, { amount: '21' })).toEqual([
-      'Maximum value is 20.'
+      'Maximum value is 20.',
     ])
     expect(validateFieldValue('amount', '', { numeric: true, min: 10 }, { amount: '' })).toEqual([])
   })
@@ -144,9 +140,9 @@ describe('validation', () => {
             validate: ({ index }) => {
               indexes.push(index!)
               return undefined
-            }
-          }
-        }
+            },
+          },
+        },
       }
     )
 

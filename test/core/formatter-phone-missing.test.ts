@@ -8,7 +8,7 @@ import {
   __resetFormatterLoaderForTests,
   __setFormatterModuleForTests,
   loadFormatter,
-  type FormatterModule
+  type FormatterModule,
 } from '../../src/core/formatter-loader'
 
 afterEach(() => {
@@ -20,7 +20,7 @@ describe('formatter 3 phone opt-in without the phone subpath', () => {
     const error = vi.spyOn(console, 'error').mockImplementation(() => {})
     const modern: FormatterModule = {
       format: value => ({ formatted: String(value), raw: String(value), type: 'phone' }),
-      isPhoneRegistered: () => false
+      isPhoneRegistered: () => false,
     }
     __setFormatterModuleForTests(modern)
 

@@ -6,7 +6,7 @@ import {
   findVisibleField,
   FORMATTER_RAW_ATTRIBUTE,
   renameVisibleField,
-  restoreVisibleName
+  restoreVisibleName,
 } from '../core/format-helpers'
 import { loadFormatter } from '../core/formatter-loader'
 import type { FormControllerHelpers, FormControllerState } from '../core/state'
@@ -71,14 +71,14 @@ const buildAutoInterpretedOptions = (
   formatOptions: Record<string, unknown> | undefined
 ): Record<string, unknown> => ({
   ...(formatOptions ?? {}),
-  interpretInputAs: 'auto'
+  interpretInputAs: 'auto',
 })
 
 const buildDisplayInterpretedOptions = (
   formatOptions: Record<string, unknown> | undefined
 ): Record<string, unknown> => ({
   ...(formatOptions ?? {}),
-  interpretInputAs: 'display'
+  interpretInputAs: 'display',
 })
 
 const shouldForceAutoInterpretation = (
@@ -127,9 +127,7 @@ const applyFormat = async (
 ): Promise<void> => {
   if (!state.element || !state.api) return
   if (Array.isArray(config.field) && config.displayField) {
-    console.error(
-      '[samline/forms] `displayField` can only be used when `field` is a string.'
-    )
+    console.error('[samline/forms] `displayField` can only be used when `field` is a string.')
     return
   }
 
@@ -148,8 +146,7 @@ const applyFormat = async (
     const canonicalFields = helpers.getFieldsByName(fieldName) as FormFieldElement[]
     const candidates = canonicalFields.filter(
       (f): f is HTMLInputElement | HTMLTextAreaElement =>
-        (f instanceof HTMLInputElement && f.type !== 'hidden') ||
-        f instanceof HTMLTextAreaElement
+        (f instanceof HTMLInputElement && f.type !== 'hidden') || f instanceof HTMLTextAreaElement
     )
     let visible: HTMLInputElement | HTMLTextAreaElement | null = candidates[0] ?? null
     if (!visible) {
@@ -171,7 +168,7 @@ const applyFormat = async (
       state.formattedFields.set(fieldName, {
         config,
         displayName,
-        mirrorIsOwned
+        mirrorIsOwned,
       })
       phase1Entries.push(existing)
     } else {
@@ -183,13 +180,13 @@ const applyFormat = async (
         mirrorIsOwned,
         defaultVisible: null,
         defaultRaw: null,
-        handler: UNBOUND
+        handler: UNBOUND,
       }
       bucket.set(fieldName, entry)
       state.formattedFields.set(fieldName, {
         config,
         displayName,
-        mirrorIsOwned
+        mirrorIsOwned,
       })
       phase1Entries.push(entry)
     }
@@ -298,10 +295,7 @@ export const resolveCanonicalForName = (
   return null
 }
 
-export const resolveDisplayNameForName = (
-  state: FormControllerState,
-  name: string
-): string => {
+export const resolveDisplayNameForName = (state: FormControllerState, name: string): string => {
   const bucket = registry.get(state)
   if (!bucket) return name
   for (const [canonical, entry] of bucket) {

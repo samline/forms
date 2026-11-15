@@ -6,14 +6,11 @@
 import type { FormControllerHelpers, FormControllerState } from '../core/state'
 
 export const createPrefill =
-  (state: FormControllerState, helpers: FormControllerHelpers) =>
-  (fieldName?: string) => {
+  (state: FormControllerState, helpers: FormControllerHelpers) => (fieldName?: string) => {
     if (!state.element || state.isDestroyed) return state.api!
 
     const params = new URLSearchParams(window.location.search)
-    const keys = Array.from(new Set(params.keys())).filter(
-      key => !fieldName || fieldName === key
-    )
+    const keys = Array.from(new Set(params.keys())).filter(key => !fieldName || fieldName === key)
     if (keys.length === 0) return state.api!
 
     // Every written field still runs the delegated pipeline (watchers,

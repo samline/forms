@@ -33,26 +33,22 @@ describe('form controller (integration)', () => {
       validators: {
         email: {
           required: true,
-          pattern: /^[^\s@]+@[^\s@]+\.[^\s@]+$/
-        }
-      }
+          pattern: /^[^\s@]+@[^\s@]+\.[^\s@]+$/,
+        },
+      },
     })
 
     api.watch('email', callback)
     api.setValue('email', 'hello')
 
     expect(callback).toHaveBeenCalled()
-    expect(api.getState().errors.email).toEqual([
-      'Value does not match the required pattern.'
-    ])
+    expect(api.getState().errors.email).toEqual(['Value does not match the required pattern.'])
 
     api.setValue('email', 'hello@example.com')
 
     expect(api.getValue('email')).toBe('hello@example.com')
     expect(api.getState().errors.email).toBeUndefined()
-    expect(
-      (api.getField('email') as HTMLInputElement).hasAttribute('css-filled')
-    ).toBe(true)
+    expect((api.getField('email') as HTMLInputElement).hasAttribute('css-filled')).toBe(true)
   })
 
   it('revalidates a sameAs field when its source changes', () => {
@@ -64,9 +60,9 @@ describe('form controller (integration)', () => {
     const api = form('contact-form', {
       validators: {
         password_confirmation: {
-          sameAs: { value: 'password', message: 'Passwords do not match.' }
-        }
-      }
+          sameAs: { value: 'password', message: 'Passwords do not match.' },
+        },
+      },
     })
 
     api.setValue('password', 'first-secret')
@@ -74,9 +70,7 @@ describe('form controller (integration)', () => {
     expect(api.getState().errors.password_confirmation).toBeUndefined()
 
     api.setValue('password', 'changed-secret')
-    expect(api.getState().errors.password_confirmation).toEqual([
-      'Passwords do not match.'
-    ])
+    expect(api.getState().errors.password_confirmation).toEqual(['Passwords do not match.'])
 
     api.setValue('password_confirmation', 'changed-secret')
     expect(api.getState().errors.password_confirmation).toBeUndefined()
@@ -94,13 +88,13 @@ describe('form controller (integration)', () => {
       validators: {
         password: {
           sameAs: 'password_confirmation',
-          validate: validatePassword
+          validate: validatePassword,
         },
         password_confirmation: {
           sameAs: 'password',
-          validate: validateConfirmation
-        }
-      }
+          validate: validateConfirmation,
+        },
+      },
     })
     validatePassword.mockClear()
     validateConfirmation.mockClear()
@@ -116,12 +110,8 @@ describe('form controller (integration)', () => {
 
     expect(validatePassword).toHaveBeenCalledTimes(1)
     expect(validateConfirmation).toHaveBeenCalledTimes(1)
-    expect(api.getState().errors.password).toEqual([
-      'Value must match password_confirmation.'
-    ])
-    expect(api.getState().errors.password_confirmation).toEqual([
-      'Value must match password.'
-    ])
+    expect(api.getState().errors.password).toEqual(['Value must match password_confirmation.'])
+    expect(api.getState().errors.password_confirmation).toEqual(['Value must match password.'])
   })
 
   it('activates transitive sameAs dependencies after manual validation', () => {
@@ -136,8 +126,8 @@ describe('form controller (integration)', () => {
       autoValidate: false,
       validators: {
         first: { sameAs: 'second', validate: validateFirst },
-        second: { sameAs: 'third', validate: validateSecond }
-      }
+        second: { sameAs: 'third', validate: validateSecond },
+      },
     })
 
     api.setValue('third', 'before-validation')
@@ -159,8 +149,8 @@ describe('form controller (integration)', () => {
     )
     const api = form('contact-form', {
       validators: {
-        email: { dependsOn: 'name', validate: validateEmail }
-      }
+        email: { dependsOn: 'name', validate: validateEmail },
+      },
     })
     validateEmail.mockClear()
 
@@ -171,11 +161,7 @@ describe('form controller (integration)', () => {
   })
 
   it('serializes repeated fields and supports prefill', () => {
-    window.history.replaceState(
-      {},
-      '',
-      'http://localhost/?name=Sam&email=sam@example.com'
-    )
+    window.history.replaceState({}, '', 'http://localhost/?name=Sam&email=sam@example.com')
 
     const api = form('contact-form')
     api.prefill()
@@ -191,31 +177,23 @@ describe('form controller (integration)', () => {
   it('does not invoke submit handlers when validation fails', () => {
     const onSubmit = vi.fn()
     const api = form('contact-form', {
-      validators: { email: { required: true } }
+      validators: { email: { required: true } },
     })
 
     api.onSubmit(onSubmit)
 
     const formElement = document.getElementById('contact-form') as HTMLFormElement
-    formElement.dispatchEvent(
-      new Event('submit', { bubbles: true, cancelable: true })
-    )
+    formElement.dispatchEvent(new Event('submit', { bubbles: true, cancelable: true }))
 
     expect(onSubmit).not.toHaveBeenCalled()
     expect(document.activeElement).toBe(api.getField('email'))
-    expect((api.getField('email') as HTMLInputElement).getAttribute('aria-invalid')).toBe(
-      'true'
-    )
+    expect((api.getField('email') as HTMLInputElement).getAttribute('aria-invalid')).toBe('true')
 
     api.setValue('email', 'sam@example.com')
-    formElement.dispatchEvent(
-      new Event('submit', { bubbles: true, cancelable: true })
-    )
+    formElement.dispatchEvent(new Event('submit', { bubbles: true, cancelable: true }))
 
     expect(onSubmit).toHaveBeenCalledTimes(1)
-    expect((api.getField('email') as HTMLInputElement).hasAttribute('aria-invalid')).toBe(
-      false
-    )
+    expect((api.getField('email') as HTMLInputElement).hasAttribute('aria-invalid')).toBe(false)
   })
 
   it('skips hidden invalid fields when focusing after submit', () => {
@@ -224,8 +202,8 @@ describe('form controller (integration)', () => {
     const api = form('contact-form', {
       validators: {
         token: { required: true },
-        email: { required: true }
-      }
+        email: { required: true },
+      },
     })
 
     formElement.dispatchEvent(new Event('submit', { bubbles: true, cancelable: true }))
@@ -246,7 +224,7 @@ describe('form controller (integration)', () => {
       new SubmitEvent('submit', {
         bubbles: true,
         cancelable: true,
-        submitter: button
+        submitter: button,
       })
     )
 
@@ -358,9 +336,9 @@ describe('form controller (integration)', () => {
       validators: {
         email: {
           required: true,
-          pattern: /^[^\s@]+@[^\s@]+\.[^\s@]+$/
-        }
-      }
+          pattern: /^[^\s@]+@[^\s@]+\.[^\s@]+$/,
+        },
+      },
     })
 
     api.setErrors(['email', 'name'])
@@ -375,17 +353,15 @@ describe('form controller (integration)', () => {
       validators: {
         email: {
           required: true,
-          pattern: /^[^\s@]+@[^\s@]+\.[^\s@]+$/
-        }
-      }
+          pattern: /^[^\s@]+@[^\s@]+\.[^\s@]+$/,
+        },
+      },
     })
 
     api.setErrors(['email'])
     api.setValue('email', 'invalid')
 
-    expect(api.getState().errors.email).toEqual([
-      'Value does not match the required pattern.'
-    ])
+    expect(api.getState().errors.email).toEqual(['Value does not match the required pattern.'])
   })
 
   it('keeps manual errors on change when clearManualErrorsOnChange is false', () => {
@@ -395,9 +371,9 @@ describe('form controller (integration)', () => {
       validators: {
         email: {
           required: true,
-          pattern: /^[^\s@]+@[^\s@]+\.[^\s@]+$/
-        }
-      }
+          pattern: /^[^\s@]+@[^\s@]+\.[^\s@]+$/,
+        },
+      },
     })
 
     api.setErrors(['email'])
@@ -415,7 +391,7 @@ describe('form controller (integration)', () => {
     const formElement = document.getElementById('contact-form') as HTMLFormElement
     const event = new Event('submit', {
       bubbles: true,
-      cancelable: true
+      cancelable: true,
     })
     formElement.dispatchEvent(event)
 
@@ -426,14 +402,14 @@ describe('form controller (integration)', () => {
   it('onSubmit with preventDefault=false still prevents when validation fails', () => {
     const onSubmit = vi.fn()
     const api = form('contact-form', {
-      validators: { name: { required: true } }
+      validators: { name: { required: true } },
     })
     api.onSubmit(onSubmit, false)
 
     const formElement = document.getElementById('contact-form') as HTMLFormElement
     const event = new Event('submit', {
       bubbles: true,
-      cancelable: true
+      cancelable: true,
     })
     formElement.dispatchEvent(event)
 
@@ -475,9 +451,7 @@ describe('form controller (integration)', () => {
 
     const unsubscribe = api.subscribe(listener)
     expect(listener).toHaveBeenCalledTimes(1)
-    expect(listener).toHaveBeenLastCalledWith(
-      expect.objectContaining({ submitCount: 0 })
-    )
+    expect(listener).toHaveBeenLastCalledWith(expect.objectContaining({ submitCount: 0 }))
 
     api.setValue('name', 'Sam')
     expect(listener.mock.calls.length).toBeGreaterThanOrEqual(2)
@@ -495,7 +469,7 @@ describe('form controller (integration)', () => {
 
     const api = form('contact-form', {
       autoValidate: false,
-      validators: { name: { validate: validateName } }
+      validators: { name: { validate: validateName } },
     })
 
     expect(name.hasAttribute('css-filled')).toBe(true)
@@ -575,9 +549,9 @@ describe('form controller (integration)', () => {
       validators: {
         email: {
           required: true,
-          pattern: /^[^\s@]+@[^\s@]+\.[^\s@]+$/
-        }
-      }
+          pattern: /^[^\s@]+@[^\s@]+\.[^\s@]+$/,
+        },
+      },
     })
 
     api.setValue('email', 'sam@example.com')
@@ -595,7 +569,7 @@ describe('form controller (integration)', () => {
 
     const api = form('contact-form', {
       autoValidate: false,
-      autoSubmit: { debounce: 10 }
+      autoSubmit: { debounce: 10 },
     })
 
     api.setValue('name', 'Sam')
@@ -615,7 +589,7 @@ describe('form controller (integration)', () => {
 
     const api = form('contact-form', {
       autoValidate: false,
-      autoSubmit: { debounce: 30 }
+      autoSubmit: { debounce: 30 },
     })
 
     api.setValue('name', 'Sam')
@@ -632,7 +606,7 @@ describe('form controller (integration)', () => {
       .mockImplementation(() => undefined)
     const api = form('contact-form', {
       autoValidate: false,
-      autoSubmit: { debounce: 30 }
+      autoSubmit: { debounce: 30 },
     })
 
     api.setValue('name', 'Sam')
@@ -650,7 +624,7 @@ describe('form controller (integration)', () => {
     const onSubmit = vi.fn()
     const api = form('contact-form', {
       autoValidate: false,
-      autoSubmit: { debounce: 30 }
+      autoSubmit: { debounce: 30 },
     })
     api.onSubmit(onSubmit, true)
 
@@ -674,9 +648,7 @@ describe('form controller (integration)', () => {
 
     const callsBefore = listener.mock.calls.length
     const formElement = document.getElementById('contact-form') as HTMLFormElement
-    formElement.dispatchEvent(
-      new Event('input', { bubbles: true })
-    )
+    formElement.dispatchEvent(new Event('input', { bubbles: true }))
     expect(listener.mock.calls.length).toBe(callsBefore)
   })
 

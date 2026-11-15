@@ -5,7 +5,7 @@ import {
   __resetFormatterLoaderForTests,
   __setFormatterModuleForTests,
   loadFormatter,
-  type FormatterModule
+  type FormatterModule,
 } from '../../src/core/formatter-loader'
 
 afterEach(() => {
@@ -35,7 +35,7 @@ describe('formatter 3 phone opt-in', () => {
 
   it('does not load phones for other types and treats 2.x as always ready', async () => {
     const legacy: FormatterModule = {
-      format: value => ({ formatted: String(value), raw: String(value), type: 'phone' })
+      format: value => ({ formatted: String(value), raw: String(value), type: 'phone' }),
     }
     __setFormatterModuleForTests(legacy)
     await expect(loadFormatter({ phone: true })).resolves.toBe(legacy)

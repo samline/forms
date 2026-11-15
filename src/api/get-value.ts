@@ -8,4 +8,5 @@ import { readFieldValue } from '../core/dom'
 
 export const createGetValue =
   (state: FormControllerState, helpers: FormControllerHelpers) =>
-  (name: string): FormFieldValue => readFieldValue(helpers.getFieldsByName(name))
+  (name: string): FormFieldValue =>
+    readFieldValue(helpers.getFieldsByName(name))

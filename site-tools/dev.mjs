@@ -6,19 +6,8 @@ const children = [
   ['docs', String(project.dev.docsPort)],
 ].map(([workspace, port]) =>
   spawn(
-    'npm',
-    [
-      'run',
-      'dev',
-      '--workspace',
-      workspace,
-      '--',
-      '--host',
-      '127.0.0.1',
-      '--port',
-      port,
-      '--ignore-lock',
-    ],
+    'bun',
+    ['run', '--cwd', workspace, 'dev', '--host', '127.0.0.1', '--port', port, '--ignore-lock'],
     { stdio: 'inherit' }
   )
 )

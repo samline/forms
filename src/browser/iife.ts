@@ -1,4 +1,5 @@
-// Standalone IIFE entry (`dist/browser/global.global.js`).
+// Standalone IIFE entry (`dist/browser/forms.global.js`, aliased as
+// `dist/browser/global.global.js`).
 // tsup assigns this module's named exports to `window.Forms` through
 // `globalName`, so the global has exactly the documented shape, with no
 // `default` key: { form, newForm, destroyForm, available }.

@@ -7,7 +7,7 @@ import { validateFieldValue } from '../../src/core/validation'
 import {
   __resetFormatterLoaderForTests,
   __setFormatterModuleForTests,
-  type FormatterModule
+  type FormatterModule,
 } from '../../src/core/formatter-loader'
 
 // Uses the real @samline/formatter (>= 3.2.0) so the documented pairing of
@@ -40,7 +40,7 @@ describe('formatter 3.2 regex and check digits in validators', () => {
     const rule = { pattern: { value: regex.email.pattern, message: regex.email.errorMessage } }
     expect(validateFieldValue('email', 'ana@correo.méx', rule, {})).toEqual([])
     expect(validateFieldValue('email', 'ana..lopez@correo.mx', rule, {})).toEqual([
-      regex.email.errorMessage
+      regex.email.errorMessage,
     ])
   })
 
@@ -49,13 +49,13 @@ describe('formatter 3.2 regex and check digits in validators', () => {
       curp: {
         pattern: { value: regex.curp.pattern, message: regex.curp.errorMessage },
         validate: ({ value }: { value: unknown }) =>
-          isValidCurp(value) || 'The CURP check digit does not match.'
-      }
+          isValidCurp(value) || 'The CURP check digit does not match.',
+      },
     }
     expect(validateFieldValue('curp', 'GODE561231HDFRRN00', rules.curp, {})).toEqual([])
     // Right shape, wrong check digit: only `validate` catches it.
     expect(validateFieldValue('curp', 'GODE561231HDFRRN01', rules.curp, {})).toEqual([
-      'The CURP check digit does not match.'
+      'The CURP check digit does not match.',
     ])
   })
 
@@ -65,12 +65,12 @@ describe('formatter 3.2 regex and check digits in validators', () => {
         iban: {
           type: 'general',
           field: 'iban',
-          options: { blocks: [4, 4, 4, 4, 4, 4], delimiter: ' ' }
-        }
+          options: { blocks: [4, 4, 4, 4, 4, 4], delimiter: ' ' },
+        },
       },
       validators: {
-        iban: { validate: ({ value }) => isValidIban(value) || 'Check the IBAN.' }
-      }
+        iban: { validate: ({ value }) => isValidIban(value) || 'Check the IBAN.' },
+      },
     })
     await flush()
 
@@ -94,8 +94,8 @@ describe('formatter 3.2 regex and check digits in validators', () => {
     const api = form('profile', {
       formats: { birthday: { type: 'date', field: 'birthday', options: dateOptions } },
       validators: {
-        birthday: { pattern: { value: dateRule.pattern, message: dateRule.errorMessage } }
-      }
+        birthday: { pattern: { value: dateRule.pattern, message: dateRule.errorMessage } },
+      },
     })
     await flush()
 
@@ -120,9 +120,9 @@ describe('formatter 3.2 regex and check digits in validators', () => {
       validators: {
         price: {
           validate: ({ values }) =>
-            priceRule.pattern.test(String(values.price_displayed ?? '')) || priceRule.errorMessage
-        }
-      }
+            priceRule.pattern.test(String(values.price_displayed ?? '')) || priceRule.errorMessage,
+        },
+      },
     })
     await flush()
 

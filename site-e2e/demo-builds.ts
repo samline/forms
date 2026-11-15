@@ -8,9 +8,9 @@
  *   one module (the dist entry imports chunks and the optional
  *   @samline/formatter peer), mapped from the bare `@samline/forms` import.
  *
- * Paths are relative to the project root. Run `npm run build` first.
+ * Paths are relative to the project root. Run `bun run build` first.
  */
 export const localBuilds = {
-  iife: 'dist/browser/global.global.js' as string | null,
+  iife: 'dist/browser/forms.global.js' as string | null,
   esm: 'dist/index.js' as string | null,
 }

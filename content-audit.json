@@ -59,73 +59,73 @@
     ],
     "scenarios": [
       {
-        "name": "signup — validation",
+        "name": "signup \u2014 validation",
         "evidence": "required, pattern, minLength, sameAs, autoValidate:false, focus after a failed submit",
         "destination": "shared/i18n/translations/en/demo.ts",
         "reviewed": true
       },
       {
-        "name": "checkout — formatting",
+        "name": "checkout \u2014 formatting",
         "evidence": "formats option with phone, creditCard and numeral; raw hidden mirrors read through getData",
         "destination": "shared/i18n/translations/en/demo.ts",
         "reviewed": true
       },
       {
-        "name": "filters — auto-submit",
+        "name": "filters \u2014 auto-submit",
         "evidence": "autoSubmit debounce, select, tags[] checkboxes, FormData query string, prefill",
         "destination": "shared/i18n/translations/en/demo.ts",
         "reviewed": true
       },
       {
-        "name": "feedback — live state",
+        "name": "feedback \u2014 live state",
         "evidence": "subscribe isValid/filledFields, observe character count, reset after submit, [css-error][css-filled]",
         "destination": "shared/i18n/translations/en/demo.ts",
         "reviewed": true
       },
       {
-        "name": "username — server errors",
+        "name": "username \u2014 server errors",
         "evidence": "async onSubmit, isSubmitting, setErrors, manual errors cleared on change",
         "destination": "shared/i18n/translations/en/demo.ts",
         "reviewed": true
       },
       {
-        "name": "guests — repeated fields",
+        "name": "guests \u2014 repeated fields",
         "evidence": "guests[] with each rules, MutationObserver revalidation, addCleanup",
         "destination": "shared/i18n/translations/en/demo.ts",
         "reviewed": true
       },
       {
-        "name": "wizard — steps",
+        "name": "wizard \u2014 steps",
         "evidence": "validate([names]) per step, Back/Next, addCleanup for the step buttons",
         "destination": "shared/i18n/translations/en/demo.ts",
         "reviewed": true
       },
       {
-        "name": "delivery — conditional rules",
+        "name": "delivery \u2014 conditional rules",
         "evidence": "custom validate reading values with dependsOn and pattern",
         "destination": "shared/i18n/translations/en/demo.ts",
         "reviewed": true
       },
       {
-        "name": "order — numbers",
+        "name": "order \u2014 numbers",
         "evidence": "required, numeric, min, max and observe() for a live total",
         "destination": "shared/i18n/translations/en/demo.ts",
         "reviewed": true
       },
       {
-        "name": "preferences — all controls",
+        "name": "preferences \u2014 all controls",
         "evidence": "radio group, checkbox group with minLength, multiple select, required consent checkbox, getState().values shapes",
         "destination": "shared/i18n/translations/en/demo.ts",
         "reviewed": true
       },
       {
-        "name": "floating — custom attributes",
+        "name": "floating \u2014 custom attributes",
         "evidence": "attributes option renaming css-filled/css-error, floating labels with :has()",
         "destination": "shared/i18n/translations/en/demo.ts",
         "reviewed": true
       },
       {
-        "name": "summary — error summary",
+        "name": "summary \u2014 error summary",
         "evidence": "append() with atStart and class replacement, links via getField(), submitCount",
         "destination": "shared/i18n/translations/en/demo.ts",
         "reviewed": true
@@ -138,22 +138,22 @@
   },
   "themeReview": {
     "status": "verified",
-    "source": "Maintainer request, 2026-11-06: “el color de forms será azul celeste” (sky blue). Accessible pair derived with site:accent from #0ea5e9 / #38bdf8, darkened to Tailwind sky-700 for 4.5:1 on accent-tinted cards.",
+    "source": "Maintainer request, 2026-11-06: \u201cel color de forms ser\u00e1 azul celeste\u201d (sky blue). Accessible pair derived with site:accent from #0ea5e9 / #38bdf8, darkened to Tailwind sky-700 for 4.5:1 on accent-tinted cards.",
     "accentLight": "#0369a1",
     "accentDark": "#38bdf8"
   },
   "status": "verified",
-  "packageVersion": "2.11.1",
+  "packageVersion": "3.0.0",
   "sources": [
     {
       "source": "CHANGELOG.md",
-      "sha256": "e823dd909c210252ab4304a35c498119af1e61ecb445ba003116d8ea7970abbd",
+      "sha256": "49fc8318be9f02bf53b27e08089b70bd19c1ffee4dd75e8e40188c7f6bb6654f",
       "destination": "CHANGELOG.md",
       "reviewed": true
     },
     {
       "source": "README.md",
-      "sha256": "56f9e719cc0fca62538b9fe622f8d4ad8185b5a7e4cc2a194184df965781363d",
+      "sha256": "1c591ad52146b3a2dc4745e0ccacca64a3ab57aff511167fa8baee9f3624a3e5",
       "destination": "README.md",
       "reviewed": true
     },
@@ -565,7 +565,7 @@
     },
     {
       "source": "package.json",
-      "sha256": "59396eec2eb72eb95376fe8ee29b9793ee8b34a8c85801f65a5c2fbbfb962d51",
+      "sha256": "43a320cd45beba92f8ccedcb7ca17f9b1baf65a21e573777466a5ef29664b802",
       "destination": "docs/src/content/docs/reference/entrypoints.mdx",
       "reviewed": true
     },
@@ -577,49 +577,49 @@
     },
     {
       "source": "src/api/append.ts",
-      "sha256": "f7a875708fb143f5b5e6fee5dedb9ee756ea14ea7b7a6ad060d2c414de60dfae",
+      "sha256": "065e2a29acc8abae2ffde4d022d46e162760d1d56b30abe0dfdf732a342a0e7f",
       "destination": "docs/src/content/docs/api/append.md",
       "reviewed": true
     },
     {
       "source": "src/api/auto-submit.ts",
-      "sha256": "2f63fd8ac03c87d73833ce148f25edf2ebcc85e652b1ed8a1e3f6fd3c848d0b5",
+      "sha256": "9edc0d0fa94aa7f167ec7303490987bc6b90defe984f34c5b27ae6b0884624d1",
       "destination": "docs/src/content/docs/api/auto-submit.md",
       "reviewed": true
     },
     {
       "source": "src/api/clear-errors.ts",
-      "sha256": "e31a5f71e15128fe4bfb77ccaf53af36de510c643d123c7221d71e163c257c18",
+      "sha256": "c7bfddeb6c898603bc1539cc10493f990fbbeadf87f108da5768434447d63f72",
       "destination": "docs/src/content/docs/api/clear-errors.md",
       "reviewed": true
     },
     {
       "source": "src/api/destroy.ts",
-      "sha256": "31efc08792477bd9d734c648751b78aa117002127b91b27f6b187413885bda53",
+      "sha256": "99d7a1de76db8ee791ae69cae8d6757094ef9142318a4b9c7923d9343277af29",
       "destination": "docs/src/content/docs/api/destroy.md",
       "reviewed": true
     },
     {
       "source": "src/api/disable-auto-submit.ts",
-      "sha256": "301f319baacbb5f8c40e8c2f97cf6c767b5e1d4ea2b104a6e276279146423ab2",
+      "sha256": "4b136a041492595efb32d4217db61d166b983693bfdb90a868a4a92fedf3d3fa",
       "destination": "docs/src/content/docs/api/disable-auto-submit.md",
       "reviewed": true
     },
     {
       "source": "src/api/form.ts",
-      "sha256": "6543389d33ce2ccfc422e92fc7b36cc67c7e77c0a731251fe68abada0d9dfc23",
+      "sha256": "0e40d6a32efdf23da9590305f9a1988f2d4d0c16aee483942cc5031b673caf6a",
       "destination": "docs/src/content/docs/api/form.md",
       "reviewed": true
     },
     {
       "source": "src/api/format.ts",
-      "sha256": "38e0093455f27634f9617ed6c4cf260d7857452060a14c3fd9c262c3cfbb1b7a",
+      "sha256": "b34c122d4bab16e73763ec70fa9801047a8aeaa4060bcb43163886a3df51c1e6",
       "destination": "docs/src/content/docs/api/format.md",
       "reviewed": true
     },
     {
       "source": "src/api/get-data.ts",
-      "sha256": "ddb367e1f18ebcd7eb2d5a4b976eb99c539ec68308d9b24ba7adc25d45e42bea",
+      "sha256": "d3d85f0cba634ddf4bc94f8247d9d30d6c0c6797ff6fc7a4f325a82c942f96c0",
       "destination": "docs/src/content/docs/api/get-data.md",
       "reviewed": true
     },
@@ -631,19 +631,19 @@
     },
     {
       "source": "src/api/get-state.ts",
-      "sha256": "be9daf9ae96d7345be2cdc756f5092b4dc0b284ad0d734b85f1afb85e454fb4c",
+      "sha256": "66186f4dcf2806a5e52ec00f48b82a92570ec09afd8e9065ec0c2b104edb2da4",
       "destination": "docs/src/content/docs/api/get-state.md",
       "reviewed": true
     },
     {
       "source": "src/api/get-value.ts",
-      "sha256": "fc65dddbb7f683280b954489554c88b8e522d256c2fcfad68f5ee874ac02dbb1",
+      "sha256": "3ac8416076a94621a3556d20eae96f0393921f3f74e811f4b1e1f709cd7547f1",
       "destination": "docs/src/content/docs/api/get-value.md",
       "reviewed": true
     },
     {
       "source": "src/api/observe.ts",
-      "sha256": "463d3cd35c1f4331c7a9ec1810ef00b05462a345ab6ce09dddb43be1ff7aa3d4",
+      "sha256": "c5822274397f78fa28ca5ff62b4087dd2368bd8af1734b52bc0ff4270236baff",
       "destination": "docs/src/content/docs/api/observe.md",
       "reviewed": true
     },
@@ -661,13 +661,13 @@
     },
     {
       "source": "src/api/prefill.ts",
-      "sha256": "c59ef88275f3d00173a853a9268133e4e0f5e1e35e91c4f916febfda97d446cd",
+      "sha256": "1f596e80e166dea395879e55ad4a8da47a446ccd20bd8d3e9bdbdebe40197b93",
       "destination": "docs/src/content/docs/api/prefill.md",
       "reviewed": true
     },
     {
       "source": "src/api/reset.ts",
-      "sha256": "40ae305b83c0ce2b7bbf28463f129e04297fc39f7ec9cb0cf5b047f497b9dcbd",
+      "sha256": "aa7497da698e9ab61c6b29b6ab550f13a7ff96dd8734205afd897e1fbd805160",
       "destination": "docs/src/content/docs/api/reset.md",
       "reviewed": true
     },
@@ -679,7 +679,7 @@
     },
     {
       "source": "src/api/set-errors.ts",
-      "sha256": "364e6b0715f6f565f73d23f00dce78ff1583101862f66aa389abb508b3873bcd",
+      "sha256": "49cac7c654bb564b4ded3a27be9d8a6ae33c04ebcf6d6884ac1d68eb444908ee",
       "destination": "docs/src/content/docs/api/set-errors.md",
       "reviewed": true
     },
@@ -703,7 +703,7 @@
     },
     {
       "source": "src/api/unwatch.ts",
-      "sha256": "8ba3e4d6f64180a8897e95ae881dfde8a20991000e849a529e1d987811c40672",
+      "sha256": "85541bc7488b83c34c2bd98416b556eb6173b9cfe49a4aa33ab84aee3b3ad9d1",
       "destination": "docs/src/content/docs/api/unwatch.md",
       "reviewed": true
     },
@@ -721,55 +721,55 @@
     },
     {
       "source": "src/api/watch.ts",
-      "sha256": "b7749c101a2b85de6640e0f1214188f88397f702c8a498320dcdb87c68d4d15c",
+      "sha256": "3d3c119444bbb1016ab49b078bb9867870ac0d9c37872da9a43a99996d6ef850",
       "destination": "docs/src/content/docs/api/watch.md",
       "reviewed": true
     },
     {
       "source": "src/browser/global.ts",
-      "sha256": "0c7fb7f614561e3c09c4b5a9e280250761616e329a589b0a2ac7301748ac460a",
+      "sha256": "19ef5f827164f585796879a65c85de5e06b465013681c925d85dd60cc12212b6",
       "destination": "docs/src/content/docs/reference/browser.mdx",
       "reviewed": true
     },
     {
       "source": "src/browser/iife.ts",
       "destination": "docs/src/content/docs/reference/browser.mdx",
-      "sha256": "65ec1962c9fb2b8b4fd84e5fb6c9098544f081dbe74cbc2d56e6e5cfea5c2950",
+      "sha256": "2903e5a31199f9e82daedaa9c13da3b21c8eebc54a60518097437dc3628a0877",
       "reviewed": true
     },
     {
       "source": "src/browser/index.ts",
-      "sha256": "8eafdd785827a73bebc01bed7da11ffeede601b2f75d459ab43471af3104ae14",
+      "sha256": "474f86059d3b385420dde1a77423a3a4c819cdb813c92647102d970ad83d34e8",
       "destination": "docs/src/content/docs/reference/entrypoints.mdx",
       "reviewed": true
     },
     {
       "source": "src/browser/registry.ts",
-      "sha256": "ace3bc65af100c5e916be633d31acb4d74f296582563aa3d350a0f65886fc221",
+      "sha256": "716a5fdee4ed158f8de305515c0a10d890a89ed8b441ec63479d68fbcc8cdcd6",
       "destination": "docs/src/content/docs/reference/browser.mdx",
       "reviewed": true
     },
     {
       "source": "src/core/controller.ts",
-      "sha256": "2293ab440fd06aefdff36c5ce277c62ac6354305ae765978555f2fff63a8f961",
+      "sha256": "4bc43efadbe41fdfa30ff24f5daf14ed172788708fff3cdabac79b94253115a3",
       "destination": "docs/src/content/docs/reference/api.mdx",
       "reviewed": true
     },
     {
       "source": "src/core/dom.ts",
-      "sha256": "9108d3f195c4b63045cdb433f4f67dd69216978c423343cbe08fbb54e650ba81",
+      "sha256": "63faad068eebbc1845783a5407d03f5fea12573553380e3977c338f0f32a07a0",
       "destination": "docs/src/content/docs/guides/controls.mdx",
       "reviewed": true
     },
     {
       "source": "src/core/format-helpers.ts",
-      "sha256": "f3af1cf164d42952d07c33b67b885977dc358ff169eb1990c1ac6d1c940ac4b7",
+      "sha256": "f3edd32903c2929164ac6da56c7584fd752f5a4301d4630056c428de83802226",
       "destination": "docs/src/content/docs/guides/formatting.mdx",
       "reviewed": true
     },
     {
       "source": "src/core/formatter-loader.ts",
-      "sha256": "71dc256e404c82d0b4a6f005dcb5870d12895de0e9a0921fe5cd3536d91a087b",
+      "sha256": "4cad825c438e9641bdf5557d04efd9db3da3e1dd9ac7565a1c54e205202e4c8a",
       "destination": "docs/src/content/docs/guides/formatting.mdx",
       "reviewed": true
     },
@@ -781,37 +781,37 @@
     },
     {
       "source": "src/core/serialize.ts",
-      "sha256": "7a58efdda4ec260630373aada880d5b7604bba24a71e69386de570b1c518c0e9",
+      "sha256": "d4536eed11684a2b84b138ef64eb89941f127cab95223f39600849ad52b69920",
       "destination": "docs/src/content/docs/api/parse-form-data.md",
       "reviewed": true
     },
     {
       "source": "src/core/state.ts",
-      "sha256": "94cd446ba92864ca9f72f16cb7ec61c21c42ef1140f37b01a9490689d69960d3",
+      "sha256": "6135c668be22100128d372cabcc3909bf7141e03b57eefaa6320c5bfae2c7a18",
       "destination": "docs/src/content/docs/guides/state-and-submission.md",
       "reviewed": true
     },
     {
       "source": "src/core/types.ts",
-      "sha256": "8304cedbbfc28d54abf857f06146e1dba9e477d474e56a0b063a14e4c2438e5e",
+      "sha256": "8dbfa11171e1c20fe7dade9924164988448d770c21ae6d2983e8cc4d08085072",
       "destination": "docs/src/content/docs/reference/typescript.mdx",
       "reviewed": true
     },
     {
       "source": "src/core/validation.ts",
-      "sha256": "b0b743f98674ef289bb2328ddd8ee87041a57c24757f36e0bbfd34d5e2599836",
+      "sha256": "77731114b6bf130e2c05daea36b27354a3c4cb7278f5cb6255ab1afc1bc798af",
       "destination": "docs/src/content/docs/guides/validation.mdx",
       "reviewed": true
     },
     {
       "source": "src/index.ts",
-      "sha256": "546b420e4caa433ce4081637b1831372364371e6230be2d03d8394ad508b12f7",
+      "sha256": "6c6adb0ba8858f47cc5608f76a3d81b3254b460b1d1c3dd5abd4752d4bb1849e",
       "destination": "docs/src/content/docs/reference/api.mdx",
       "reviewed": true
     },
     {
       "source": "src/types/formatter.d.ts",
-      "sha256": "76dda40de8091c9612f4a43cb615b33012f05924783744b6b365072809756a87",
+      "sha256": "e29eb8d0c268ef4693bf0ea26351057e7a26473f73ec45838fa88545394b6560",
       "destination": "docs/src/content/docs/reference/regex.mdx",
       "reviewed": true
     }

@@ -4,8 +4,7 @@
 import type { FormControllerHelpers, FormControllerState } from '../core/state'
 
 export const createDisableAutoSubmit =
-  (state: FormControllerState, helpers: FormControllerHelpers) =>
-  () => {
+  (state: FormControllerState, helpers: FormControllerHelpers) => () => {
     state.autoSubmitEnabled = false
     if (state.autoSubmitTimer) {
       clearTimeout(state.autoSubmitTimer)

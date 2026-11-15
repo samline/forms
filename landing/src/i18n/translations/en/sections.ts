@@ -268,7 +268,7 @@ export default {
       cdn: {
         question: text('Can I use it without a bundler?'),
         answer: text(
-          'Load dist/browser/global.global.js from a CDN or your own server. It defines window.Forms with form, newForm, destroyForm and available, and it already includes the formatter.'
+          'Load dist/browser/forms.global.js from a CDN or your own server. It defines window.Forms with form, newForm, destroyForm and available, and it already includes the formatter.'
         ),
       },
       formatter: {

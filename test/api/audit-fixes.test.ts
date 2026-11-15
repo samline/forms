@@ -110,7 +110,7 @@ describe('2.8.0 audit regressions', () => {
 
   it('focuses the first invalid control in document order', () => {
     const api = form('audit-form', {
-      validators: { email: { required: true }, name: { required: true } }
+      validators: { email: { required: true }, name: { required: true } },
     })
     api.element!.dispatchEvent(new Event('submit', { cancelable: true }))
 
@@ -120,7 +120,7 @@ describe('2.8.0 audit regressions', () => {
   it('does not move focus when an automatic submit is invalid', () => {
     const api = form('audit-form', {
       autoSubmit: true,
-      validators: { email: { required: true } }
+      validators: { email: { required: true } },
     })
     const name = api.getField('name') as HTMLInputElement
     name.focus()
@@ -166,7 +166,10 @@ describe('destroyed controllers', () => {
     api.destroy()
     finish()
     await flush()
-    api.setErrors({ user: ['Taken.'] }).setValue('user', 'x').validate()
+    api
+      .setErrors({ user: ['Taken.'] })
+      .setValue('user', 'x')
+      .validate()
 
     const field = document.querySelector('input')!
     expect(field.hasAttribute('css-error')).toBe(false)

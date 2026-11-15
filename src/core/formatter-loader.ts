@@ -128,14 +128,10 @@ export const __resetFormatterLoaderForTests = (): void => {
 // Test-only helper: inject a formatter implementation directly,
 // bypassing the dynamic import. Pass `null` to simulate the
 // "peer not installed" branch.
-export const __setFormatterModuleForTests = (
-  module: FormatterModule | null
-): void => {
+export const __setFormatterModuleForTests = (module: FormatterModule | null): void => {
   state = { status: 'resolved', module }
 }
 
-export const __setFormatterPromiseForTests = (
-  promise: Promise<FormatterModule | null>
-): void => {
+export const __setFormatterPromiseForTests = (promise: Promise<FormatterModule | null>): void => {
   state = { status: 'pending', promise }
 }

@@ -5,7 +5,7 @@ import {
   __resetFormatterLoaderForTests,
   __setFormatterModuleForTests,
   __setFormatterPromiseForTests,
-  type FormatterModule
+  type FormatterModule,
 } from '../../src/core/formatter-loader'
 
 const buildFixture = () => {
@@ -22,15 +22,17 @@ const buildFixture = () => {
 
 const phoneFormatter: FormatterModule = {
   format: (value, _type, _options) => {
-    const digits = String(value ?? '').replace(/\D/g, '').slice(0, 10)
+    const digits = String(value ?? '')
+      .replace(/\D/g, '')
+      .slice(0, 10)
     const formatted =
       digits.length > 6
         ? `${digits.slice(0, 2)} ${digits.slice(2, 6)} ${digits.slice(6)}`
         : digits.length > 2
-        ? `${digits.slice(0, 2)} ${digits.slice(2)}`
-        : digits
+          ? `${digits.slice(0, 2)} ${digits.slice(2)}`
+          : digits
     return { formatted, raw: digits, type: 'phone' }
-  }
+  },
 }
 
 const numeralFormatter: FormatterModule = {
@@ -39,17 +41,19 @@ const numeralFormatter: FormatterModule = {
     const formatted = digits
       ? Number(digits).toLocaleString('en-US', {
           minimumFractionDigits: 0,
-          maximumFractionDigits: 2
+          maximumFractionDigits: 2,
         })
       : ''
     return { formatted, raw: digits, type: 'numeral' }
-  }
+  },
 }
 
 // Deterministic DD/MM/YYYY fixture for caret tests.
 const dateFormatter: FormatterModule = {
   format: (value, _type, _options) => {
-    const digits = String(value ?? '').replace(/\D/g, '').slice(0, 8)
+    const digits = String(value ?? '')
+      .replace(/\D/g, '')
+      .slice(0, 8)
     let formatted = digits
     if (digits.length > 4) {
       formatted = `${digits.slice(0, 2)}/${digits.slice(2, 4)}/${digits.slice(4)}`
@@ -57,7 +61,7 @@ const dateFormatter: FormatterModule = {
       formatted = `${digits.slice(0, 2)}/${digits.slice(2)}`
     }
     return { formatted, raw: digits, type: 'date' }
-  }
+  },
 }
 
 const flush = () => new Promise<void>(resolve => setTimeout(resolve, 0))
@@ -82,12 +86,8 @@ describe('format() integration', () => {
     api.format({ type: 'phone', field: 'phone' })
 
     const formElement = document.getElementById('checkout-form') as HTMLFormElement
-    const visible = formElement.querySelector<HTMLInputElement>(
-      'input[name="phone_displayed"]'
-    )
-    const mirror = formElement.querySelector<HTMLInputElement>(
-      'input[type="hidden"][name="phone"]'
-    )
+    const visible = formElement.querySelector<HTMLInputElement>('input[name="phone_displayed"]')
+    const mirror = formElement.querySelector<HTMLInputElement>('input[type="hidden"][name="phone"]')
 
     expect(visible).not.toBeNull()
     expect(mirror).not.toBeNull()
@@ -105,8 +105,8 @@ describe('format() integration', () => {
     await flush()
 
     expect(visible.value).toBe('55 1234 5678')
-    expect((api.getValue('phone') as string)).toBe('5512345678')
-    expect((api.getValue('phone_displayed') as string)).toBe('55 1234 5678')
+    expect(api.getValue('phone') as string).toBe('5512345678')
+    expect(api.getValue('phone_displayed') as string).toBe('55 1234 5678')
   })
 
   it('restores matching visible and canonical defaults on reset', async () => {
@@ -213,7 +213,7 @@ describe('format() integration', () => {
     api.formatAll({
       type: 'numeral',
       field: ['card', 'amount'],
-      displayField: 'shared'
+      displayField: 'shared',
     })
     await flush()
 
@@ -336,16 +336,12 @@ describe('format() integration', () => {
     await flush()
 
     const formElement = document.getElementById('checkout-form') as HTMLFormElement
-    expect(
-      formElement.querySelector('input[data-formatter-raw-for="phone"]')
-    ).not.toBeNull()
+    expect(formElement.querySelector('input[data-formatter-raw-for="phone"]')).not.toBeNull()
     expect(formElement.querySelector('input[name="phone_displayed"]')).not.toBeNull()
 
     api.destroy()
 
-    expect(
-      formElement.querySelector('input[data-formatter-raw-for="phone"]')
-    ).toBeNull()
+    expect(formElement.querySelector('input[data-formatter-raw-for="phone"]')).toBeNull()
     // The visible's name is restored so the form goes back to the
     // developer's authored state.
     expect(formElement.querySelector('input[name="phone"]')).not.toBeNull()
@@ -426,8 +422,8 @@ describe('format() integration', () => {
     __setFormatterModuleForTests(phoneFormatter)
     const api = form('checkout-form', {
       formats: {
-        phone: { type: 'phone', field: 'phone' }
-      }
+        phone: { type: 'phone', field: 'phone' },
+      },
     })
 
     const visible = api.getField('phone_displayed') as HTMLInputElement
@@ -465,14 +461,9 @@ describe('format() integration', () => {
 
   const dispatchDeletion = (
     field: HTMLInputElement,
-    inputType:
-      | 'deleteContentBackward'
-      | 'deleteContentForward'
-      | 'deleteWordBackward'
+    inputType: 'deleteContentBackward' | 'deleteContentForward' | 'deleteWordBackward'
   ) => {
-    field.dispatchEvent(
-      new InputEvent('input', { bubbles: true, inputType })
-    )
+    field.dispatchEvent(new InputEvent('input', { bubbles: true, inputType }))
   }
 
   it('pulls the caret back past a delimiter after deleteContentBackward removes the digit immediately after it', async () => {
@@ -617,7 +608,7 @@ describe('format() integration', () => {
       format: value => {
         const v = String(value ?? '').replace(/\s/g, '')
         return { formatted: `[${type}]${v}`, raw: `${type}:${v}`, type }
-      }
+      },
     })
     const router: FormatterModule = {
       format: (value, type, options) => {
@@ -625,7 +616,7 @@ describe('format() integration', () => {
         if (type === 'date') return stamp('date').format(value, type, options)
         if (type === 'general') return stamp('general').format(value, type, options)
         return { formatted: String(value), raw: String(value), type: String(type) }
-      }
+      },
     }
     __setFormatterModuleForTests(router)
 
@@ -635,32 +626,45 @@ describe('format() integration', () => {
     // the easytrip registration form.
     api.format({ type: 'phone', field: 'phone', options: { country: 'MX' } })
     api.format({ type: 'date', field: 'birth_date', options: { datePattern: ['d', 'm', 'Y'] } })
-    api.format({ type: 'general', field: 'tag_number', options: { blocks: [8, 1], prefix: 'EASY' } })
+    api.format({
+      type: 'general',
+      field: 'tag_number',
+      options: { blocks: [8, 1], prefix: 'EASY' },
+    })
     await flush()
 
     const formElement = document.getElementById('multi-format-form') as HTMLFormElement
 
     // Type into each field and verify the right formatter ran.
-    const phoneVisible = formElement.querySelector<HTMLInputElement>('input[name="phone_displayed"]')!
+    const phoneVisible = formElement.querySelector<HTMLInputElement>(
+      'input[name="phone_displayed"]'
+    )!
     phoneVisible.value = '5512345678'
     phoneVisible.dispatchEvent(new Event('input', { bubbles: true }))
     await flush()
-    expect(formElement.querySelector<HTMLInputElement>('input[name="phone"]')?.value)
-      .toBe('phone:5512345678')
+    expect(formElement.querySelector<HTMLInputElement>('input[name="phone"]')?.value).toBe(
+      'phone:5512345678'
+    )
 
-    const bdVisible = formElement.querySelector<HTMLInputElement>('input[name="birth_date_displayed"]')!
+    const bdVisible = formElement.querySelector<HTMLInputElement>(
+      'input[name="birth_date_displayed"]'
+    )!
     bdVisible.value = '25122026'
     bdVisible.dispatchEvent(new Event('input', { bubbles: true }))
     await flush()
-    expect(formElement.querySelector<HTMLInputElement>('input[name="birth_date"]')?.value)
-      .toBe('date:25122026')
+    expect(formElement.querySelector<HTMLInputElement>('input[name="birth_date"]')?.value).toBe(
+      'date:25122026'
+    )
 
-    const tagVisible = formElement.querySelector<HTMLInputElement>('input[name="tag_number_displayed"]')!
+    const tagVisible = formElement.querySelector<HTMLInputElement>(
+      'input[name="tag_number_displayed"]'
+    )!
     tagVisible.value = '12345678'
     tagVisible.dispatchEvent(new Event('input', { bubbles: true }))
     await flush()
-    expect(formElement.querySelector<HTMLInputElement>('input[name="tag_number"]')?.value)
-      .toBe('general:12345678')
+    expect(formElement.querySelector<HTMLInputElement>('input[name="tag_number"]')?.value).toBe(
+      'general:12345678'
+    )
   })
 
   // === visual attributes land on the visible, not the hidden ===
@@ -682,9 +686,7 @@ describe('format() integration', () => {
     await flush()
 
     const formElement = document.getElementById('checkout-form') as HTMLFormElement
-    const visible = formElement.querySelector<HTMLInputElement>(
-      'input[name="phone_displayed"]'
-    )!
+    const visible = formElement.querySelector<HTMLInputElement>('input[name="phone_displayed"]')!
     const hidden = formElement.querySelector<HTMLInputElement>(
       'input[type="hidden"][name="phone"]'
     )!
@@ -706,9 +708,7 @@ describe('format() integration', () => {
     await flush()
 
     const formElement = document.getElementById('checkout-form') as HTMLFormElement
-    const visible = formElement.querySelector<HTMLInputElement>(
-      'input[name="phone_displayed"]'
-    )!
+    const visible = formElement.querySelector<HTMLInputElement>('input[name="phone_displayed"]')!
     const hidden = formElement.querySelector<HTMLInputElement>(
       'input[type="hidden"][name="phone"]'
     )!
@@ -722,7 +722,7 @@ describe('format() integration', () => {
   it('keeps css-filled on the visible for non-formatted fields (regression guard)', async () => {
     // No format() call — the field has no mirror.
     const api = form('checkout-form', {
-      autoValidate: true
+      autoValidate: true,
     })
 
     const formElement = document.getElementById('checkout-form') as HTMLFormElement
@@ -756,15 +756,13 @@ describe('format() integration', () => {
     __setFormatterModuleForTests(phoneFormatter)
     const api = form('checkout-form', {
       autoValidate: true,
-      validators: { phone: { pattern: /^\d{10}$/ } }
+      validators: { phone: { pattern: /^\d{10}$/ } },
     })
     api.format({ type: 'phone', field: 'phone' })
     await flush()
 
     const formElement = document.getElementById('checkout-form') as HTMLFormElement
-    const visible = formElement.querySelector<HTMLInputElement>(
-      'input[name="phone_displayed"]'
-    )!
+    const visible = formElement.querySelector<HTMLInputElement>('input[name="phone_displayed"]')!
     const hidden = formElement.querySelector<HTMLInputElement>(
       'input[type="hidden"][name="phone"]'
     )!
@@ -781,15 +779,13 @@ describe('format() integration', () => {
     __setFormatterModuleForTests(phoneFormatter)
     const api = form('checkout-form', {
       autoValidate: true,
-      validators: { phone: { pattern: /^\d{10}$/ } }
+      validators: { phone: { pattern: /^\d{10}$/ } },
     })
     api.format({ type: 'phone', field: 'phone' })
     await flush()
 
     const formElement = document.getElementById('checkout-form') as HTMLFormElement
-    const visible = formElement.querySelector<HTMLInputElement>(
-      'input[name="phone_displayed"]'
-    )!
+    const visible = formElement.querySelector<HTMLInputElement>('input[name="phone_displayed"]')!
     const hidden = formElement.querySelector<HTMLInputElement>(
       'input[type="hidden"][name="phone"]'
     )!
@@ -805,15 +801,13 @@ describe('format() integration', () => {
     __setFormatterModuleForTests(phoneFormatter)
     const api = form('checkout-form', {
       autoValidate: true,
-      validators: { phone: { pattern: /^\d{10}$/ } }
+      validators: { phone: { pattern: /^\d{10}$/ } },
     })
     api.format({ type: 'phone', field: 'phone' })
     await flush()
 
     const formElement = document.getElementById('checkout-form') as HTMLFormElement
-    const visible = formElement.querySelector<HTMLInputElement>(
-      'input[name="phone_displayed"]'
-    )!
+    const visible = formElement.querySelector<HTMLInputElement>('input[name="phone_displayed"]')!
     const hidden = formElement.querySelector<HTMLInputElement>(
       'input[type="hidden"][name="phone"]'
     )!
@@ -832,9 +826,7 @@ describe('format() integration', () => {
     await flush()
 
     const formElement = document.getElementById('checkout-form') as HTMLFormElement
-    const visible = formElement.querySelector<HTMLInputElement>(
-      'input[name="phone_displayed"]'
-    )!
+    const visible = formElement.querySelector<HTMLInputElement>('input[name="phone_displayed"]')!
     const hidden = formElement.querySelector<HTMLInputElement>(
       'input[type="hidden"][name="phone"]'
     )!
@@ -852,9 +844,7 @@ describe('format() integration', () => {
     await flush()
 
     const formElement = document.getElementById('checkout-form') as HTMLFormElement
-    const visible = formElement.querySelector<HTMLInputElement>(
-      'input[name="phone_displayed"]'
-    )!
+    const visible = formElement.querySelector<HTMLInputElement>('input[name="phone_displayed"]')!
     const hidden = formElement.querySelector<HTMLInputElement>(
       'input[type="hidden"][name="phone"]'
     )!
@@ -872,9 +862,7 @@ describe('format() integration', () => {
     await flush()
 
     const formElement = document.getElementById('checkout-form') as HTMLFormElement
-    const visible = formElement.querySelector<HTMLInputElement>(
-      'input[name="phone_displayed"]'
-    )!
+    const visible = formElement.querySelector<HTMLInputElement>('input[name="phone_displayed"]')!
     const hidden = formElement.querySelector<HTMLInputElement>(
       'input[type="hidden"][name="phone"]'
     )!
@@ -908,15 +896,13 @@ describe('format() integration', () => {
 
     const api = form('checkout-form', {
       autoValidate: true,
-      validators: { phone: { pattern: /^\d{10}$/ } }
+      validators: { phone: { pattern: /^\d{10}$/ } },
     })
     api.format({ type: 'phone', field: 'phone' })
     await flush()
     api.validate()
 
-    const visible = formElement.querySelector<HTMLInputElement>(
-      'input[name="phone_displayed"]'
-    )!
+    const visible = formElement.querySelector<HTMLInputElement>('input[name="phone_displayed"]')!
     const hidden = formElement.querySelector<HTMLInputElement>(
       'input[type="hidden"][name="phone"]'
     )!
@@ -929,8 +915,8 @@ describe('format() integration', () => {
     __setFormatterModuleForTests(phoneFormatter)
     const api = form('checkout-form', {
       validators: {
-        phone: { each: { pattern: /^\d{10}$/ } }
-      }
+        phone: { each: { pattern: /^\d{10}$/ } },
+      },
     })
     api.format({ type: 'phone', field: 'phone' })
     await flush()
@@ -938,9 +924,7 @@ describe('format() integration', () => {
     api.setValue('phone', '123')
 
     const formElement = document.getElementById('checkout-form') as HTMLFormElement
-    const visible = formElement.querySelector<HTMLInputElement>(
-      'input[name="phone_displayed"]'
-    )!
+    const visible = formElement.querySelector<HTMLInputElement>('input[name="phone_displayed"]')!
     const hidden = formElement.querySelector<HTMLInputElement>(
       'input[type="hidden"][name="phone"]'
     )!
@@ -993,7 +977,9 @@ describe('format() integration', () => {
       format: (value, _type, options) => {
         const opts = (options ?? {}) as { interpretInputAs?: 'raw' | 'display' | 'auto' }
         record(value, options)
-        const digits = String(value ?? '').replace(/\D/g, '').slice(0, 8)
+        const digits = String(value ?? '')
+          .replace(/\D/g, '')
+          .slice(0, 8)
         const interpretAs =
           opts.interpretInputAs === 'auto' || opts.interpretInputAs === undefined
             ? interpretAuto(digits, String(value ?? ''), opts)
@@ -1005,7 +991,7 @@ describe('format() integration', () => {
             return {
               formatted: `${digits.slice(6, 8)}/${digits.slice(4, 6)}/${digits.slice(0, 4)}`,
               raw: digits,
-              type: 'date'
+              type: 'date',
             }
           }
           return { formatted: digits, raw: digits, type: 'date' }
@@ -1018,18 +1004,18 @@ describe('format() integration', () => {
           return {
             formatted: `${digits.slice(0, 2)}/${digits.slice(2, 4)}/${digits.slice(4, 8)}`,
             raw: `${digits.slice(4, 8)}${digits.slice(2, 4)}${digits.slice(0, 2)}`,
-            type: 'date'
+            type: 'date',
           }
         }
         if (digits.length === 6) {
           return {
             formatted: `${digits.slice(0, 2)}/${digits.slice(2, 4)}/${digits.slice(4)}`,
             raw: `${digits.slice(4)}${digits.slice(2, 4)}${digits.slice(0, 2)}`,
-            type: 'date'
+            type: 'date',
           }
         }
         return { formatted: digits, raw: digits, type: 'date' }
-      }
+      },
     }
     return { formatter, calls }
   }
@@ -1052,15 +1038,13 @@ describe('format() integration', () => {
         datePattern: ['d', 'm', 'Y'],
         delimiter: '/',
         dateRawPattern: ['Y', 'm', 'd'],
-        dateRawPatternDelimiter: ''
-      }
+        dateRawPatternDelimiter: '',
+      },
     })
     await flush()
 
     const formElement = document.getElementById('birthday-form') as HTMLFormElement
-    const visible = formElement.querySelector<HTMLInputElement>(
-      'input[name="birthday_displayed"]'
-    )!
+    const visible = formElement.querySelector<HTMLInputElement>('input[name="birthday_displayed"]')!
     const hidden = formElement.querySelector<HTMLInputElement>(
       'input[type="hidden"][name="birthday"]'
     )!
@@ -1102,8 +1086,8 @@ describe('format() integration', () => {
         datePattern: ['d', 'm', 'Y'],
         delimiter: '/',
         dateRawPattern: ['Y', 'm', 'd'],
-        dateRawPatternDelimiter: ''
-      }
+        dateRawPatternDelimiter: '',
+      },
     })
     await flush()
 
@@ -1112,9 +1096,7 @@ describe('format() integration', () => {
     // `interpretInputAs: 'raw'` — what the user types is in
     // display order, and forcing 'raw' would scramble the digits.
     const formElement = document.getElementById('birthday-form') as HTMLFormElement
-    const visible = formElement.querySelector<HTMLInputElement>(
-      'input[name="birthday_displayed"]'
-    )!
+    const visible = formElement.querySelector<HTMLInputElement>('input[name="birthday_displayed"]')!
     visible.value = '13/12/1990'
     visible.dispatchEvent(new Event('input', { bubbles: true }))
     await flush()
@@ -1122,8 +1104,7 @@ describe('format() integration', () => {
     // The visible stays in display order, the hidden gets the Ymd.
     expect(visible.value).toBe('13/12/1990')
     expect(
-      formElement.querySelector<HTMLInputElement>('input[type="hidden"][name="birthday"]')!
-        .value
+      formElement.querySelector<HTMLInputElement>('input[type="hidden"][name="birthday"]')!.value
     ).toBe('19901213')
 
     // The listener declares the visible field's display-order
@@ -1154,28 +1135,26 @@ describe('format() integration', () => {
         datePattern: ['d', 'm', 'Y'],
         delimiter: '/',
         dateRawPattern: ['Y', 'm', 'd'],
-        dateRawPatternDelimiter: ''
-      }
+        dateRawPatternDelimiter: '',
+      },
     })
     await flush()
 
     const formElement = document.getElementById('paste-form') as HTMLFormElement
-    const visible = formElement.querySelector<HTMLInputElement>(
-      'input[name="birthday_displayed"]'
-    )!
+    const visible = formElement.querySelector<HTMLInputElement>('input[name="birthday_displayed"]')!
     visible.value = '12121990'
     visible.dispatchEvent(new Event('input', { bubbles: true }))
     await flush()
 
     expect(visible.value).toBe('12/12/1990')
     expect(
-      formElement.querySelector<HTMLInputElement>('input[type="hidden"][name="birthday"]')!
-        .value
+      formElement.querySelector<HTMLInputElement>('input[type="hidden"][name="birthday"]')!.value
     ).toBe('19901212')
     expect(
-      (calls[calls.length - 1]?.options as
-        | { interpretInputAs?: 'raw' | 'display' | 'auto' }
-        | undefined)?.interpretInputAs
+      (
+        calls[calls.length - 1]?.options as
+          { interpretInputAs?: 'raw' | 'display' | 'auto' } | undefined
+      )?.interpretInputAs
     ).toBe('display')
   })
 
@@ -1197,8 +1176,8 @@ describe('format() integration', () => {
         datePattern: ['d', 'm', 'Y'],
         delimiter: '/',
         dateRawPattern: ['Y', 'm', 'd'],
-        dateRawPatternDelimiter: ''
-      }
+        dateRawPatternDelimiter: '',
+      },
     })
     await flush()
 
@@ -1253,15 +1232,13 @@ describe('format() integration', () => {
         delimiter: '/',
         dateRawPattern: ['Y', 'm', 'd'],
         dateRawPatternDelimiter: '',
-        interpretInputAs: 'display'
-      }
+        interpretInputAs: 'display',
+      },
     })
     await flush()
 
     const formElement = document.getElementById('display-form') as HTMLFormElement
-    const visible = formElement.querySelector<HTMLInputElement>(
-      'input[name="birthday_displayed"]'
-    )!
+    const visible = formElement.querySelector<HTMLInputElement>('input[name="birthday_displayed"]')!
 
     // Initial pass with display interpretation: the visible value
     // "12/12/1990" is passed through and the raw Ymd is extracted.
@@ -1297,8 +1274,8 @@ describe('format() integration', () => {
         datePattern: ['d', 'm', 'Y'],
         delimiter: '/',
         dateRawPattern: ['Y', 'm', 'd'],
-        dateRawPatternDelimiter: ''
-      }
+        dateRawPatternDelimiter: '',
+      },
     })
     await flush()
 
@@ -1315,8 +1292,8 @@ describe('format() integration', () => {
         datePattern: ['d', 'm', 'Y'],
         delimiter: '/',
         dateRawPattern: ['Y', 'm', 'd'],
-        dateRawPatternDelimiter: ''
-      }
+        dateRawPatternDelimiter: '',
+      },
     })
     await flush()
 

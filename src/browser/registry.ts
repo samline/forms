@@ -7,11 +7,7 @@
 // source of truth for the registry helpers.
 
 import { form } from '../api/form'
-import type {
-  FormController,
-  FormControllerOptions,
-  FormTarget
-} from '../core/types'
+import type { FormController, FormControllerOptions, FormTarget } from '../core/types'
 
 export interface NewFormInput {
   id: string
@@ -23,10 +19,7 @@ export interface FormsAvailable {
 }
 
 export interface FormsApi {
-  form: (
-    target: FormTarget,
-    options?: FormControllerOptions
-  ) => FormController
+  form: (target: FormTarget, options?: FormControllerOptions) => FormController
   newForm: (input: NewFormInput) => FormController | undefined
   destroyForm: (id: string) => void
   available: FormsAvailable
@@ -64,5 +57,5 @@ export const browser: FormsApi = {
   form,
   newForm,
   destroyForm,
-  available
+  available,
 }

@@ -1,0 +1,28 @@
+# Managed by package-landing-docs (family/templates/package). Edit there, then run node family/scripts/sync.mjs.
+# pnpm settings for this package and its website (landing, docs, shared).
+
+packages:
+  - landing
+  - docs
+  - shared
+
+# Fresh @samline releases install right away; every other version waits pnpm's
+# minimumReleaseAge before it can be installed.
+minimumReleaseAgeExclude:
+  - '@samline/*'
+
+# Dependencies allowed to run install scripts. Everything else is blocked.
+allowBuilds:
+  esbuild: true
+
+# Repository overrides (kept by sync): patched transitive versions for the
+# website toolchain and tsup (esbuild GHSA-g7r4-m6w7-qqqr).
+overrides:
+  esbuild: ^0.28.1
+  nanoid: ^3.3.18
+  postcss: ^8.5.23
+  vite: ^8.3.4
+  undici: ^8.12.2
+  source-map-js: ^1.2.2
+  parse5: ^8.1.0
+  '@emnapi/runtime': 1.11.3

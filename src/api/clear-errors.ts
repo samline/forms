@@ -5,8 +5,7 @@
 import type { FormControllerHelpers, FormControllerState } from '../core/state'
 
 export const createClearErrors =
-  (state: FormControllerState, helpers: FormControllerHelpers) =>
-  (fields?: string[]) => {
+  (state: FormControllerState, helpers: FormControllerHelpers) => (fields?: string[]) => {
     if (state.isDestroyed) return state.api!
     if (!fields) {
       state.manualErrors = {}

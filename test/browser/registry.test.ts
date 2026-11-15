@@ -70,13 +70,11 @@ describe('browser singleton', () => {
   })
 
   it('newForm logs an error and returns undefined when id is missing', () => {
-    const errorSpy = vi
-      .spyOn(console, 'error')
-      .mockImplementation(() => undefined)
+    const errorSpy = vi.spyOn(console, 'error').mockImplementation(() => undefined)
 
     const result = browser.newForm({
       id: '',
-      options: { validators: { name: { required: true } } }
+      options: { validators: { name: { required: true } } },
     })
 
     expect(result).toBeUndefined()
@@ -89,15 +87,15 @@ describe('browser singleton', () => {
       id: 'contact-form',
       options: {
         autoValidate: false,
-        validators: { name: { required: true } }
-      }
+        validators: { name: { required: true } },
+      },
     })
 
     expect(controller).toBeDefined()
     if (!controller) throw new Error('expected controller')
     expect(controller.options.autoValidate).toBe(false)
     expect(controller.options.validators).toEqual({
-      name: { required: true }
+      name: { required: true },
     })
   })
 
@@ -113,9 +111,7 @@ describe('browser singleton', () => {
   })
 
   it('destroyForm logs an error when id is missing', () => {
-    const errorSpy = vi
-      .spyOn(console, 'error')
-      .mockImplementation(() => undefined)
+    const errorSpy = vi.spyOn(console, 'error').mockImplementation(() => undefined)
 
     browser.destroyForm('')
 
@@ -123,15 +119,11 @@ describe('browser singleton', () => {
   })
 
   it('destroyForm warns when the id is not registered', () => {
-    const warnSpy = vi
-      .spyOn(console, 'warn')
-      .mockImplementation(() => undefined)
+    const warnSpy = vi.spyOn(console, 'warn').mockImplementation(() => undefined)
 
     browser.destroyForm('ghost-form')
 
-    expect(warnSpy).toHaveBeenCalledWith(
-      'Form with ID ghost-form not found'
-    )
+    expect(warnSpy).toHaveBeenCalledWith('Form with ID ghost-form not found')
   })
 
   it('spread into a custom global keeps newForm / destroyForm / available', () => {
@@ -154,10 +146,7 @@ describe('browser singleton', () => {
     browser.newForm({ id: 'contact-form' })
     browser.newForm({ id: 'login-form' })
 
-    expect(Object.keys(browser.available).sort()).toEqual([
-      'contact-form',
-      'login-form'
-    ])
+    expect(Object.keys(browser.available).sort()).toEqual(['contact-form', 'login-form'])
 
     browser.destroyForm('contact-form')
     expect(Object.keys(browser.available)).toEqual(['login-form'])

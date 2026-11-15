@@ -16,9 +16,9 @@ The package exposes separate surfaces for module consumers and script-tag consum
 | --------------------- | ------------------------------------------------- | ---------------------------- | ----------------------------------------------- |
 | ESM or TypeScript app | `import { form } from '@samline/forms'`           | None                         | Optional peer must be installed for formatting. |
 | CommonJS app          | `const { form } = require('@samline/forms')`      | None                         | Optional peer must be installed for formatting. |
-| Registry module       | `import Forms from '@samline/forms/browser'`      | Installs `globalThis.Forms`. | Optional peer must be installed for formatting. |
+| Registry module       | `import * as Forms from '@samline/forms/browser'` | Installs `globalThis.Forms`. | Optional peer must be installed for formatting. |
 | Registry CommonJS     | `const Forms = require('@samline/forms/browser')` | Installs `globalThis.Forms`. | Optional peer must be installed for formatting. |
-| No bundler / CDN      | Load `dist/browser/global.global.js`              | Installs `window.Forms`.     | Formatter is bundled.                           |
+| No bundler / CDN      | Load `dist/browser/forms.global.js`               | Installs `window.Forms`.     | Formatter is bundled.                           |
 
 ## Root entrypoint
 
@@ -51,7 +51,7 @@ Type exports from this subpath are `FormsApi`, `FormsAvailable`, and `NewFormInp
 ## Standalone IIFE
 
 ```html
-<script src="https://unpkg.com/@samline/forms@2.11.1/dist/browser/global.global.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/@samline/forms@3.0.0/dist/browser/forms.global.js"></script>
 <script>
   const contact = window.Forms.newForm({ id: 'contact-form' })
 </script>

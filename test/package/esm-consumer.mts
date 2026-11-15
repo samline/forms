@@ -1,4 +1,5 @@
-import Forms, { newForm } from '@samline/forms/browser'
+import * as Forms from '@samline/forms/browser'
+import { newForm } from '@samline/forms/browser'
 import type { FormDataPrimitive, FormFieldWatcher } from '@samline/forms'
 
 const primitive: FormDataPrimitive = 'value'

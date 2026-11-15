@@ -1,6 +1,6 @@
 {
   "name": "@samline/forms",
-  "version": "2.11.1",
+  "version": "3.0.0",
   "description": "TypeScript-first, framework-free form controller with validation, reactive state, serialization, auto-submit, and input formatting.",
   "keywords": [
     "forms",
@@ -30,6 +30,7 @@
   "sideEffects": [
     "./dist/browser/index.js",
     "./dist/browser/index.cjs",
+    "./dist/browser/forms.global.js",
     "./dist/browser/global.global.js"
   ],
   "files": [
@@ -61,37 +62,44 @@
       }
     },
     "./browser/global": {
-      "default": "./dist/browser/global.global.js"
-    }
+      "default": "./dist/browser/forms.global.js"
+    },
+    "./package.json": "./package.json"
   },
   "scripts": {
     "clean": "rm -rf dist coverage",
     "build": "tsup --config tsup.config.ts",
     "dev": "tsup --config tsup.config.ts --watch",
-    "pack:check": "npm pack --dry-run",
+    "pack:check": "pnpm pack --dry-run",
     "typecheck": "tsc --noEmit",
     "test": "vitest run",
     "test:coverage": "vitest run --coverage",
     "test:package": "node scripts/test-package.mjs && tsc -p tsconfig.package.json",
     "test:watch": "vitest",
-    "prepublishOnly": "npm run clean && npm run build && npm run typecheck && npm test && npm run test:package",
+    "prepublishOnly": "bun run clean && bun run build && bun run typecheck && bun run test && bun run test:package",
     "site:dev": "node site-tools/assets.mjs && node site-tools/dev.mjs",
-    "site:build": "node site-tools/assets.mjs && npm --workspace docs run build && npm --workspace landing run build && node site-tools/assemble.mjs && node site-tools/check-site.mjs",
+    "site:build": "node site-tools/assets.mjs && bun run --cwd docs build && bun run --cwd landing build && node site-tools/assemble.mjs && node site-tools/check-site.mjs",
     "site:preview": "node site-tools/preview.mjs",
-    "site:check": "node site-tools/check-config.mjs && npm run site:check:design && npm --workspace landing run check && npm --workspace docs run check",
+    "site:check": "node site-tools/check-config.mjs && bun run site:check:design && bun run --cwd landing check && bun run --cwd docs check",
     "site:format": "prettier --plugin prettier-plugin-astro --write landing docs/src docs/scripts shared site-tools site-tests site-e2e skills playwright.site.config.ts project.config.json content-audit.json design-reference.json SITE.md --ignore-path .site-prettierignore",
     "site:format:check": "prettier --plugin prettier-plugin-astro --check landing docs/src docs/scripts shared site-tools site-tests site-e2e skills playwright.site.config.ts project.config.json content-audit.json design-reference.json SITE.md --ignore-path .site-prettierignore",
     "site:test": "node --test site-tests/*.test.mjs",
     "site:test:browser": "playwright test --config playwright.site.config.ts",
-    "site:verify": "npm run site:check && npm run site:format:check && npm run site:test && npm run site:test:adaptation && npm run site:build && npm run site:check:identity && npm run site:check:content && npm run site:test:browser",
+    "site:verify": "bun run site:check && bun run site:format:check && bun run site:test && bun run site:test:adaptation && bun run site:build && bun run site:check:identity && bun run site:check:content && bun run site:test:browser",
     "site:configure": "node site-tools/configure.mjs",
-    "site:check:release": "npm run site:check:identity && node site-tools/check-release.mjs",
+    "site:check:release": "bun run site:check:identity && node site-tools/check-release.mjs",
     "site:check:content": "node site-tools/check-content.mjs",
     "site:migrate:starlight": "node site-tools/migrate-starlight.mjs",
     "site:accent": "node site-tools/accent-pair.mjs",
     "site:test:adaptation": "node site-tools/test-adaptation.mjs",
     "site:check:design": "node site-tools/check-design.mjs",
-    "site:check:identity": "node site-tools/check-identity.mjs"
+    "site:check:identity": "node site-tools/check-identity.mjs",
+    "format": "prettier --write .",
+    "format:check": "prettier --check .",
+    "test:e2e": "playwright test",
+    "size": "node scripts/check-size.mjs",
+    "check": "bun run format:check && bun run typecheck && bun run test:coverage && bun run build && bun run size && bun run test:package && bun run test:e2e",
+    "release": "bun run check && pnpm publish"
   },
   "peerDependencies": {
     "@samline/formatter": "^2.1.0 || ^3.0.0"
@@ -101,22 +109,13 @@
       "optional": true
     }
   },
-  "overrides": {
-    "esbuild": "^0.28.1",
-    "nanoid": "^3.3.18",
-    "postcss": "^8.5.23",
-    "vite": "^8.3.4",
-    "undici": "^8.12.2",
-    "source-map-js": "^1.2.2",
-    "parse5": "^8.1.0",
-    "@emnapi/runtime": "1.11.3"
-  },
   "devDependencies": {
     "@playwright/test": "1.62.1",
     "@samline/formatter": "^3.2.0",
     "@types/node": "^26.6.2",
     "@vitest/coverage-v8": "^5.0.1",
     "axe-core": "^4.14.0",
+    "esbuild": "^0.28.2",
     "jsdom": "^30.1.0",
     "prettier": "^3.9.10",
     "prettier-plugin-astro": "^1.1.1",
@@ -125,10 +124,12 @@
     "vite": "^8.3.4",
     "vitest": "^5.0.1"
   },
-  "workspaces": [
-    "landing",
-    "docs",
-    "shared"
-  ],
-  "packageManager": "bun@1.4.4"
+  "packageManager": "pnpm@12.9.1",
+  "unpkg": "./dist/browser/forms.global.js",
+  "jsdelivr": "./dist/browser/forms.global.js",
+  "size": {
+    "dist/index.js": 9500,
+    "dist/browser/index.js": 9450,
+    "dist/browser/forms.global.js": 55750
+  }
 }

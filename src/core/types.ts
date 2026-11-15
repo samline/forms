@@ -128,17 +128,10 @@ export interface FormStateSnapshot {
 
 export type FormStateListener = (state: FormStateSnapshot) => void
 
-export type FormFieldElement =
-  | HTMLInputElement
-  | HTMLSelectElement
-  | HTMLTextAreaElement
+export type FormFieldElement = HTMLInputElement | HTMLSelectElement | HTMLTextAreaElement
 
 export type FormTarget =
-  | string
-  | HTMLFormElement
-  | { current: HTMLFormElement | null }
-  | null
-  | undefined
+  string | HTMLFormElement | { current: HTMLFormElement | null } | null | undefined
 
 export interface AppendContentOptions {
   tag: keyof HTMLElementTagNameMap

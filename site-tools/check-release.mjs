@@ -66,7 +66,7 @@ const problems = await checkContent({
   audit,
 })
 if (problems.length) console.error(problems.map(problem => `✗ ${problem}`).join('\n'))
-assert.equal(problems.length, 0, 'Fix the content findings above (run npm run site:build first).')
+assert.equal(problems.length, 0, 'Fix the content findings above (run bun run site:build first).')
 console.log(
-  'Release evidence is complete. Run npm run verify and manually review claims and copied examples.'
+  'Release evidence is complete. Run bun run verify and manually review claims and copied examples.'
 )

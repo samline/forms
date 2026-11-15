@@ -163,7 +163,7 @@ export async function configure(args = process.argv.slice(2)) {
   })
   if (!values.package)
     throw new Error(
-      'Usage: npm run configure -- --package ../your-package --site-url https://owner.github.io/your-package/'
+      'Usage: bun run configure --package ../your-package --site-url https://owner.github.io/your-package/'
     )
   const current = JSON.parse(await readFile(join(root, 'project.config.json'), 'utf8'))
   if (!current.site.template && !values.force)
