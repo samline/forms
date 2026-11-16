@@ -228,8 +228,8 @@ importers:
         specifier: ^3.7.4
         version: 3.7.5
       '@samline/drawer':
-        specifier: 5.1.2
-        version: 5.1.2
+        specifier: 6.0.0
+        version: 6.0.0
       '@tailwindcss/vite':
         specifier: 4.3.0
         version: 4.3.0(vite@8.3.8(@types/node@26.6.6)(esbuild@0.28.2)(jiti@2.7.0)(yaml@2.9.1))
@@ -265,8 +265,8 @@ importers:
         specifier: ^2.6.2
         version: 2.6.2
       '@samline/drawer':
-        specifier: 5.1.2
-        version: 5.1.2
+        specifier: 6.0.0
+        version: 6.0.0
       '@tailwindcss/vite':
         specifier: 4.3.0
         version: 4.3.0(vite@8.3.8(@types/node@26.6.6)(esbuild@0.28.2)(jiti@2.7.0)(yaml@2.9.1))
@@ -1435,8 +1435,8 @@ packages:
     cpu: [x64]
     os: [win32]
 
-  '@samline/drawer@5.1.2':
-    resolution: {integrity: sha512-sTjWF80KRLWNmphkhpddAC4s93LKcQBSn/+gn89NxEbmjgGCSEwbif5fWlDpyBl3tqG3afKvt6RBIJwh2MI+pw==}
+  '@samline/drawer@6.0.0':
+    resolution: {integrity: sha512-PoKQbEpaNkFD3oY8XL8HXhv0rfHV+G0iJm+5ClOKZveLZ4WwAFAwk29ts0JwVgEqEHGnIKwmnbbbuX907QdnJQ==}
     engines: {node: '>=20'}
 
   '@samline/formatter@3.3.0':
@@ -4310,7 +4310,7 @@ snapshots:
   '@rollup/rollup-win32-x64-msvc@4.68.3':
     optional: true
 
-  '@samline/drawer@5.1.2': {}
+  '@samline/drawer@6.0.0': {}
 
   '@samline/formatter@3.3.0':
     dependencies:
