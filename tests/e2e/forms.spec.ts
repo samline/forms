@@ -61,3 +61,17 @@ test('the bundled formatter formats input in the classic script', async ({ load 
   await expect(page.getByLabel('Amount')).toHaveValue('1,234,567')
   await expect(page.locator('input[type="hidden"][name="amount"]')).toHaveValue('1234567')
 })
+
+test('the bundled formatter 3.3.0 transliterates slugs with charMap', async ({ load }) => {
+  const page = await load(`<form id="post"><label>Slug <input name="slug"></label></form>`, 'forms')
+  await page.evaluate(() =>
+    (window as any).Forms.form('post').format({
+      type: 'slug',
+      field: 'slug',
+      options: { charMap: 'cyrillic', preserve: '.' },
+    })
+  )
+  await page.getByLabel('Slug').pressSequentially('Привет v1.2')
+  await expect(page.getByLabel('Slug')).toHaveValue('privet-v1.2')
+  await expect(page.locator('input[type="hidden"][name="slug"]')).toHaveValue('privet-v1.2')
+})

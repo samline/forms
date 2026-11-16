@@ -180,8 +180,8 @@ importers:
         specifier: 1.62.1
         version: 1.62.1
       '@samline/formatter':
-        specifier: ^3.2.0
-        version: 3.2.1
+        specifier: ^3.3.0
+        version: 3.3.0
       '@types/node':
         specifier: ^26.6.2
         version: 26.6.6
@@ -1439,8 +1439,8 @@ packages:
     resolution: {integrity: sha512-sTjWF80KRLWNmphkhpddAC4s93LKcQBSn/+gn89NxEbmjgGCSEwbif5fWlDpyBl3tqG3afKvt6RBIJwh2MI+pw==}
     engines: {node: '>=20'}
 
-  '@samline/formatter@3.2.1':
-    resolution: {integrity: sha512-DZHODOCMrdUfv03tRxCiJMsQyVfFJkcSIOu0aMCZvk6L76VsGhiwObnev+s23SiDzTxLQMhzukmdD/50oltgcQ==}
+  '@samline/formatter@3.3.0':
+    resolution: {integrity: sha512-ImR33Wnyj8CiA0VC8zxec55M4W2pQnfeq7VQqF4rOUxciqrDMgac4R/yLUwdNFjJw3kTlWvBUmxevNihDBKSFA==}
     engines: {node: '>=20'}
 
   '@shikijs/core@4.6.0':
@@ -4312,7 +4312,7 @@ snapshots:
 
   '@samline/drawer@5.1.2': {}
 
-  '@samline/formatter@3.2.1':
+  '@samline/formatter@3.3.0':
     dependencies:
       libphonenumber-js: 1.13.16
 

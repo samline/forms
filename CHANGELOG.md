@@ -11,6 +11,7 @@ All notable changes to `@samline/forms` are documented in this file. The format 
 
 ### Changed
 
+- The standalone script bundles `@samline/formatter` 3.3.0: `slug` formats take `charMap` (Cyrillic, Greek and German presets or your own map) and `preserve`, and casing keeps decomposed accents inside their word.
 - Installs with pnpm and runs every script with Bun, with the @samline family CI, Prettier settings and gzip budgets for each public entry.
 - CDN examples use pinned jsDelivr URLs.
 

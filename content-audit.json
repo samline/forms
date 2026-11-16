@@ -59,73 +59,73 @@
     ],
     "scenarios": [
       {
-        "name": "signup \u2014 validation",
+        "name": "signup — validation",
         "evidence": "required, pattern, minLength, sameAs, autoValidate:false, focus after a failed submit",
         "destination": "shared/i18n/translations/en/demo.ts",
         "reviewed": true
       },
       {
-        "name": "checkout \u2014 formatting",
+        "name": "checkout — formatting",
         "evidence": "formats option with phone, creditCard and numeral; raw hidden mirrors read through getData",
         "destination": "shared/i18n/translations/en/demo.ts",
         "reviewed": true
       },
       {
-        "name": "filters \u2014 auto-submit",
+        "name": "filters — auto-submit",
         "evidence": "autoSubmit debounce, select, tags[] checkboxes, FormData query string, prefill",
         "destination": "shared/i18n/translations/en/demo.ts",
         "reviewed": true
       },
       {
-        "name": "feedback \u2014 live state",
+        "name": "feedback — live state",
         "evidence": "subscribe isValid/filledFields, observe character count, reset after submit, [css-error][css-filled]",
         "destination": "shared/i18n/translations/en/demo.ts",
         "reviewed": true
       },
       {
-        "name": "username \u2014 server errors",
+        "name": "username — server errors",
         "evidence": "async onSubmit, isSubmitting, setErrors, manual errors cleared on change",
         "destination": "shared/i18n/translations/en/demo.ts",
         "reviewed": true
       },
       {
-        "name": "guests \u2014 repeated fields",
+        "name": "guests — repeated fields",
         "evidence": "guests[] with each rules, MutationObserver revalidation, addCleanup",
         "destination": "shared/i18n/translations/en/demo.ts",
         "reviewed": true
       },
       {
-        "name": "wizard \u2014 steps",
+        "name": "wizard — steps",
         "evidence": "validate([names]) per step, Back/Next, addCleanup for the step buttons",
         "destination": "shared/i18n/translations/en/demo.ts",
         "reviewed": true
       },
       {
-        "name": "delivery \u2014 conditional rules",
+        "name": "delivery — conditional rules",
         "evidence": "custom validate reading values with dependsOn and pattern",
         "destination": "shared/i18n/translations/en/demo.ts",
         "reviewed": true
       },
       {
-        "name": "order \u2014 numbers",
+        "name": "order — numbers",
         "evidence": "required, numeric, min, max and observe() for a live total",
         "destination": "shared/i18n/translations/en/demo.ts",
         "reviewed": true
       },
       {
-        "name": "preferences \u2014 all controls",
+        "name": "preferences — all controls",
         "evidence": "radio group, checkbox group with minLength, multiple select, required consent checkbox, getState().values shapes",
         "destination": "shared/i18n/translations/en/demo.ts",
         "reviewed": true
       },
       {
-        "name": "floating \u2014 custom attributes",
+        "name": "floating — custom attributes",
         "evidence": "attributes option renaming css-filled/css-error, floating labels with :has()",
         "destination": "shared/i18n/translations/en/demo.ts",
         "reviewed": true
       },
       {
-        "name": "summary \u2014 error summary",
+        "name": "summary — error summary",
         "evidence": "append() with atStart and class replacement, links via getField(), submitCount",
         "destination": "shared/i18n/translations/en/demo.ts",
         "reviewed": true
@@ -138,7 +138,7 @@
   },
   "themeReview": {
     "status": "verified",
-    "source": "Maintainer request, 2026-11-06: \u201cel color de forms ser\u00e1 azul celeste\u201d (sky blue). Accessible pair derived with site:accent from #0ea5e9 / #38bdf8, darkened to Tailwind sky-700 for 4.5:1 on accent-tinted cards.",
+    "source": "Maintainer request, 2026-11-06: “el color de forms será azul celeste” (sky blue). Accessible pair derived with site:accent from #0ea5e9 / #38bdf8, darkened to Tailwind sky-700 for 4.5:1 on accent-tinted cards.",
     "accentLight": "#0369a1",
     "accentDark": "#38bdf8"
   },
@@ -147,7 +147,7 @@
   "sources": [
     {
       "source": "CHANGELOG.md",
-      "sha256": "49fc8318be9f02bf53b27e08089b70bd19c1ffee4dd75e8e40188c7f6bb6654f",
+      "sha256": "0e9c5d0c098fc91621c1b210799169c761e49785b4402690d96d57a2b47c4a42",
       "destination": "CHANGELOG.md",
       "reviewed": true
     },
@@ -565,7 +565,7 @@
     },
     {
       "source": "package.json",
-      "sha256": "43a320cd45beba92f8ccedcb7ca17f9b1baf65a21e573777466a5ef29664b802",
+      "sha256": "5595619ce8c49de853fac1dbd0f8c517170771bcbeb74b82155f26e2184f5f6e",
       "destination": "docs/src/content/docs/reference/entrypoints.mdx",
       "reviewed": true
     },
