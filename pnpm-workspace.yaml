@@ -26,3 +26,10 @@ overrides:
   source-map-js: ^1.2.2
   parse5: ^8.1.0
   '@emnapi/runtime': 1.11.3
+
+# picomatch <=4.0.7 (GHSA-fc5q-39xc-vjpf, ReDoS) reaches only the website build
+# through astro > unstorage > anymatch and has no fixed release yet. Remove this
+# once picomatch ships a fix and the lockfile picks it up.
+auditConfig:
+  ignoreGhsas:
+    - GHSA-fc5q-39xc-vjpf
