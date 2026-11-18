@@ -16,6 +16,23 @@
       "sourceType": "autoskills-registry",
       "computedHash": "a4e6516a601f72ffd8bcd0d64609e8ba724d2ce92569a059a6890a5caadf072b"
     },
+    "modern-web-guidance": {
+      "source": "GoogleChrome/modern-web-guidance",
+      "commit": "64a6d708f5a43f2cd3fde5d4d7db3905ba1bdf65",
+      "sourceType": "github",
+      "skillPath": "skills/modern-web-guidance/SKILL.md",
+      "computedHash": "d9f3ceba8b5c77b12ae6f852932a349843ce086d03ce76ab5e2257e7e5acd16d"
+    },
+    "nodejs-backend-patterns": {
+      "source": "wshobson/agents",
+      "sourceType": "autoskills-registry",
+      "computedHash": "ec099fc7d7ece12e8a89c24b12eff36f27dd243db15c5a70f3df8406ec9c738e"
+    },
+    "nodejs-best-practices": {
+      "source": "sickn33/antigravity-awesome-skills",
+      "sourceType": "autoskills-registry",
+      "computedHash": "2c543ab51c9c4093c8a94aa615f39ca55d93835816aeeaa5bbd89261d85c584c"
+    },
     "playwright-best-practices": {
       "source": "currents-dev/playwright-best-practices-skill",
       "sourceType": "autoskills-registry",
@@ -34,7 +51,7 @@
     "typescript-advanced-types": {
       "source": "wshobson/agents",
       "sourceType": "autoskills-registry",
-      "computedHash": "5ca0e177c6aaaba1889255691224daafdb7d71f317cc70bede1590d3907ded42"
+      "computedHash": "cb5d18bc19191b388cc49c15ff98dcbc714fa343373d078be00833e8a18ef291"
     },
     "vite": {
       "source": "antfu/skills",
@@ -44,7 +61,7 @@
     "vitest": {
       "source": "antfu/skills",
       "sourceType": "autoskills-registry",
-      "computedHash": "be7329a28a492b802061206c2d75603ab294f25f541bc5421d5de8d41abe68b1"
+      "computedHash": "bbb3d22f611fb721b9b475f014b323882732dc3f724e0f3de229c38795d77e8f"
     }
   }
 }
