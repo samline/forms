@@ -1,81 +1,33 @@
-# AGENTS
+# @samline/forms
 
-## Main Instruction
+TypeScript-first, framework-free form controller with validation, reactive state, serialization, auto-submit, and input formatting.
 
-Before starting any task in this repository, the AI must first read `.agents/agent-index.md`.
+Package memory: decisions and lessons specific to this package. Family rules are in the block below. `.agents/documentation.md` holds the documentation checklist for public API changes and releases.
 
-That file acts as the master index of the project's internal instructions and defines which other documents in `.agents/` should be reviewed based on the type of work.
+## Package lessons
 
-## Mandatory Reading Rule
-
-When starting a new conversation or a new task inside this repository, the AI must follow this order strictly:
-
-1. **Graph Query (MCP):** Whenever the agent needs to see files, the directory structure, or any element of the project, it must first use the `codebase-memory-mcp` MCP to get the information from the graph.
-2. Read `.agents/agent-index.md`.
-3. Determine the type of task.
-4. Read the additional internal documents that `.agents/agent-index.md` points to for that context.
-
----
-
-## Available Internal Documents
-
-The AI must use `.agents/agent-index.md` as the entry point to locate and review, when applicable:
-
-1. `.agents/package-replication-guide.md`
-2. `.agents/deploy-and-release-guide.md`
-3. `.agents/todo.md`
-4. `.agents/lessons.md`
-5. `.agents/new-project.md`
-
----
-
-## Interpretation Rule
-
-The files inside `.agents/` are internal instructions for the AI, not public documentation of the package.
-
-The AI must treat them as operational context of the project.
-
-> **Critical Git Note (updated 2026-07-13):** `AGENTS.md` and `.agents/` **are versioned** and appear in git. They are only excluded from the published npm tarball via `.npmignore`. The old convention of keeping them out of Git is deprecated.
-
----
-
-## Minimum Cases
-
-### General task
-
-1. Query the graph with `codebase-memory-mcp`.
-2. Read `.agents/agent-index.md`.
-3. If applicable, review `.agents/todo.md` and `.agents/lessons.md`.
-
-### New package or new scaffold
-
-1. Query the graph with `codebase-memory-mcp`.
-2. Read `.agents/agent-index.md`, `.agents/package-replication-guide.md`, `.agents/new-project.md`, `.agents/todo.md` and `.agents/lessons.md`.
-
-### Release, deploy, or publish
-
-1. Query the graph with `codebase-memory-mcp`.
-2. Read `.agents/agent-index.md`, `.agents/deploy-and-release-guide.md`, `.agents/todo.md` and `.agents/lessons.md`.
-
----
-
-## Agent skills and memory location
-
-Agents, Claude included, store and read project skills and memory in `.agents/`. Skills are created and edited only in `.agents/skills/`. `.claude/skills` is a tracked relative symlink to `../.agents/skills` because Claude Code loads project skills only from `.claude/skills/`; never keep a second copy there. On Windows, clone with `git config core.symlinks true`.
-
----
-
-## Persistence Rule
-
-If the user adds new internal rules, todos, or lessons, the AI must keep the corresponding documents inside `.agents/` updated.
-
-If during a session the AI saves context in the chat session memory and that content corresponds to an internal rule, a todo, a lesson, or an operational preference of the project, it must also persist it in the appropriate file in `.agents/` to keep coherence if the session is cleared.
-
-The AI must also preserve the current convention: `AGENTS.md` and `.agents/` are versioned in git but excluded from the published npm tarball.
-
----
-
----
+- Test published ESM, CJS, browser-module, and IIFE artifacts; source-level tests do not detect export-condition or global-name failures.
+- Treat formatted visible inputs and hidden canonical mirrors as one state unit, including reset and destroy paths.
+- HTML controls associated through `form="id"` belong to `form.elements` even when they are outside the form subtree.
+- A single user action must enter the delegated pipeline once; use `input` consistently instead of combining `input` and `change`.
+- Keep browser side-effect entrypoints listed in `package.json#sideEffects`.
+- Validate release lockfiles with an empty package-manager cache; cached tarballs can hide dependencies withdrawn from the registry.
+- Resolve cross-field validation dependencies as an iterative graph traversal with a visited set; do not create reciprocal watchers or recursively dispatch validation events.
+- Keep public field errors serializable and stable; retain per-element ownership in controller state instead of exposing live DOM nodes through snapshots.
+- Synchronize visual filled state independently from validation activation so `autoValidate: false` does not leave prefilled controls visually stale.
+- Review related dependency updates as one compatibility set; action runtimes, documentation frameworks, Node engines, and custom theme selectors can require coordinated changes.
+- A `MutationObserver` that reacts to every child mutation loops when a subscriber renders markup into the observed form; filter records to the mutations that actually touch form controls.
+- `requestSubmit()` dispatches `submit` synchronously: a flag set around it tells the handler the submit was automatic, so it must not steal focus.
+- The `reset` event fires before the browser restores defaults, and microtasks can run in between for user-initiated resets; defer the state pass to the next task.
+- Destroyed controllers must ignore late calls: async submit handlers commonly settle after their owner is gone and would otherwise repaint a reused form.
+- tsup's `globalName` assigns the entry module's namespace; an entry with `export default` leaks a `default` key into `window.Forms`. The IIFE uses its own named-export entry (`src/browser/iife.ts`).
+- Compare the rendered header and footer with a published sibling at 1024 and 1440 pixels, not only the source: a template breakpoint change hid the header's GitHub and Get started actions while every check passed.
+- Shared `Field` must apply `type` after spreading attributes; a duplicated `type` attribute keeps the first value, which showed passwords as text.
+- Docs examples show each preview with its code (`<Playground preset showCode />`); never send readers to the landing to copy code.
+- `validate()` does not notify subscribers: render messages from its returned `errors` when calling it outside a submit.
+- npm rejects an override of a direct dependency unless its specifier matches the direct dependency exactly; keep both Vite ranges aligned and verify with test:package after changing tooling overrides.
+- `<option>` / `<optgroup>` are not form controls, so the field-only `MutationObserver` filter ignored option-list changes and a select's value could change silently. Option mutations are tracked separately against a per-select selection snapshot; api methods that rewrite options call `commitOwnMutations` so the observer does not process them twice.
+- Prettier only owns the paths listed in `site:format`. Never run it over `src/`, `test/` or `README.md`: it rewrites unrelated union types and signatures in the runtime source.
 
 ## Documentation must be in sync before pushing
 
@@ -177,6 +129,7 @@ This block is synced from the template that owns the family conventions ([packag
 - `bun run check` must pass: format, typecheck, unit tests with coverage thresholds, build, size budgets, e2e in Chromium, Firefox and WebKit.
 - README is the package guide and the site's source of truth; public text in English. Any public API change updates tests, README, docs, examples and `skills/<name>/SKILL.md` together.
 - Releases: Keep a Changelog entry for every user-facing change, semver, pinned CDN URLs bumped before release. Publishing is manual (`bun run release` by the maintainer); CI never publishes; no `--provenance`.
+- Public repository: no dated reports, handoff notes, transcripts or client names; private notes go in the ignored `.local/`. Site examples with state offer Reset; icons are SVG, never Unicode glyphs.
 - Never add AI attribution to commits, tags or pull requests.
 
 <!-- samline:family:end -->

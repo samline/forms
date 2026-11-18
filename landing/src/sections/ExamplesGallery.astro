@@ -1,4 +1,5 @@
 ---
+import Icon from '../../../shared/components/Icon.astro'
 import Box from '../../../shared/components/Box.astro'
 import Section from '../../../shared/components/Section.astro'
 import PageTitle from '../../../shared/components/PageTitle.astro'
@@ -31,11 +32,11 @@ const columns = count <= 4 ? count : count % 4 === 0 ? 4 : count % 3 === 0 ? 3 :
     <div class:list={['gallery-actions']}>
       <Button context="hero" href={`#${presetIds[0]}`} variant="primary">
         {t.exploreAction}
-        <span aria-hidden="true">↓</span>
+        <Icon name="arrow-down" size="1em" weight={2} />
       </Button>
       <Button context="hero" href={`${project.docsBase}getting-started/`} variant="secondary">
         {t.installAction}
-        <span aria-hidden="true">↗</span>
+        <Icon name="arrow-right" size="1em" weight={2} />
       </Button>
     </div>
     <p class:list={['accessibility']}>{t.accessibility}</p>
@@ -51,7 +52,7 @@ const columns = count <= 4 ? count : count % 4 === 0 ? 4 : count % 3 === 0 ? 3 :
         {presetIds.map(key => (
           <Button variant="secondary" href={`#${key}`} class:list={['recipe-link']}>
             {scenarios[key].tab}
-            <span aria-hidden="true">↓</span>
+            <Icon name="arrow-down" size="1em" weight={2} />
           </Button>
         ))}
       </nav>

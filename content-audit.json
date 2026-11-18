@@ -654,12 +654,6 @@
       "reviewed": true
     },
     {
-      "source": "src/api/parse-form-data.ts",
-      "sha256": "ebe08d0171fd6957305bc30e7f7ce4894d00f66db935136f43dcf479669407a9",
-      "destination": "docs/src/content/docs/api/parse-form-data.md",
-      "reviewed": true
-    },
-    {
       "source": "src/api/prefill.ts",
       "sha256": "1f596e80e166dea395879e55ad4a8da47a446ccd20bd8d3e9bdbdebe40197b93",
       "destination": "docs/src/content/docs/api/prefill.md",
@@ -705,12 +699,6 @@
       "source": "src/api/unwatch.ts",
       "sha256": "85541bc7488b83c34c2bd98416b556eb6173b9cfe49a4aa33ab84aee3b3ad9d1",
       "destination": "docs/src/content/docs/api/unwatch.md",
-      "reviewed": true
-    },
-    {
-      "source": "src/api/validate-values.ts",
-      "sha256": "3a0cf0f270a473e4820f40d7c1e21a24dc99552d8450a090718b5fefbb81c3d4",
-      "destination": "docs/src/content/docs/api/validate-values.md",
       "reviewed": true
     },
     {

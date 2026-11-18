@@ -3,12 +3,12 @@ name: forms
 description: Add validation, reactive state, serialization, auto-submit and optional input formatting to native HTML forms with @samline/forms, in plain pages, CMS templates or framework components. Use for Forms installation, rules, error messages, submission, lifecycle and formatting; not for other form libraries or repository maintenance.
 metadata:
   package: '@samline/forms'
-  package-version: '2.11.1'
+  package-version: '3.0.0'
 ---
 
 # Forms
 
-Build against the installed `@samline/forms` version. This skill describes v2.11.1. Check the dependency version and exports before applying it to another release, and read `CHANGELOG.md` when upgrading. Keep the host's markup, components and styling: the package adds a controller to a native `<form>`; it never renders inputs or messages.
+Build against the installed `@samline/forms` version. This skill describes v3.0.0. Check the dependency version and exports before applying it to another release, and read `CHANGELOG.md` when upgrading. Keep the host's markup, components and styling: the package adds a controller to a native `<form>`; it never renders inputs or messages.
 
 ## Choose loading, then keep the controller
 
