@@ -3,7 +3,7 @@
 // listeners, validators, and visual state run as if a user typed.
 
 import type { FormControllerHelpers, FormControllerState } from '../core/state'
-import { writeFieldValue } from '../core/dom'
+import { writeFieldValue } from '../vanilla/dom'
 
 export const createSetValue =
   (state: FormControllerState, helpers: FormControllerHelpers) =>

@@ -7,7 +7,7 @@ import {
   FORMATTER_RAW_ATTRIBUTE,
   renameVisibleField,
   restoreVisibleName,
-} from '../core/format-helpers'
+} from '../vanilla/format-helpers'
 import { loadFormatter } from '../core/formatter-loader'
 import type { FormControllerHelpers, FormControllerState } from '../core/state'
 

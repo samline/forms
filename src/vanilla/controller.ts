@@ -34,7 +34,7 @@ import { createUnwatch } from '../api/unwatch'
 import { createValidate } from '../api/validate'
 import { createWatch } from '../api/watch'
 import { validateFieldValueDetailed } from '../core/validation'
-import { parseFormData } from './serialize'
+import { parseFormData } from '../core/serialize'
 import {
   applyBooleanAttribute,
   clearAttributes,
@@ -47,7 +47,7 @@ import {
   submitForm,
   writeFieldValue,
 } from './dom'
-import { cloneErrors, mergeErrors } from './state'
+import { cloneErrors, mergeErrors } from '../core/state'
 import type {
   FormController,
   FormControllerOptions,
@@ -56,8 +56,8 @@ import type {
   FormTarget,
   ValidationResult,
   VisualAttributes,
-} from './types'
-import type { FormControllerHelpers, FormControllerState } from './state'
+} from '../core/types'
+import type { FormControllerHelpers, FormControllerState } from '../core/state'
 
 const DEFAULT_ATTRIBUTES: Required<VisualAttributes> = {
   filled: 'css-filled',
@@ -253,7 +253,7 @@ export const createFormController = (
     }
   }
 
-  // readFieldValue/writeFieldValue are exported from core/dom for direct
+  // readFieldValue/writeFieldValue are exported from vanilla/dom for direct
   // callers; referenced here so the linter keeps them as part of the
   // controlled API surface.
   void readFieldValue

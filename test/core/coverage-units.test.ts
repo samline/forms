@@ -7,9 +7,9 @@ import {
   resolveFormElement,
   submitForm,
   writeFieldValue,
-} from '../../src/core/dom'
+} from '../../src/vanilla/dom'
 import { validateFieldValue, validateFieldValueDetailed } from '../../src/core/validation'
-import { createFormController } from '../../src/core/controller'
+import { createFormController } from '../../src/vanilla/controller'
 import type { FormFieldElement } from '../../src/core/types'
 
 const html = (markup: string) => {
@@ -288,7 +288,7 @@ describe('controller events', () => {
   })
 
   it('finds formatter fields without CSS.escape', async () => {
-    const { getFormatterField, findVisibleField } = await import('../../src/core/format-helpers')
+    const { getFormatterField, findVisibleField } = await import('../../src/vanilla/format-helpers')
     vi.stubGlobal('CSS', undefined)
     const form = html('<form><input name="email[primary]"><input name="a.b_displayed"></form>')
     expect(getFormatterField(form, 'email[primary]')).toBe(form.elements[0])

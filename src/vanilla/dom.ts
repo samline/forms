@@ -1,7 +1,7 @@
 // Low-level DOM helpers used by the controller orchestrator and by api
 // methods that need direct DOM access. Pure: no controller state.
 
-import type { FormFieldElement, FormFieldValue, FormTarget } from './types'
+import type { FormFieldElement, FormFieldValue, FormTarget } from '../core/types'
 
 const isFormFieldElement = (value: Element): value is FormFieldElement =>
   value instanceof HTMLInputElement ||

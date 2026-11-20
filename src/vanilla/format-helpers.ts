@@ -16,7 +16,7 @@
 // The helpers here are pure DOM utilities — they do not know about the
 // controller state.
 
-import type { FormFieldElement } from './types'
+import type { FormFieldElement } from '../core/types'
 
 /**
  * Marks a hidden input as the raw mirror of a formatted field.

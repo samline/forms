@@ -4,7 +4,7 @@
 
 import type { FormControllerHelpers, FormControllerState } from '../core/state'
 import type { FormFieldValue } from '../core/types'
-import { readFieldValue } from '../core/dom'
+import { readFieldValue } from '../vanilla/dom'
 
 export const createGetValue =
   (state: FormControllerState, helpers: FormControllerHelpers) =>

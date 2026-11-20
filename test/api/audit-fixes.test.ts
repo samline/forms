@@ -1,7 +1,7 @@
 import { beforeEach, describe, expect, it, vi } from 'vitest'
 
 import { form } from '../../src/api/form'
-import { applyFormattedValue } from '../../src/core/format-helpers'
+import { applyFormattedValue } from '../../src/vanilla/format-helpers'
 
 const flush = () => new Promise<void>(resolve => setTimeout(resolve, 0))
 const microtasks = () => new Promise<void>(resolve => queueMicrotask(resolve))

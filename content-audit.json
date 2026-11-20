@@ -738,20 +738,20 @@
       "reviewed": true
     },
     {
-      "source": "src/core/controller.ts",
-      "sha256": "4bc43efadbe41fdfa30ff24f5daf14ed172788708fff3cdabac79b94253115a3",
+      "source": "src/vanilla/controller.ts",
+      "sha256": "3711485fd2d8a3d09f6631300bb9bfff84c30cabf214884dc89c24969772f6bd",
       "destination": "docs/src/content/docs/reference/api.mdx",
       "reviewed": true
     },
     {
-      "source": "src/core/dom.ts",
-      "sha256": "63faad068eebbc1845783a5407d03f5fea12573553380e3977c338f0f32a07a0",
+      "source": "src/vanilla/dom.ts",
+      "sha256": "700d5ce08ffdc984bff56214b0075004b585382ae5265e34969556a024fb41e2",
       "destination": "docs/src/content/docs/guides/controls.mdx",
       "reviewed": true
     },
     {
-      "source": "src/core/format-helpers.ts",
-      "sha256": "f3edd32903c2929164ac6da56c7584fd752f5a4301d4630056c428de83802226",
+      "source": "src/vanilla/format-helpers.ts",
+      "sha256": "01aa379ac4acfa8914e56d09c7a089b12182927c23efe78e314d2019b7e25920",
       "destination": "docs/src/content/docs/guides/formatting.mdx",
       "reviewed": true
     },

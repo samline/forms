@@ -2,7 +2,7 @@
 // Public surface exposed to `@samline/forms`.
 
 export { form } from './api/form'
-export { createFormController } from './core/controller'
+export { createFormController } from './vanilla/controller'
 export { browser } from './browser/registry'
 export type { FormsApi, FormsAvailable, NewFormInput } from './browser/registry'
 

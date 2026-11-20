@@ -123,7 +123,7 @@ Because the mirror is a real `<input>` inside the form, it shows up automaticall
 
 ## Cursor tracking
 
-The helper in [`src/core/format-helpers.ts`](https://github.com/samline/forms/blob/main/src/core/format-helpers.ts) implements a cursor-restore algorithm modelled on cleave.js' `getNextCursorPosition` and `postDelimiterBackspace`:
+The helper in [`src/vanilla/format-helpers.ts`](https://github.com/samline/forms/blob/main/src/vanilla/format-helpers.ts) implements a cursor-restore algorithm modelled on cleave.js' `getNextCursorPosition` and `postDelimiterBackspace`:
 
 - The caret position is captured **before** the value is rewritten.
 - After `FormatterResult.formatted` is written, the helper counts the number of non-format characters (digits, ASCII letters) to the left of the original caret and re-positions the caret at the same logical index in the new value, skipping delimiters.
