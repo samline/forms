@@ -607,13 +607,13 @@
     },
     {
       "source": "src/api/form.ts",
-      "sha256": "0e40d6a32efdf23da9590305f9a1988f2d4d0c16aee483942cc5031b673caf6a",
+      "sha256": "401d26e93b6a747698633976edc95de39f1ad2bac143945969a898e57b0a4a23",
       "destination": "docs/src/content/docs/api/form.md",
       "reviewed": true
     },
     {
       "source": "src/api/format.ts",
-      "sha256": "b34c122d4bab16e73763ec70fa9801047a8aeaa4060bcb43163886a3df51c1e6",
+      "sha256": "0c84e28feef05d3325afb3168695565fb1f29816542b2462bfdcd16d9e1e4647",
       "destination": "docs/src/content/docs/api/format.md",
       "reviewed": true
     },
@@ -637,7 +637,7 @@
     },
     {
       "source": "src/api/get-value.ts",
-      "sha256": "3ac8416076a94621a3556d20eae96f0393921f3f74e811f4b1e1f709cd7547f1",
+      "sha256": "bdbdb628d18bc61bb4f0f67180aa4eb39587275d5c4f4a833cec9553fb7fd91a",
       "destination": "docs/src/content/docs/api/get-value.md",
       "reviewed": true
     },
@@ -685,7 +685,7 @@
     },
     {
       "source": "src/api/set-value.ts",
-      "sha256": "1660ec7d4a061d96206d7701284e2ed44d573ab2a33569cc2675db622ce8e62f",
+      "sha256": "29762b61619083a6cb87cc1b4970ec96417da989a96bf2cabb6304e0d021416f",
       "destination": "docs/src/content/docs/api/set-value.md",
       "reviewed": true
     },
@@ -763,7 +763,7 @@
     },
     {
       "source": "src/core/index.ts",
-      "sha256": "78613fc00515b960d38c72b32ac7f6aedc31f4738ffbc00f7410295584d4f08f",
+      "sha256": "aa79b5d9a358bf1fd85b6555f8e7cdb76973428a961c1404e2355c582e313fda",
       "destination": "docs/src/content/docs/reference/typescript.mdx",
       "reviewed": true
     },
@@ -793,7 +793,7 @@
     },
     {
       "source": "src/index.ts",
-      "sha256": "6c6adb0ba8858f47cc5608f76a3d81b3254b460b1d1c3dd5abd4752d4bb1849e",
+      "sha256": "d851c7f95f0a9bfa1a463b71b433729dbeaea9f4e236919ad9288c81254a4364",
       "destination": "docs/src/content/docs/reference/api.mdx",
       "reviewed": true
     },
