@@ -143,7 +143,7 @@
     "accentDark": "#38bdf8"
   },
   "status": "verified",
-  "packageVersion": "4.0.0",
+  "packageVersion": "4.0.1",
   "sources": [
     {
       "source": "CHANGELOG.md",

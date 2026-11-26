@@ -2,6 +2,19 @@
 
 All notable changes to `@samline/forms` are documented in this file. The format follows [Keep a Changelog](https://keepachangelog.com/en/1.1.0/) and the project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [4.0.1] - 2026-11-25
+
+No API changes.
+
+### Fixed
+
+- A manual error that matches no editable control no longer blocks submission forever. In 4.0.0, `setErrors({ non_field_errors: [...] })`, a server key that names no input (`items.0.name` next to `items[0][name]`) or an error on a removed, disabled, hidden or read-only field kept every later submit invalid, with nothing to edit and nothing to focus. These errors are still reported in `getState().errors`, and each submit attempt now drops them before validation. Manual errors on editable fields keep blocking until the field changes, as documented in 4.0.0.
+
+### Documentation
+
+- The login recipe reports rejected credentials as a form-level error instead of a password error that stayed after the user corrected the email, and the manual-validation recipe renders the errors returned by `validate()` instead of turning them into a manual error that kept the form invalid.
+- `setErrors()`, `onSubmit()`, the configuration reference, the validation guide, the README and the agent skill describe which manual errors block. `clearErrorsOnSubmit` and `clearManualErrorsOnChange` have JSDoc with their defaults.
+
 ## [4.0.0] - 2026-11-25
 
 ### Breaking changes
@@ -351,6 +364,7 @@ No breaking API changes. The behavior changes below fix incorrect or surprising 
 
 - Initial release of `@samline/forms`. Vanilla JS form controller with framework-specific variants (React, Vue, Svelte) initially included; bundled `.local/` agent docs at the repo root.
 
+[4.0.1]: https://github.com/samline/forms/compare/v4.0.0...v4.0.1
 [4.0.0]: https://github.com/samline/forms/compare/v3.0.0...v4.0.0
 [3.0.0]: https://github.com/samline/forms/compare/v2.11.1...v3.0.0
 [2.11.1]: https://github.com/samline/forms/compare/v2.11.0...v2.11.1
