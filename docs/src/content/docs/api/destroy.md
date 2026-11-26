@@ -30,6 +30,7 @@ When invoked, the controller:
 - Runs active callbacks registered with [`addCleanup()`](../add-cleanup/) once in reverse registration order. A thrown cleanup is logged and does not stop the others.
 - Clears `watchedFields`, `subscribers`, `submitHandlers`, and `fieldCache`.
 - Resets manual and validation error maps.
+- Removes `css-filled`, `css-error` (or your custom attribute names) and `aria-invalid` from the form's fields, restoring the markup.
 - Clears tracked async-submit state. Pending handler promises continue independently, but no completion notification is emitted after destruction.
 
 After `destroy()` the controller object still exists and its methods remain callable, but they no longer touch the form (since 2.8.0). `setValue`, `setErrors`, `clearErrors`, `validate`, `revalidate`, `reset`, `prefill`, `append`, `autoSubmit` and `format` return without effect; `subscribe`, `observe`, `watch` and `onSubmit` register nothing; `validate()` returns `{ isValid: true, errors: {} }`. Reads such as `getValue()` and `getData()` still inspect the DOM. This matters when an async submit handler settles after its owner was destroyed: a late `setErrors()` cannot mark a form that now belongs to another controller.
@@ -75,7 +76,7 @@ profile.addCleanup(() => observer.disconnect())
 
 ## Edge cases
 
-- **`destroy()` does not remove `css-filled` / `css-error` attributes** from fields. If you need that, call [`reset()`](../reset/) before destroy, or strip the attributes yourself.
+- **`destroy()` removes the attributes it wrote.** `css-filled`, `css-error` (custom names respected) and `aria-invalid` are cleared; field values are untouched. Call [`reset()`](../reset/) first if you also want default values back.
 - **Subscribers and watchers stop receiving notifications immediately**, but their closures remain until you release them.
 - **Cleanup registrations are independent.** Registering the same callback twice runs it twice unless one registration's unregister function is called.
 - **Late cleanup registration runs immediately.** Calling `addCleanup()` after destruction executes the callback at once and returns a no-op unregister function.

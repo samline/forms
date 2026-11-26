@@ -103,7 +103,7 @@ export default {
       accessibility: {
         title: 'Errors people can find',
         description: text(
-          'Invalid controls get aria-invalid, and a failed submit focuses the first one in document order. You write the messages and decide where they appear.'
+          'Invalid controls get aria-invalid once the error reaches the visitor, and a failed submit focuses the first visible one in document order. You write the messages and decide where they appear.'
         ),
       },
       lifecycle: {
@@ -256,7 +256,7 @@ export default {
       messages: {
         question: text('Does the package render error messages?'),
         answer: text(
-          'No. It sets css-error and aria-invalid on invalid controls and moves focus after a failed submit. Read state.errors in subscribe() and place each message where your design needs it, ideally linked with aria-describedby.'
+          'No. It sets css-error on invalid controls, aria-invalid once the error reaches the visitor, and moves focus after a failed submit. Read state.errors in subscribe() and place each message where your design needs it, ideally linked with aria-describedby.'
         ),
       },
       frameworks: {

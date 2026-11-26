@@ -27,8 +27,8 @@ When invoked, the controller:
 1. Calls `state.element.reset()` (the native form reset).
 2. Clears `state.manualErrors` and `state.validationErrors`.
 3. Restores matching visible/raw defaults for formatted fields.
-4. Removes every `css-filled`, `css-error`, and `aria-invalid` attribute from associated fields.
-5. Re-syncs visual state. Controls whose native default value is non-empty regain `css-filled`, even when `autoValidate` is `false`; errors and `aria-invalid` stay cleared.
+4. Removes every `css-filled`, `css-error`, and `aria-invalid` attribute from associated fields; controls with native `required` then carry `aria-invalid="false"`.
+5. Re-syncs visual state. Controls whose native default value is non-empty regain `css-filled`, even when `autoValidate` is `false`; errors stay cleared and `aria-invalid` is removed (controls with native `required` carry `aria-invalid="false"`) until the user edits a field, submits, or you call `validate()`.
 6. Calls every [`watch`](../watch/) and [`observe`](../observe/) callback with the restored value, so counters and previews follow the reset (since 2.8.0).
 7. Notifies subscribers.
 

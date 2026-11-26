@@ -2,6 +2,20 @@
 
 All notable changes to `@samline/forms` are documented in this file. The format follows [Keep a Changelog](https://keepachangelog.com/en/1.1.0/) and the project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [4.0.2] - 2026-11-26
+
+No API changes.
+
+### Fixed
+
+- `aria-invalid="true"` now follows the moment an error reaches the user, not the moment it exists. With the default `autoValidate: true`, empty required fields no longer announce as invalid on page load. `css-error` still marks every error at once. The attribute appears when the field is edited or already holds a value, when the user starts a submit, when you call `validate()` or `revalidate()`, and when you call `setErrors()`; `reset()` returns fields to the unexposed state. Controls with a native `required` attribute and no shown error get `aria-invalid="false"`, so Firefox and Safari do not report them as invalid; CSS that styles `[aria-invalid]` by presence, or `[aria-invalid="false"]` as valid (some CSS frameworks do), now matches those controls. `setValue()` and `prefill()` alone do not expose an empty field, and a server-rendered `aria-invalid="true"` is kept while the field is invalid. An auto-submit never exposes fields the user has not touched.
+- After a failed submit, focus skips invalid controls that are not rendered, such as controls inside `hidden`, `display: none` or `visibility: hidden` containers, and lands on the first rendered one. When none is rendered (an error on a hidden wizard step) focus does not move.
+- `destroy()` now removes `css-filled`, `css-error` (or your custom attribute names) and `aria-invalid`, as the accessibility guide already stated; `api/destroy.md` used to say they were kept, and now documents the removal.
+
+### Changed
+
+- The standalone script bundles `@samline/formatter` 3.3.1. Internal refactor only.
+
 ## [4.0.1] - 2026-11-25
 
 No API changes.
@@ -364,6 +378,7 @@ No breaking API changes. The behavior changes below fix incorrect or surprising 
 
 - Initial release of `@samline/forms`. Vanilla JS form controller with framework-specific variants (React, Vue, Svelte) initially included; bundled `.local/` agent docs at the repo root.
 
+[4.0.2]: https://github.com/samline/forms/compare/v4.0.1...v4.0.2
 [4.0.1]: https://github.com/samline/forms/compare/v4.0.0...v4.0.1
 [4.0.0]: https://github.com/samline/forms/compare/v3.0.0...v4.0.0
 [3.0.0]: https://github.com/samline/forms/compare/v2.11.1...v3.0.0

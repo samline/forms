@@ -70,8 +70,8 @@ signup.onSubmit(async (_element, data, formData) => {
 What happens:
 
 - With `autoValidate: false`, rules first run on submit and then on every `input` event. The default, `autoValidate: true`, runs them on load as well; see [`autoValidate`](../reference/configuration/#autovalidate).
-- Invalid controls receive `css-error` and `aria-invalid="true"`; filled controls receive `css-filled`. Style them as described in [Styling with CSS](../guides/css-styling/).
-- An invalid submit is always prevented, handlers do not run, and focus moves to the first invalid control in document order.
+- Invalid controls receive `css-error` at once and `aria-invalid="true"` once the error has reached the user (edited by the user, holds a value, a submit the user started (not auto-submit), `validate()`/`revalidate()`, `setErrors()`; `setValue()`/`prefill()` alone do not expose an empty field; a server-rendered `aria-invalid="true"` is kept while the field is invalid); filled controls receive `css-filled`. Style them as described in [Styling with CSS](../guides/css-styling/).
+- An invalid submit is always prevented, handlers do not run, and focus moves to the first rendered invalid control in document order.
 - A valid submit passes the serialized object, a fresh `FormData` and a state snapshot to every handler. `state.isSubmitting` stays `true` until a returned promise settles.
 
 ## Working starter files
@@ -90,7 +90,7 @@ These are the files behind the first live example on Home: a sign-up form with f
 Without a bundler, load the standalone script. It defines `window.Forms` with `form`, `newForm`, `destroyForm` and `available`, and it already contains the formatter.
 
 ```html title="index.html"
-<script src="https://cdn.jsdelivr.net/npm/@samline/forms@4.0.1/dist/browser/forms.global.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/@samline/forms@4.0.2/dist/browser/forms.global.js"></script>
 <script>
   const signup = window.Forms.form('signup', {
     validators: { email: { required: true, pattern: /^[^\s@]+@[^\s@]+\.[^\s@]+$/ } },

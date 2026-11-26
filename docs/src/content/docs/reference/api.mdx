@@ -122,7 +122,7 @@ readonly options: FormControllerOptions
 
 #### `reset()`
 
-Restores native and formatted default values, clears manual and validation errors plus `aria-invalid`, calls field watchers with the restored values, then notifies subscribers. It dispatches no `input` events, runs no validation, does not disable auto-submit, and does not reset `submitCount`. A native reset button runs the same state pass after the browser restores defaults. When the controller is already validated, filled attributes are recalculated immediately from default values.
+Restores native and formatted default values, clears manual and validation errors plus `aria-invalid` (controls with native `required` carry `aria-invalid="false"`; fields return to the unexposed state), calls field watchers with the restored values, then notifies subscribers. It dispatches no `input` events, runs no validation, does not disable auto-submit, and does not reset `submitCount`. A native reset button runs the same state pass after the browser restores defaults. When the controller is already validated, filled attributes are recalculated immediately from default values.
 
 #### `addCleanup(cleanup)`
 
@@ -152,7 +152,7 @@ onSubmit(
 ): FormController
 ```
 
-The submit pipeline clears manual errors when configured, validates, synchronizes `aria-invalid`, increments `submitCount`, and invokes every handler in registration order when valid. Invalid submissions are always intercepted and focus moves to the first focusable invalid field in document order, except when auto-submit started the submit. If any valid-submit handler uses the default `preventDefault: true`, the event is prevented for all handlers. Handlers may return `Promise<void>`; `getState().isSubmitting` remains `true` while async handlers from any concurrent submission are pending. Fulfilled and rejected promises both settle the submitting state; a rejection is reported with `console.error`. Promise settlement does not delay native navigation when every handler opts out of prevention. There is no per-handler unsubscribe method; `destroy()` clears all handlers. A successful named submit button contributes its name/value to fresh `data` and `formData` values.
+The submit pipeline clears manual errors when configured, validates, exposes `aria-invalid` for user-started submits, increments `submitCount`, and invokes every handler in registration order when valid. Invalid submissions are always intercepted and focus moves to the first focusable, rendered invalid field in document order, except when auto-submit started the submit. If any valid-submit handler uses the default `preventDefault: true`, the event is prevented for all handlers. Handlers may return `Promise<void>`; `getState().isSubmitting` remains `true` while async handlers from any concurrent submission are pending. Fulfilled and rejected promises both settle the submitting state; a rejection is reported with `console.error`. Promise settlement does not delay native navigation when every handler opts out of prevention. There is no per-handler unsubscribe method; `destroy()` clears all handlers. A successful named submit button contributes its name/value to fresh `data` and `formData` values.
 
 #### `autoSubmit(options?)`
 

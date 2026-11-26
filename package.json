@@ -1,6 +1,6 @@
 {
   "name": "@samline/forms",
-  "version": "4.0.1",
+  "version": "4.0.2",
   "description": "TypeScript-first, framework-free form controller with validation, reactive state, serialization, auto-submit, and input formatting.",
   "keywords": [
     "forms",
@@ -111,7 +111,7 @@
   },
   "devDependencies": {
     "@playwright/test": "1.62.1",
-    "@samline/formatter": "^3.3.0",
+    "@samline/formatter": "^3.3.1",
     "@types/node": "^26.6.2",
     "@vitest/coverage-v8": "^5.0.1",
     "axe-core": "^4.14.0",
@@ -128,8 +128,8 @@
   "unpkg": "./dist/browser/forms.global.js",
   "jsdelivr": "./dist/browser/forms.global.js",
   "size": {
-    "dist/index.js": 9500,
-    "dist/browser/index.js": 9450,
+    "dist/index.js": 9650,
+    "dist/browser/index.js": 9600,
     "dist/browser/forms.global.js": 55750
   }
 }

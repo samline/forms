@@ -71,14 +71,14 @@ signup.onSubmit(async (_element, _data, formData) => {
 // signup.destroy()
 ```
 
-Invalid submits are always prevented and focus moves to the first invalid field. Valid submits reach every `onSubmit()` handler with a plain object, a fresh `FormData` and a state snapshot.
+Invalid submits are always prevented and focus moves to the first rendered invalid field. Valid submits reach every `onSubmit()` handler with a plain object, a fresh `FormData` and a state snapshot.
 
 ## HTML / CDN
 
 The standalone build defines `window.Forms` and already includes `@samline/formatter`. Pin the version.
 
 ```html
-<script src="https://cdn.jsdelivr.net/npm/@samline/forms@4.0.1/dist/browser/forms.global.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/@samline/forms@4.0.2/dist/browser/forms.global.js"></script>
 <script>
   const signup = window.Forms.form('signup', {
     validators: { email: { required: true, pattern: /^[^\s@]+@[^\s@]+\.[^\s@]+$/ } },
@@ -91,7 +91,7 @@ The standalone build defines `window.Forms` and already includes `@samline/forma
 ## Capabilities
 
 - **Validation rules:** `required`, `minLength`, `maxLength`, `pattern`, `numeric`, `min`, `max`, `sameAs`, `dependsOn`, per-row `each` and custom validators that read every value.
-- **Accessible state:** invalid controls get `aria-invalid` and `css-error`, filled ones `css-filled`; a failed submit focuses the first invalid control in document order.
+- **Accessible state:** invalid controls get `css-error` at once and `aria-invalid="true"` once the error has reached the user (edited by the user, holds a value, a submit the user started (not auto-submit), `validate()`/`revalidate()`, `setErrors()`; `setValue()`/`prefill()` alone do not expose an empty field; a server-rendered `aria-invalid="true"` is kept while the field is invalid), filled ones `css-filled`; a failed submit focuses the first rendered invalid control in document order.
 - **Reactive state:** `subscribe()` for the whole form, `observe()`/`watch()` for one field.
 - **Submission:** promise-aware `onSubmit()`, `autoSubmit()` with debounce, `setErrors()` for server responses, `prefill()` from the URL and `reset()`.
 - **Native controls:** checkbox groups, radios, multiple selects, files, repeated `name[]` inputs and controls linked with `form="id"`, including fields added later.

@@ -171,7 +171,7 @@ form('signup-form', {
 
 ## Accessibility
 
-The controller sets `aria-invalid="true"` while a field has validation or manual errors and removes it when the field becomes valid. Invalid submission focuses the first connected, enabled, non-hidden invalid field in document order. Provide `aria-describedby` and an error message element in your template:
+The controller marks every invalid field with `css-error` and sets `aria-invalid="true"` once the error has reached the user (edited by the user, holds a value, a submit the user started (not auto-submit), `validate()`/`revalidate()`, `setErrors()`; `setValue()`/`prefill()` alone do not expose an empty field; a server-rendered `aria-invalid="true"` is kept while the field is invalid); it removes both when the field becomes valid. Controls with a native `required` attribute and no shown error get `aria-invalid="false"`. Invalid submission focuses the first connected, enabled, non-hidden, rendered invalid field in document order. Provide `aria-describedby` and an error message element in your template:
 
 ```html
 <label class="field">

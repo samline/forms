@@ -132,7 +132,7 @@ const post = form('post', {
 
 Formatter 3.3.0 adds two `slug` options: `charMap` transliterates other scripts (`'cyrillic'`, `'greek'`, `'german'`, your own map or several of them), which are dropped without it, and `preserve` keeps characters such as `.` and `_`, for example `options: { charMap: 'cyrillic', preserve: '.' }`.
 
-The global IIFE bundles formatter 3.3.0, so both types and these options work from the CDN script too.
+The global IIFE bundles formatter 3.3.1, so both types and these options work from the CDN script too.
 
 The IIFE does not expose the formatter's `regex` object or its check-digit validators on `window.Forms`. Import them from the peer in module builds, or load the formatter global next to the forms script; see [Browser globals](../../reference/regex/#browser-globals).
 

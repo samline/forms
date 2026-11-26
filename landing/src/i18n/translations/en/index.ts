@@ -76,7 +76,7 @@ export default {
     guide: 'Read the example guide',
     navigation: 'Choose an example',
     accessibility:
-      'Every preview is a labeled native form: invalid controls receive aria-invalid, messages are announced politely, and a failed submit moves focus to the first field to fix.',
+      'Every preview is a labeled native form: invalid controls receive aria-invalid once the error reaches the visitor, messages are announced politely, and a failed submit moves focus to the first field to fix.',
     skill: `Download the ${project.name} skill for AI agents`,
   },
 } as const
