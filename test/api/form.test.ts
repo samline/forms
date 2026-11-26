@@ -382,6 +382,51 @@ describe('form controller (integration)', () => {
     expect(api.getState().errors.email).toEqual(['Invalid value.'])
   })
 
+  it('keeps manual errors on the field and blocks submission by default', () => {
+    const onSubmit = vi.fn()
+    const api = form('contact-form', {
+      validators: { email: { required: true } },
+    })
+    api.onSubmit(onSubmit, false)
+    api.setValue('email', 'sam@example.com')
+    api.setErrors({ email: ['Already in use.'] })
+
+    const event = new Event('submit', { bubbles: true, cancelable: true })
+    api.element!.dispatchEvent(event)
+
+    expect(event.defaultPrevented).toBe(true)
+    expect(onSubmit).not.toHaveBeenCalled()
+    expect(api.getState()).toMatchObject({
+      errors: { email: ['Already in use.'] },
+      isValid: false,
+    })
+    const email = api.getField('email') as HTMLInputElement
+    expect(email.hasAttribute('css-error')).toBe(true)
+    expect(email.getAttribute('aria-invalid')).toBe('true')
+    expect(document.activeElement).toBe(email)
+
+    api.setValue('email', 'another@example.com')
+    api.element!.dispatchEvent(new Event('submit', { bubbles: true, cancelable: true }))
+    expect(onSubmit).toHaveBeenCalledTimes(1)
+  })
+
+  it('clears manual errors before submit validation when explicitly configured', () => {
+    const onSubmit = vi.fn()
+    const api = form('contact-form', { clearErrorsOnSubmit: true })
+    api.onSubmit(onSubmit, false)
+    api.setErrors(['email'])
+
+    const event = new Event('submit', { bubbles: true, cancelable: true })
+    api.element!.dispatchEvent(event)
+
+    expect(event.defaultPrevented).toBe(false)
+    expect(onSubmit).toHaveBeenCalledTimes(1)
+    expect(api.getState().errors).toEqual({})
+    const email = api.getField('email') as HTMLInputElement
+    expect(email.hasAttribute('css-error')).toBe(false)
+    expect(email.hasAttribute('aria-invalid')).toBe(false)
+  })
+
   it('onSubmit with preventDefault=false lets the browser submit natively when valid', () => {
     const onSubmit = vi.fn()
     const api = form('contact-form')

@@ -143,17 +143,17 @@
     "accentDark": "#38bdf8"
   },
   "status": "verified",
-  "packageVersion": "3.0.0",
+  "packageVersion": "4.0.0",
   "sources": [
     {
       "source": "CHANGELOG.md",
-      "sha256": "0e9c5d0c098fc91621c1b210799169c761e49785b4402690d96d57a2b47c4a42",
+      "sha256": "ccc7f94d7ce3b83c823be5d701a818ae7e8d067c8991ce5b0d59e3dccb6135ee",
       "destination": "CHANGELOG.md",
       "reviewed": true
     },
     {
       "source": "README.md",
-      "sha256": "1c591ad52146b3a2dc4745e0ccacca64a3ab57aff511167fa8baee9f3624a3e5",
+      "sha256": "17dabdd0aa354e1be56b834c9c6921309fabb24836974f4e0d80cfc29e6e061f",
       "destination": "README.md",
       "reviewed": true
     },
@@ -739,7 +739,7 @@
     },
     {
       "source": "src/vanilla/controller.ts",
-      "sha256": "3711485fd2d8a3d09f6631300bb9bfff84c30cabf214884dc89c24969772f6bd",
+      "sha256": "76ab498abdee4aee55060d88deb97bfeefaff0b6a2c60134aa74edcf12f514bf",
       "destination": "docs/src/content/docs/reference/api.mdx",
       "reviewed": true
     },

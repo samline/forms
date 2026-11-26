@@ -67,7 +67,7 @@ const profile = form('profile-form', {
 
 profile.options.autoValidate // false (overridden)
 profile.options.autoSubmit // false (default)
-profile.options.clearErrorsOnSubmit // true (default)
+profile.options.clearErrorsOnSubmit // false (default)
 profile.options.attributes.error // 'is-invalid'
 profile.options.attributes.filled // 'css-filled' (default)
 profile.options.formats.phone // FieldFormatConfig (overridden)

@@ -321,7 +321,7 @@ export const scenarios = {
     title: 'Show the server’s answer next to the field',
     description:
       'The submit handler awaits a simulated availability check, then attaches the rejection to the username field with setErrors().',
-    hint: 'Local simulation: the “server” answers after 600 ms without any network request. Try admin, ada or support. A manual error clears as soon as the field changes.',
+    hint: 'The simulated server answers after 600 ms. Try admin, ada or support. The error blocks another submit until you edit the username.',
     call: "controller.setErrors({ username: ['That username is already taken.'] })",
     behavior: 'username',
     helpers: ['renderErrors'],

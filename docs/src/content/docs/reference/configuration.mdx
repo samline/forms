@@ -19,7 +19,7 @@ const contactForm = form('contact-form', {
   attributes: { filled: 'is-filled', error: 'is-invalid' },
   autoValidate: true,
   autoSubmit: { debounce: 500 },
-  clearErrorsOnSubmit: true,
+  clearErrorsOnSubmit: false,
   clearManualErrorsOnChange: true,
   validators: {
     email: { required: true, pattern: /^[^\s@]+@[^\s@]+\.[^\s@]+$/ },
@@ -48,7 +48,7 @@ interface FormControllerOptions {
 | `attributes`                | `Partial<VisualAttributes>`                                                                      | `{ filled: 'css-filled', error: 'css-error' }` | Override the names of the visual attributes applied to fields.                                                                                                                                                       |
 | `autoValidate`              | `boolean`                                                                                        | `true`                                         | Run validation on construction and on handled `input` events for fields that have rules.                                                                                                                             |
 | `autoSubmit`                | `boolean \| AutoSubmitOptions`                                                                   | `false`                                        | Submit the form automatically after handled `input` events. Pass `{ debounce: ms }` to delay.                                                                                                                        |
-| `clearErrorsOnSubmit`       | `boolean`                                                                                        | `true`                                         | Clear all manual errors before submit validation runs.                                                                                                                                                               |
+| `clearErrorsOnSubmit`       | `boolean`                                                                                        | `false`                                        | Keep manual errors on submit. Set `true` to clear them before submit validation.                                                                                                                                     |
 | `clearManualErrorsOnChange` | `boolean`                                                                                        | `true`                                         | Clear the manual error of a field when it changes. Set `false` to keep manual errors until you call [`clearErrors`](../../reference/api/#clearerrorsfields).                                                         |
 | `validators`                | `ValidationSchema`                                                                               | `{}`                                           | Field → rules map. See [`ValidationSchema`](../../reference/typescript/#validationschema) and the rule reference below.                                                                                              |
 | `formats`                   | [`FieldFormatConfigMap`](../../reference/typescript/#fieldformatconfig-and-fieldformatconfigmap) | `{}`                                           | Declarative `@samline/formatter` configuration. Each entry is applied during `form()` initialization using the same logic as [`format()`](../../reference/api/#formatconfig). Requires the optional peer dependency. |
@@ -96,10 +96,10 @@ Disable at any time with [`disableAutoSubmit()`](../../reference/api/#disableaut
 
 ## `clearErrorsOnSubmit`
 
-When `true` (default), all manual errors created with [`setErrors`](../../reference/api/#seterrorsfields) are cleared before submit validation runs. Validation errors from the current rules are computed fresh. Set this to `false` if you want manual errors to survive submit attempts:
+By default (`false`), manual errors created with [`setErrors`](../../reference/api/#seterrorsfields) survive submit attempts and block submission. Set this to `true` to clear all manual errors before submit validation runs.
 
 ```ts
-form('profile-form', { clearErrorsOnSubmit: false })
+form('profile-form', { clearErrorsOnSubmit: true })
 ```
 
 This only affects manual errors. Validation errors always recompute on submit.
@@ -270,7 +270,7 @@ const DEFAULT_ATTRIBUTES = {
 
 const DEFAULT_OPTIONS = {
   autoValidate: true,
-  clearErrorsOnSubmit: true,
+  clearErrorsOnSubmit: false,
   clearManualErrorsOnChange: true,
 }
 ```

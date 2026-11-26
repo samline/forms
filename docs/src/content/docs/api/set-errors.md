@@ -32,7 +32,8 @@ The same [`FormController`](../../reference/typescript/#formcontroller) — chai
 
 - Manual errors are merged with existing manual errors — existing entries for other fields are preserved.
 - Validation errors from rules are not affected: validation errors and manual errors live in separate maps and are merged only when reading state.
-- Visual attributes are re-synced for the affected fields, so `css-error` is added to each.
+- Affected fields receive `css-error` and `aria-invalid="true"`.
+- By default, manual errors block submission and stay on the field and in `getState().errors` after the attempt. Set [`clearErrorsOnSubmit: true`](../../reference/configuration/#clearerrorsonsubmit) to clear them before submit validation.
 - Subscribers are notified.
 
 ## Examples
@@ -71,9 +72,7 @@ profile.setErrors({
 ```ts
 import { form } from '@samline/forms'
 
-const signup = form('signup-form', {
-  clearManualErrorsOnChange: false,
-})
+const signup = form('signup-form')
 
 signup.onSubmit(async (_element, _data, formData) => {
   const response = await fetch('/signup', { method: 'POST', body: formData })

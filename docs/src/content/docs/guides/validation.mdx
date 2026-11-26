@@ -236,7 +236,7 @@ form('items', {
 - Manual errors come from `setErrors()` and remain separate internally.
 - Returned state merges both maps.
 - `clearErrors()` clears only manual errors.
-- `clearErrorsOnSubmit` and `clearManualErrorsOnChange` control when manual errors disappear.
+- Manual errors block submission and survive submit attempts by default. Editing the affected field clears its manual error by default. Use `clearErrorsOnSubmit` and `clearManualErrorsOnChange` to configure those behaviors.
 - A partial `validate(['email'])` preserves existing validation errors for fields not requested.
 
 ## State caveats

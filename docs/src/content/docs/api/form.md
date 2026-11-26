@@ -70,7 +70,7 @@ Allowed for type-system ergonomics. The resulting controller has `element === nu
 On creation the controller:
 
 1. Resolves the form element.
-2. Merges the provided options with defaults (`autoValidate: true`, `clearErrorsOnSubmit: true`, `clearManualErrorsOnChange: true`, `attributes: { filled: 'css-filled', error: 'css-error' }`).
+2. Merges the provided options with defaults (`autoValidate: true`, `clearErrorsOnSubmit: false`, `clearManualErrorsOnChange: true`, `attributes: { filled: 'css-filled', error: 'css-error' }`).
 3. Wires delegated `input` and `submit` listeners, including controls associated through `form="id"`.
 4. Starts a `MutationObserver` on the form subtree to track dynamic fields.
 5. Optionally enables [`autoSubmit`](../auto-submit/) when `options.autoSubmit` is truthy.

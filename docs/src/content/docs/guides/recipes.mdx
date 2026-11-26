@@ -44,7 +44,7 @@ No bundler required. Drop the CDN script and use `window.Forms.newForm({ id, opt
   <button type="submit">Send</button>
 </form>
 
-<script src="https://cdn.jsdelivr.net/npm/@samline/forms@3.0.0/dist/browser/forms.global.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/@samline/forms@4.0.0/dist/browser/forms.global.js"></script>
 <script>
   const contact = window.Forms.newForm({
     id: 'contact-form',
@@ -118,7 +118,6 @@ import { form } from '@samline/forms'
 
 const profile = form('profile-form', {
   autoValidate: false,
-  clearManualErrorsOnChange: false,
   validators: {
     email: { required: true, pattern: /^[^\s@]+@[^\s@]+\.[^\s@]+$/ },
   },
@@ -145,11 +144,8 @@ profile.onSubmit(async (_element, _data, formData) => {
 })
 ```
 
-<Callout title='Why `clearManualErrorsOnChange: false`'>
+The server's errors stay visible and block another submit. Editing an affected field clears its manual error so the user can submit the corrected value.
 
-The server's errors should stay visible while the user fixes them. With the default behaviour, editing the email would clear the manual error before the user had a chance to correct it.
-
-</Callout>
 ## Recipe: Multi-step / wizard
 
 ```html

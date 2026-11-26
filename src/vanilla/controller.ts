@@ -66,7 +66,7 @@ const DEFAULT_ATTRIBUTES: Required<VisualAttributes> = {
 
 const DEFAULT_OPTIONS = {
   autoValidate: true,
-  clearErrorsOnSubmit: true,
+  clearErrorsOnSubmit: false,
   clearManualErrorsOnChange: true,
 } satisfies Pick<
   FormControllerOptions,

@@ -241,6 +241,8 @@ Alias of `validate` kept separate for readability at call sites that want to exp
 
 Pushes manual errors into the form. Two overloads: array form (`string[]`, default message "Invalid value.") and map form (`FormErrors`, custom messages per field).
 
+Manual errors block submission and stay on the field and in form state by default. [`clearErrorsOnSubmit: true`](../configuration/#clearerrorsonsubmit) clears them before submit validation.
+
 #### `clearErrors(fields?)`
 
 Removes manual errors. Validation errors from rules are not touched. Visual attributes are re-synced for the affected fields.

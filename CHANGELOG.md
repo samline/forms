@@ -2,6 +2,12 @@
 
 All notable changes to `@samline/forms` are documented in this file. The format follows [Keep a Changelog](https://keepachangelog.com/en/1.1.0/) and the project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [4.0.0] - 2026-11-25
+
+### Breaking changes
+
+- `setErrors()` now blocks submission by default. Manual errors stay on the field and in form state after a submit attempt. Set `clearErrorsOnSubmit: true` to clear them before submit validation and restore the previous behavior.
+
 ## [3.0.0] - 2026-11-15
 
 ### Breaking changes
@@ -345,6 +351,7 @@ No breaking API changes. The behavior changes below fix incorrect or surprising 
 
 - Initial release of `@samline/forms`. Vanilla JS form controller with framework-specific variants (React, Vue, Svelte) initially included; bundled `.local/` agent docs at the repo root.
 
+[4.0.0]: https://github.com/samline/forms/compare/v3.0.0...v4.0.0
 [3.0.0]: https://github.com/samline/forms/compare/v2.11.1...v3.0.0
 [2.11.1]: https://github.com/samline/forms/compare/v2.11.0...v2.11.1
 [2.11.0]: https://github.com/samline/forms/compare/v2.10.0...v2.11.0
