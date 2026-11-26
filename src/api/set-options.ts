@@ -98,6 +98,11 @@ export const createSetOptions =
     // process it a second time.
     helpers.commitOwnMutations(selects)
 
-    changed[0]?.dispatchEvent(new Event('input', { bubbles: true }))
+    state.isProgrammaticInput = true
+    try {
+      changed[0]?.dispatchEvent(new Event('input', { bubbles: true }))
+    } finally {
+      state.isProgrammaticInput = false
+    }
     return state.api!
   }

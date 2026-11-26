@@ -16,6 +16,11 @@ export const createSetValue =
     const firstField = fields[0]
     if (!firstField) return state.api!
 
-    firstField.dispatchEvent(new Event('input', { bubbles: true }))
+    state.isProgrammaticInput = true
+    try {
+      firstField.dispatchEvent(new Event('input', { bubbles: true }))
+    } finally {
+      state.isProgrammaticInput = false
+    }
     return state.api!
   }

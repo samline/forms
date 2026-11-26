@@ -22,7 +22,9 @@ export const createSetErrors =
       }
     }
 
-    helpers.syncVisualState(Array.isArray(fields) ? fields : Object.keys(fields))
+    const names = Array.isArray(fields) ? fields : Object.keys(fields)
+    helpers.exposeErrors(names)
+    helpers.syncVisualState(names)
     helpers.notifySubscribers()
     return state.api!
   }

@@ -106,6 +106,7 @@ export const createFormController = (
     pendingSubmitCount: 0,
     autoSubmitTimer: null,
     isAutoSubmitting: false,
+    isProgrammaticInput: false,
     autoSubmitSuspended: false,
     isResetting: false,
     isDestroyed: false,
@@ -217,6 +218,22 @@ export const createFormController = (
 
   const getMergedErrors = () => mergeErrors(state.validationErrors, state.manualErrors)
 
+  // `css-error` follows every error, but `aria-invalid="true"` waits until
+  // the error reaches the user: the field was edited or holds a value, a
+  // submit was attempted, or the developer asked for it (`validate()`,
+  // `setErrors()`). Otherwise screen readers report every empty required
+  // field as invalid on page load when rules run on construction.
+  const exposedNames = new Set<string>()
+  let exposeAll = false
+
+  const exposeErrors = (names?: string[]) => {
+    if (!names) {
+      exposeAll = true
+      return
+    }
+    for (const name of names) exposedNames.add(resolveCanonicalForName(state, name) ?? name)
+  }
+
   const syncVisualState = (names?: string[]) => {
     if (!state.element) return
 
@@ -243,11 +260,21 @@ export const createFormController = (
         state.validationGroupErrors[canonical]?.length || state.manualErrors[canonical]?.length
       )
       const elementErrors = state.validationElementErrors.get(canonical)
+      const exposed =
+        exposeAll || exposedNames.has(canonical) || Boolean(state.manualErrors[canonical]?.length)
+      const groupFilled = hasGroupError && fields.some(isFieldFilled)
       fields.forEach(field => {
         const hasError = hasGroupError || Boolean(elementErrors?.get(field)?.length)
-        applyBooleanAttribute(field, attributes.filled, isFieldFilled(field))
+        const filled = isFieldFilled(field)
+        applyBooleanAttribute(field, attributes.filled, filled)
         applyBooleanAttribute(field, attributes.error, hasError)
-        if (hasError) field.setAttribute('aria-invalid', 'true')
+        // A group-level error belongs to every member, so one filled member
+        // exposes all of them; `each` errors follow the member's own value.
+        const reached = hasGroupError ? groupFilled : filled
+        if (hasError && (exposed || reached)) field.setAttribute('aria-invalid', 'true')
+        // Firefox and Safari expose an empty native `required` control as
+        // invalid until `aria-invalid="false"` says otherwise.
+        else if (field.required) field.setAttribute('aria-invalid', 'false')
         else field.removeAttribute('aria-invalid')
       })
     }
@@ -418,6 +445,8 @@ export const createFormController = (
     state.validationErrors = {}
     state.validationGroupErrors = {}
     state.validationElementErrors.clear()
+    exposedNames.clear()
+    exposeAll = false
     clearAttributes(state.element, [attributes.error, attributes.filled, 'aria-invalid'])
     syncVisualState()
     snapshotAllSelects()
@@ -438,6 +467,7 @@ export const createFormController = (
     scheduleAutoSubmit,
     applyReset,
     commitOwnMutations: selects => commitOwnMutations(selects),
+    exposeErrors,
   }
 
   // ------- DOM event wiring ---------------------------------------------
@@ -470,6 +500,9 @@ export const createFormController = (
       delete state.manualErrors[canonical]
     }
 
+    // The controller's own synthetic input events (setValue, prefill,
+    // setOptions) are not the user editing the field.
+    if (!state.isProgrammaticInput) exposeErrors([canonical])
     syncVisualState([displayName])
 
     const affectedValidationNames = getAffectedValidationNames(canonical)
@@ -524,13 +557,23 @@ export const createFormController = (
     syncVisualState(detached)
   }
 
+  // A control inside a collapsed section or `display: none` ancestor cannot
+  // take focus. Only focus candidates use this; `isFocusable` also decides
+  // which manual errors are dropped, and a field in a hidden wizard step
+  // must stay attached.
+  const isRendered = (candidate: FormFieldElement) =>
+    typeof candidate.checkVisibility !== 'function' ||
+    candidate.checkVisibility({ visibilityProperty: true })
+
   // Focus the invalid control that comes first in the document, not the
   // first rule declared in the schema, so keyboard users land where the
   // form visually starts failing.
   const focusFirstInvalidField = (errors: Record<string, string[]>) => {
     const candidates: FormFieldElement[] = []
     for (const name of Object.keys(errors)) {
-      const fields = getFieldsByName(resolveDisplayNameForName(state, name)).filter(isFocusable)
+      const fields = getFieldsByName(resolveDisplayNameForName(state, name))
+        .filter(isFocusable)
+        .filter(isRendered)
       const elementErrors = state.validationElementErrors.get(name)
       const field = fields.find(candidate => elementErrors?.has(candidate)) ?? fields[0]
       if (field) candidates.push(field)
@@ -554,7 +597,9 @@ export const createFormController = (
     if (normalizedOptions.clearErrorsOnSubmit) state.manualErrors = {}
     else dropDetachedManualErrors()
 
-    const validation = state.api.validate()
+    if (!state.isAutoSubmitting) exposeErrors()
+    state.isValidated = true
+    const validation = validateNames()
     const handlers = Array.from(state.submitHandlers)
     const shouldPrevent = validation.isValid
       ? handlers.some(handler => handler.preventDefault)
@@ -750,6 +795,14 @@ export const createFormController = (
   }
 
   state.api = api
+
+  // Markup that already says `aria-invalid="true"` (server-rendered, or set
+  // by the author) keeps that state.
+  if (state.element) {
+    for (const field of getNamedFields(state.element)) {
+      if (field.getAttribute('aria-invalid') === 'true') exposeErrors([field.name])
+    }
+  }
 
   // ------- Lifecycle hooks ---------------------------------------------
 

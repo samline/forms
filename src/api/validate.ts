@@ -11,6 +11,7 @@ export const createValidate =
     // A destroyed controller owns no errors; never repaint the form again.
     if (state.isDestroyed) return { isValid: true, errors: {} }
     state.isValidated = true
+    helpers.exposeErrors(fields)
     // validateNames synchronizes visual state for the same field set.
     return helpers.validateNames(fields)
   }

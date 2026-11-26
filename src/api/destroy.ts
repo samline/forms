@@ -4,6 +4,7 @@
 // Safe to call multiple times.
 
 import { cleanupFormatRegistry } from './format'
+import { clearAttributes } from '../vanilla/dom'
 import type { FormControllerHelpers, FormControllerState } from '../core/state'
 
 export const createDestroy =
@@ -39,6 +40,15 @@ export const createDestroy =
       } catch (error) {
         console.error('[forms] cleanup failed', error)
       }
+    }
+
+    // Restore the markup: remove every attribute the controller wrote.
+    if (state.element) {
+      clearAttributes(state.element, [
+        state.attributes.error,
+        state.attributes.filled,
+        'aria-invalid',
+      ])
     }
 
     state.watchedFields.clear()

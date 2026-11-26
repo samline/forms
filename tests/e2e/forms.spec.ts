@@ -49,6 +49,37 @@ test('a failed submit marks invalid fields and focuses the first one in document
   await expect.poll(() => page.evaluate(() => (window as any).submitted)).toBe(1)
 })
 
+test('aria-invalid waits for the user while css-error shows on load', async ({ load }) => {
+  const page = await load(markup, 'forms')
+  await page.evaluate(() => {
+    ;(window as any).Forms.form('signup', { validators: { email: { required: true } } })
+  })
+  const email = page.getByLabel('Email')
+  await expect(email).toHaveAttribute('css-error', '')
+  await expect(email).not.toHaveAttribute('aria-invalid', 'true')
+  await page.getByRole('button', { name: 'Send' }).click()
+  await expect(email).toHaveAttribute('aria-invalid', 'true')
+  await expect(email).toBeFocused()
+})
+
+test('a failed submit focuses the first invalid field that is rendered', async ({ load }) => {
+  const page = await load(
+    `<form id="signup" novalidate>
+      <div hidden><label>Name <input name="name"></label></div>
+      <label>Email <input name="email"></label>
+      <button type="submit">Send</button>
+    </form>`,
+    'forms'
+  )
+  await page.evaluate(() => {
+    ;(window as any).Forms.form('signup', {
+      validators: { name: { required: true }, email: { required: true } },
+    })
+  })
+  await page.getByRole('button', { name: 'Send' }).click()
+  await expect(page.getByLabel('Email')).toBeFocused()
+})
+
 test('the bundled formatter formats input in the classic script', async ({ load }) => {
   const page = await load(
     '<form id="price"><input name="amount" aria-label="Amount"></form>',
@@ -62,7 +93,7 @@ test('the bundled formatter formats input in the classic script', async ({ load 
   await expect(page.locator('input[type="hidden"][name="amount"]')).toHaveValue('1234567')
 })
 
-test('the bundled formatter 3.3.0 transliterates slugs with charMap', async ({ load }) => {
+test('the bundled formatter 3.3.1 transliterates slugs with charMap', async ({ load }) => {
   const page = await load(`<form id="post"><label>Slug <input name="slug"></label></form>`, 'forms')
   await page.evaluate(() =>
     (window as any).Forms.form('post').format({

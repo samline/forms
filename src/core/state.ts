@@ -45,6 +45,8 @@ export interface FormControllerState {
   autoSubmitTimer: ReturnType<typeof setTimeout> | null
   /** True while an automatic `requestSubmit()` is dispatching `submit`. */
   isAutoSubmitting: boolean
+  /** True while the controller dispatches its own synthetic `input` event. */
+  isProgrammaticInput: boolean
   /** Batches several programmatic writes (`prefill`) into one auto-submit. */
   autoSubmitSuspended: boolean
   /** True while `reset()` runs the native reset it already handles. */
@@ -94,6 +96,7 @@ export interface FormControllerHelpers {
   getMergedErrors: () => FormErrors
   syncVisualState: (names?: string[]) => void
   validateNames: (names?: string[]) => ValidationResult
+  exposeErrors: (names?: string[]) => void
   emitFieldWatchers: (name: string) => void
   scheduleAutoSubmit: () => void
   applyReset: () => void
