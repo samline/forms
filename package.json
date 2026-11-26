@@ -110,16 +110,16 @@
     }
   },
   "devDependencies": {
-    "@playwright/test": "1.62.1",
+    "@playwright/test": "1.65.1",
     "@samline/formatter": "^3.3.1",
     "@types/node": "^26.6.2",
     "@vitest/coverage-v8": "^5.0.1",
-    "axe-core": "^4.14.0",
+    "axe-core": "^4.14.1",
     "esbuild": "^0.28.2",
     "jsdom": "^30.1.0",
     "prettier": "^3.9.10",
     "prettier-plugin-astro": "^1.1.1",
-    "tsup": "^8.5.1",
+    "tsup": "9.0.0",
     "typescript": "^5.9.3",
     "vite": "^8.3.4",
     "vitest": "^5.0.1"
