@@ -77,7 +77,7 @@ export default {
     descriptionContinuation:
       'Check a sign-up, format a phone number, or filter a catalog as it changes.',
     footnotes: ['Native HTML forms', 'JavaScript & TypeScript', `${project.license} licensed`],
-    compatibilityLabel: 'ONE CONTROLLER. RIGHT AT HOME IN YOUR STACK.',
+    compatibilityLabel: 'ONE SMALL SCRIPT. RIGHT AT HOME IN YOUR STACK.',
     platforms: [
       'JavaScript',
       'TypeScript',
