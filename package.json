@@ -110,7 +110,7 @@
     }
   },
   "devDependencies": {
-    "@playwright/test": "1.62.1",
+    "@playwright/test": "1.65.1",
     "@samline/formatter": "^3.3.1",
     "@types/node": "^26.6.2",
     "@vitest/coverage-v8": "^5.0.1",
