@@ -3,17 +3,17 @@ name: forms
 description: Add validation, reactive state, serialization, auto-submit and optional input formatting to native HTML forms with @samline/forms, in plain pages, CMS templates or framework components. Use for Forms installation, rules, error messages, submission, lifecycle and formatting; not for other form libraries or repository maintenance.
 metadata:
   package: '@samline/forms'
-  package-version: '4.0.0'
+  package-version: '4.0.1'
 ---
 
 # Forms
 
-Build against the installed `@samline/forms` version. This skill describes v4.0.0. Check the dependency version and exports before applying it to another release, and read `CHANGELOG.md` when upgrading. Keep the host's markup, components and styling: the package adds a controller to a native `<form>`; it never renders inputs or messages.
+Build against the installed `@samline/forms` version. This skill describes v4.0.1. Check the dependency version and exports before applying it to another release, and read `CHANGELOG.md` when upgrading. Keep the host's markup, components and styling: the package adds a controller to a native `<form>`; it never renders inputs or messages.
 
 ## Choose loading, then keep the controller
 
 - **Package / ESM:** `npm install @samline/forms` (or pnpm, yarn, bun). Import `{ form }` from `@samline/forms`. CommonJS is also exported. The root entry does not set a global.
-- **HTML / CDN:** load `https://cdn.jsdelivr.net/npm/@samline/forms@4.0.0/dist/browser/forms.global.js` with a classic `<script>` and use `window.Forms.form(...)`. The global has exactly `form`, `newForm`, `destroyForm` and `available`. This file already bundles `@samline/formatter`. Self-hosting the same file uses the same API.
+- **HTML / CDN:** load `https://cdn.jsdelivr.net/npm/@samline/forms@4.0.1/dist/browser/forms.global.js` with a classic `<script>` and use `window.Forms.form(...)`. The global has exactly `form`, `newForm`, `destroyForm` and `available`. This file already bundles `@samline/formatter`. Self-hosting the same file uses the same API.
 - **Registry helpers:** `browser` from the root entry (or the `@samline/forms/browser` subpath, which also sets `globalThis.Forms`) provides `newForm({ id, options })`, `destroyForm(id)` and the `available` map, one controller per form id.
 
 Verify the release exists on npm before using a CDN URL; a repository version does not prove publication. Load one copy of the runtime per page.
@@ -69,7 +69,7 @@ Always add `novalidate`: otherwise the browser's constraint validation blocks th
 - `sameAs: 'otherField'` compares non-empty values and revalidates when the source changes. `dependsOn: 'a' | ['a', 'b']` revalidates custom rules when those fields change.
 - `each: { ...rules }` checks every control sharing a name such as `guests[]` and marks only the failing rows.
 
-Rules run on load and on input with the default `autoValidate: true`; with `false` they start at the first `validate()`, `revalidate()` or submit. Use `[css-error][css-filled]` in CSS to highlight only filled fields when rules run on load. `setErrors({ field: ['…'] })` adds manual errors (for server responses); they block submission and remain in field and form state on submit attempts by default. Set `clearErrorsOnSubmit: true` to clear them before submit validation. Editing the field clears its manual error unless `clearManualErrorsOnChange: false`.
+Rules run on load and on input with the default `autoValidate: true`; with `false` they start at the first `validate()`, `revalidate()` or submit. Use `[css-error][css-filled]` in CSS to highlight only filled fields when rules run on load. `setErrors({ field: ['…'] })` adds manual errors (for server responses); on an editable field they block submission and remain in field and form state on submit attempts by default. Set `clearErrorsOnSubmit: true` to clear them before submit validation. Editing the field clears its manual error unless `clearManualErrorsOnChange: false`. Keys that match no editable control (`non_field_errors`, a dotted `items.0.name` next to `items[0][name]`, disabled, hidden or read-only fields) never block; render them from `getState().errors`, and they are dropped at the next submit attempt. Never turn a failed `validate()` into `setErrors()` on a field: it keeps the form invalid until that field is edited.
 
 ## What the controller does and what you do
 

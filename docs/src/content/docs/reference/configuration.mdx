@@ -96,7 +96,7 @@ Disable at any time with [`disableAutoSubmit()`](../../reference/api/#disableaut
 
 ## `clearErrorsOnSubmit`
 
-By default (`false`), manual errors created with [`setErrors`](../../reference/api/#seterrorsfields) survive submit attempts and block submission. Set this to `true` to clear all manual errors before submit validation runs.
+By default (`false`), manual errors created with [`setErrors`](../../reference/api/#seterrorsfields) on editable fields survive submit attempts and block submission until the field changes or you call [`clearErrors`](../../reference/api/#clearerrorsfields). Manual errors that match no editable control (a form-level key such as `non_field_errors`, an unknown name, or a field that is removed, disabled, hidden or read-only) never block: each submit attempt drops them before validation. Set this to `true` to clear all manual errors before submit validation runs.
 
 ```ts
 form('profile-form', { clearErrorsOnSubmit: true })

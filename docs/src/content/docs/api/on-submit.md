@@ -34,7 +34,7 @@ The same [`FormController`](../../reference/typescript/#formcontroller) — chai
 
 The submit pipeline runs in this order:
 
-1. Manual errors stay in place by default. If `clearErrorsOnSubmit` is `true`, they are cleared before validation.
+1. Manual errors on editable fields stay in place by default; manual errors that match no editable control (form-level keys, unknown names, removed, disabled, hidden or read-only fields) are dropped. If `clearErrorsOnSubmit` is `true`, every manual error is cleared before validation.
 2. Validation runs for every field with rules. `isValidated` becomes `true`.
 3. If validation fails, the browser’s native submit is prevented, submit handlers are **not** invoked, `aria-invalid="true"` is synchronized, the invalid control that comes first in document order receives focus if it is connected, enabled and not hidden (including the first failing `each` member; since 2.8.0 the order follows the DOM, not the schema). A submit started by auto-submit never moves focus, `submitCount` is incremented, and subscribers are notified.
 4. If validation passes:

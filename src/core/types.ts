@@ -93,7 +93,19 @@ export interface FormControllerOptions {
   attributes?: Partial<VisualAttributes>
   autoValidate?: boolean
   autoSubmit?: boolean | AutoSubmitOptions
+  /**
+   * Clear the manual error of a field when the user changes it.
+   * @default true
+   */
   clearManualErrorsOnChange?: boolean
+  /**
+   * Clear every manual error before submit validation. By default
+   * (`false`) manual errors on editable fields block submission until
+   * the field changes or `clearErrors()` runs; manual errors without an
+   * editable control (form-level keys, unknown names, disabled, hidden
+   * or read-only fields) are dropped at the start of each submit.
+   * @default false
+   */
   clearErrorsOnSubmit?: boolean
   validators?: ValidationSchema
   /**

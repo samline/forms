@@ -44,7 +44,7 @@ No bundler required. Drop the CDN script and use `window.Forms.newForm({ id, opt
   <button type="submit">Send</button>
 </form>
 
-<script src="https://cdn.jsdelivr.net/npm/@samline/forms@4.0.0/dist/browser/forms.global.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/@samline/forms@4.0.1/dist/browser/forms.global.js"></script>
 <script>
   const contact = window.Forms.newForm({
     id: 'contact-form',
@@ -70,6 +70,7 @@ No bundler required. Drop the CDN script and use `window.Forms.newForm({ id, opt
 <form id="login-form">
   <input name="email" type="email" autocomplete="email" required />
   <input name="password" type="password" autocomplete="current-password" required />
+  <p id="login-error" role="alert"></p>
   <button type="submit">Sign in</button>
 </form>
 ```
@@ -97,11 +98,15 @@ login.onSubmit(async (_element, _data, formData) => {
   })
 
   if (!response.ok) {
-    login.setErrors({ password: ['Wrong email or password.'] })
+    login.setErrors({ form: ['Wrong email or password.'] })
     return
   }
 
   window.location.assign('/dashboard')
+})
+
+login.subscribe(state => {
+  document.querySelector('#login-error')!.textContent = state.errors.form?.[0] ?? ''
 })
 ```
 
@@ -109,7 +114,7 @@ What this does:
 
 - Validates with custom messages.
 - Intercepts the submit (default `preventDefault: true`) so the browser does not navigate.
-- Surfaces a single error on the password field when the API rejects the credentials.
+- Shows a form-level message when the API rejects the credentials. No control is named `form`, so the message never blocks the next attempt: the controller drops it when the user submits again, whichever field they corrected.
 
 ## Recipe: Surface server-side validation errors
 
@@ -144,7 +149,7 @@ profile.onSubmit(async (_element, _data, formData) => {
 })
 ```
 
-The server's errors stay visible and block another submit. Editing an affected field clears its manual error so the user can submit the corrected value.
+The server's errors stay visible and block another submit. Editing an affected field clears its manual error so the user can submit the corrected value. Keys that name no editable control, such as `non_field_errors`, a dotted `items.0.name` next to an `items[0][name]` input, or a disabled or read-only field, never block: they stay in `getState().errors` for you to render and are dropped when the user submits again. Map dotted server keys to your input names if you want them on the field.
 
 ## Recipe: Multi-step / wizard
 
@@ -318,9 +323,9 @@ const checkout = form('checkout-form', {
 })
 
 document.querySelector('#pay')?.addEventListener('click', () => {
-  const result = checkout.validate()
-  if (!result.isValid) {
-    checkout.setErrors({ card: ['Please review your details.'] })
+  const { isValid, errors } = checkout.validate()
+  if (!isValid) {
+    document.querySelector('#pay-errors')!.textContent = Object.values(errors).flat().join(' ')
     return
   }
 
@@ -328,7 +333,7 @@ document.querySelector('#pay')?.addEventListener('click', () => {
 })
 ```
 
-Useful when you want to defer validation until a specific event (e.g. a "Review order" button).
+Useful when you want to defer validation until a specific event (e.g. a "Review order" button). `validate()` marks the invalid fields with `css-error` and `aria-invalid` but does not notify subscribers, so render messages from the errors it returns. Do not turn a failed `validate()` into `setErrors()`: a manual error on an editable field keeps the form invalid until the user edits that field.
 
 ## Recipe: Native server-rendered submit (Blade, ERB, classic Rails)
 

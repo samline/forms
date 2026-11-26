@@ -27,6 +27,7 @@ Package memory: decisions and lessons specific to this package. Family rules are
 - `validate()` does not notify subscribers: render messages from its returned `errors` when calling it outside a submit.
 - npm rejects an override of a direct dependency unless its specifier matches the direct dependency exactly; keep both Vite ranges aligned and verify with test:package after changing tooling overrides.
 - `<option>` / `<optgroup>` are not form controls, so the field-only `MutationObserver` filter ignored option-list changes and a select's value could change silently. Option mutations are tracked separately against a per-select selection snapshot; api methods that rewrite options call `commitOwnMutations` so the observer does not process them twice.
+- A manual error may block submission only while the user can clear it by editing a control. 4.0.0 kept every manual error on submit, so a form-level key (`non_field_errors`), an unmatched server key or an error on a disabled, hidden or read-only field locked the form with nothing to focus; submit now drops those first.
 - Prettier only owns the paths listed in `site:format`. Never run it over `src/`, `test/` or `README.md`: it rewrites unrelated union types and signatures in the runtime source.
 
 ## Documentation must be in sync before pushing

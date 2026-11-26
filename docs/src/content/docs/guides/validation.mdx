@@ -236,7 +236,7 @@ form('items', {
 - Manual errors come from `setErrors()` and remain separate internally.
 - Returned state merges both maps.
 - `clearErrors()` clears only manual errors.
-- Manual errors block submission and survive submit attempts by default. Editing the affected field clears its manual error by default. Use `clearErrorsOnSubmit` and `clearManualErrorsOnChange` to configure those behaviors.
+- Manual errors on editable fields block submission and survive submit attempts by default. Editing the affected field clears its manual error by default. Manual errors that match no editable control, such as a form-level `non_field_errors`, never block and are dropped at the next submit attempt. Use `clearErrorsOnSubmit` and `clearManualErrorsOnChange` to configure those behaviors.
 - A partial `validate(['email'])` preserves existing validation errors for fields not requested.
 
 ## State caveats

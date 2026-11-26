@@ -75,3 +75,51 @@ test('the bundled formatter 3.3.0 transliterates slugs with charMap', async ({ l
   await expect(page.getByLabel('Slug')).toHaveValue('privet-v1.2')
   await expect(page.locator('input[type="hidden"][name="slug"]')).toHaveValue('privet-v1.2')
 })
+
+test('a server error with no matching control never locks the form', async ({ load }) => {
+  const page = await load(markup, 'forms')
+  await page.evaluate(() => {
+    ;(window as any).attempts = 0
+    const controller = (window as any).Forms.form('signup')
+    controller.onSubmit(async () => {
+      ;(window as any).attempts += 1
+      await Promise.resolve()
+      controller.setErrors({ non_field_errors: ['Wrong email or password.'] })
+    })
+    ;(window as any).controller = controller
+  })
+  await page.getByLabel('Email').fill('ana@example.com')
+  await page.getByRole('button', { name: 'Send' }).click()
+  await expect
+    .poll(() => page.evaluate(() => (window as any).controller.getState().errors))
+    .toEqual({ non_field_errors: ['Wrong email or password.'] })
+
+  await page.getByRole('button', { name: 'Send' }).click()
+  await expect.poll(() => page.evaluate(() => (window as any).attempts)).toBe(2)
+})
+
+test('a server error on a field blocks until that field is edited', async ({ load }) => {
+  const page = await load(markup, 'forms')
+  await page.evaluate(() => {
+    ;(window as any).attempts = 0
+    const controller = (window as any).Forms.form('signup')
+    controller.onSubmit(() => {
+      ;(window as any).attempts += 1
+      if ((window as any).attempts === 1) controller.setErrors({ email: ['Already in use.'] })
+    })
+  })
+  const email = page.getByLabel('Email')
+  await email.fill('ana@example.com')
+  await page.getByRole('button', { name: 'Send' }).click()
+  await expect(email).toHaveAttribute('aria-invalid', 'true')
+
+  await page.getByLabel('Name').fill('Ana')
+  await page.getByRole('button', { name: 'Send' }).click()
+  await expect(email).toBeFocused()
+  expect(await page.evaluate(() => (window as any).attempts)).toBe(1)
+
+  await email.fill('ana+2@example.com')
+  await expect(email).not.toHaveAttribute('aria-invalid', 'true')
+  await page.getByRole('button', { name: 'Send' }).click()
+  await expect.poll(() => page.evaluate(() => (window as any).attempts)).toBe(2)
+})

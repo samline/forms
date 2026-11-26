@@ -33,7 +33,8 @@ The same [`FormController`](../../reference/typescript/#formcontroller) — chai
 - Manual errors are merged with existing manual errors — existing entries for other fields are preserved.
 - Validation errors from rules are not affected: validation errors and manual errors live in separate maps and are merged only when reading state.
 - Affected fields receive `css-error` and `aria-invalid="true"`.
-- By default, manual errors block submission and stay on the field and in `getState().errors` after the attempt. Set [`clearErrorsOnSubmit: true`](../../reference/configuration/#clearerrorsonsubmit) to clear them before submit validation.
+- By default, manual errors on an editable field block submission and stay on the field and in `getState().errors` after the attempt. Set [`clearErrorsOnSubmit: true`](../../reference/configuration/#clearerrorsonsubmit) to clear them before submit validation.
+- A manual error whose name matches no editable control (a form-level key such as `non_field_errors`, an unknown name, or a field that is removed, disabled, hidden or read-only) is reported in `getState().errors` until the next submit attempt, which drops it before validation. It never blocks submission, since the user has nothing to edit.
 - Subscribers are notified.
 
 ## Examples
@@ -91,6 +92,8 @@ signup.onSubmit(async (_element, _data, formData) => {
 - **Manual errors are cleared by default on the next change** of the affected field. Pass `clearManualErrorsOnChange: false` to keep them until you call [`clearErrors`](../clear-errors/).
 - **The array form uses the literal string `'Invalid value.'`.** Use the map form when you need custom messages.
 - **`setErrors` does not run validation.** Validation errors are computed independently by [`validate`](../validate/).
+- **Server keys must match input names to stay on a field.** A dotted `items.0.name` does not match an `items[0][name]` input; it is treated as a form-level error. Rename the keys before calling `setErrors` when you want them on the field.
+- **`validate()` called outside a submit counts every manual error**, including form-level ones, until the next submit attempt or [`clearErrors`](../clear-errors/).
 - **Setting an empty object `setErrors({})` clears nothing** — it just doesn’t add new errors. Use [`clearErrors`](../clear-errors/) to remove existing manual errors.
 
 ## Related

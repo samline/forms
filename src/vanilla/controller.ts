@@ -499,6 +499,31 @@ export const createFormController = (
     return !(candidate instanceof HTMLInputElement && candidate.type === 'hidden')
   }
 
+  // `readonly` has no effect on checkboxes, radios, selects or files.
+  const isReadOnly = (candidate: FormFieldElement) =>
+    (candidate instanceof HTMLTextAreaElement ||
+      (candidate instanceof HTMLInputElement &&
+        !['checkbox', 'radio', 'file'].includes(candidate.type))) &&
+    candidate.readOnly
+
+  const isEditable = (candidate: FormFieldElement) =>
+    isFocusable(candidate) && !candidate.matches(':disabled') && !isReadOnly(candidate)
+
+  // A manual error the user cannot clear by editing a control (a
+  // form-level key such as `non_field_errors`, a server key that names
+  // no control, or a control that is gone, disabled, hidden or read-only)
+  // describes the previous attempt. Keeping it would block every later
+  // submit with nothing to fix and nothing to focus, so a new attempt
+  // drops it before validation.
+  const dropDetachedManualErrors = () => {
+    const detached = Object.keys(state.manualErrors).filter(
+      name => !getFieldsByName(resolveDisplayNameForName(state, name)).some(isEditable)
+    )
+    if (detached.length === 0) return
+    for (const name of detached) delete state.manualErrors[name]
+    syncVisualState(detached)
+  }
+
   // Focus the invalid control that comes first in the document, not the
   // first rule declared in the schema, so keyboard users land where the
   // form visually starts failing.
@@ -527,6 +552,7 @@ export const createFormController = (
     }
 
     if (normalizedOptions.clearErrorsOnSubmit) state.manualErrors = {}
+    else dropDetachedManualErrors()
 
     const validation = state.api.validate()
     const handlers = Array.from(state.submitHandlers)

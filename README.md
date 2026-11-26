@@ -78,7 +78,7 @@ Invalid submits are always prevented and focus moves to the first invalid field.
 The standalone build defines `window.Forms` and already includes `@samline/formatter`. Pin the version.
 
 ```html
-<script src="https://cdn.jsdelivr.net/npm/@samline/forms@4.0.0/dist/browser/forms.global.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/@samline/forms@4.0.1/dist/browser/forms.global.js"></script>
 <script>
   const signup = window.Forms.form('signup', {
     validators: { email: { required: true, pattern: /^[^\s@]+@[^\s@]+\.[^\s@]+$/ } },
@@ -136,7 +136,7 @@ One controller owns one form's listeners, `MutationObserver` and auto-submit tim
 
 ### Options
 
-Manual errors set with `setErrors()` block submission by default and stay on the field and in `getState().errors` after each attempt.
+Manual errors set with `setErrors()` on an editable field block submission by default and stay on the field and in `getState().errors` after each attempt, until the user edits the field. Manual errors that match no editable control, such as a form-level `non_field_errors`, never block and are dropped at the next submit attempt.
 
 `validators`, `autoValidate` (default `true`), `autoSubmit`, `clearErrorsOnSubmit` (default `false`), `clearManualErrorsOnChange` (default `true`), `attributes` (default `{ filled: 'css-filled', error: 'css-error' }`) and `formats`. Every option is described in [Configuration options](https://samline.github.io/forms/docs/reference/configuration/); every type is exported, see the [TypeScript reference](https://samline.github.io/forms/docs/reference/typescript/).
 
