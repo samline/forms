@@ -55,7 +55,7 @@ Framework compiler check, 2026-11-06: the exact generated React JSX was bundled 
 
 ## Theme provenance
 
-Adapted from <https://github.com/samline/package-landing-docs.git> at `6b3209e436a3f935713b0e833245954711c2dc42`. Header, Logo, Field, mount-elements and the identity browser test were later synchronized with template `61cc0d8`. The visual reference is Ticker at the revision recorded in REFERENCE.md and design-reference.json. Sky blue was requested by the maintainer (light `#0369a1`, dark `#38bdf8`). [SITE-LICENSE.md](SITE-LICENSE.md) covers the imported theme; font licenses live under `shared/assets/fonts/`.
+Adapted from <https://github.com/samline/package-landing-docs.git> at `6b3209e436a3f935713b0e833245954711c2dc42`. Header, Logo, Field, mount-elements and the identity browser test were later synchronized with template `61cc0d8`. The visual reference is Ticker at the revision recorded in REFERENCE.md and design-reference.json. Sky blue was requested by the maintainer (light `#0369a1`, dark `#38bdf8`). [LICENSE.md](LICENSE.md) covers the imported theme; font licenses live under `shared/assets/fonts/`.
 
 ## Performance validation
 
