@@ -1,6 +1,6 @@
 # Forms website
 
-Landing, Examples and Docs for `@samline/forms` 4.0.2. The package's runtime, exports, Node 20+ requirement, README, license and release history remain the package contract. Website tooling requires Node **22.12+**.
+Landing, Examples and Docs for `@samline/forms` 4.1.0. The package's runtime, exports, Node 20+ requirement, README, license and release history remain the package contract. Website tooling requires Node **22.12+**.
 
 ## Run locally
 

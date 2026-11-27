@@ -143,17 +143,17 @@
     "accentDark": "#38bdf8"
   },
   "status": "verified",
-  "packageVersion": "4.0.2",
+  "packageVersion": "4.1.0",
   "sources": [
     {
       "source": "CHANGELOG.md",
-      "sha256": "600d765c3dabf68ecaa004544b54d78bd6859367135c5db2531974f2480960c0",
+      "sha256": "5994a90baca51942121d576d9b9b1b5450fb42ef4b882aa4703bedaa105ae9ae",
       "destination": "CHANGELOG.md",
       "reviewed": true
     },
     {
       "source": "README.md",
-      "sha256": "872097aecec8c85449ee1fdf95adbf5b91b963439ab200ede4ef619d4411a4a6",
+      "sha256": "a8514861c34a49c19533be76a8eb03cada5f68df1d2da08d473fc3d5a111f95b",
       "destination": "README.md",
       "reviewed": true
     },
@@ -565,7 +565,7 @@
     },
     {
       "source": "package.json",
-      "sha256": "5595619ce8c49de853fac1dbd0f8c517170771bcbeb74b82155f26e2184f5f6e",
+      "sha256": "0517cc4c7328b2b47e3044d315b791d9fae7524200c4690909465ea407053f12",
       "destination": "docs/src/content/docs/reference/entrypoints.mdx",
       "reviewed": true
     },
@@ -595,7 +595,7 @@
     },
     {
       "source": "src/api/destroy.ts",
-      "sha256": "99d7a1de76db8ee791ae69cae8d6757094ef9142318a4b9c7923d9343277af29",
+      "sha256": "a305262ea26a75d053f337e3786ddd495c15285ab69812f66b6e6f8e6f61113f",
       "destination": "docs/src/content/docs/api/destroy.md",
       "reviewed": true
     },
@@ -673,19 +673,19 @@
     },
     {
       "source": "src/api/set-errors.ts",
-      "sha256": "49cac7c654bb564b4ded3a27be9d8a6ae33c04ebcf6d6884ac1d68eb444908ee",
+      "sha256": "20428745ac29b8be45e26701117061dc0127b755cbeeb1be033d4c3954610468",
       "destination": "docs/src/content/docs/api/set-errors.md",
       "reviewed": true
     },
     {
       "source": "src/api/set-options.ts",
-      "sha256": "492cd51fc800b2600c81ef4aeb4379526726f2908489f5fe574168c9e17495e0",
+      "sha256": "692dab40d3c3c751e6819081d8e635025ab84c669049e2ba38da73d34d671bed",
       "destination": "docs/src/content/docs/api/set-options.md",
       "reviewed": true
     },
     {
       "source": "src/api/set-value.ts",
-      "sha256": "29762b61619083a6cb87cc1b4970ec96417da989a96bf2cabb6304e0d021416f",
+      "sha256": "30ee16858e048272b67c2a76461cdd88ba5ace702387d6d53028af722437ef26",
       "destination": "docs/src/content/docs/api/set-value.md",
       "reviewed": true
     },
@@ -703,7 +703,7 @@
     },
     {
       "source": "src/api/validate.ts",
-      "sha256": "bea37b75853f763128a4fc8a89c255b090b898d0ddfb99136c78cd729b131b1f",
+      "sha256": "8ee898d433ecec353f2fabb7a25dccef2665995fcf8876da51f5c669f166dc29",
       "destination": "docs/src/content/docs/api/validate.md",
       "reviewed": true
     },
@@ -739,7 +739,7 @@
     },
     {
       "source": "src/vanilla/controller.ts",
-      "sha256": "76ab498abdee4aee55060d88deb97bfeefaff0b6a2c60134aa74edcf12f514bf",
+      "sha256": "1e62855647d918994222960e848af8b041b698222e2ee5a713f056fa16f53bd1",
       "destination": "docs/src/content/docs/reference/api.mdx",
       "reviewed": true
     },
@@ -775,13 +775,13 @@
     },
     {
       "source": "src/core/state.ts",
-      "sha256": "6135c668be22100128d372cabcc3909bf7141e03b57eefaa6320c5bfae2c7a18",
+      "sha256": "f378a7e802d98d4cd72ff3610112b7feacbf26ab05b38a0f12ad6e0501a5c5cc",
       "destination": "docs/src/content/docs/guides/state-and-submission.md",
       "reviewed": true
     },
     {
       "source": "src/core/types.ts",
-      "sha256": "8dbfa11171e1c20fe7dade9924164988448d770c21ae6d2983e8cc4d08085072",
+      "sha256": "844bf515b02d882cfbef99d0c970efc16a0ae8be1569891173ca53c9134bb2f6",
       "destination": "docs/src/content/docs/reference/typescript.mdx",
       "reviewed": true
     },

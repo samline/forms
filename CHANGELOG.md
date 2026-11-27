@@ -2,7 +2,7 @@
 
 All notable changes to `@samline/forms` are documented in this file. The format follows [Keep a Changelog](https://keepachangelog.com/en/1.1.0/) and the project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
-## [Unreleased]
+## [4.1.0] - 2026-11-27
 
 ### Fixed
 
@@ -389,6 +389,7 @@ No breaking API changes. The behavior changes below fix incorrect or surprising 
 
 - Initial release of `@samline/forms`. Vanilla JS form controller with framework-specific variants (React, Vue, Svelte) initially included; bundled `.local/` agent docs at the repo root.
 
+[4.1.0]: https://github.com/samline/forms/compare/v4.0.2...v4.1.0
 [4.0.2]: https://github.com/samline/forms/compare/v4.0.1...v4.0.2
 [4.0.1]: https://github.com/samline/forms/compare/v4.0.0...v4.0.1
 [4.0.0]: https://github.com/samline/forms/compare/v3.0.0...v4.0.0

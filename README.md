@@ -78,7 +78,7 @@ Invalid submits are always prevented and focus moves to the first rendered inval
 The standalone build defines `window.Forms` and already includes `@samline/formatter`. Pin the version.
 
 ```html
-<script src="https://cdn.jsdelivr.net/npm/@samline/forms@4.0.2/dist/browser/forms.global.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/@samline/forms@4.1.0/dist/browser/forms.global.js"></script>
 <script>
   const signup = window.Forms.form('signup', {
     validators: { email: { required: true, pattern: /^[^\s@]+@[^\s@]+\.[^\s@]+$/ } },
