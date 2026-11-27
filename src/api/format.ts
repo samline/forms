@@ -95,6 +95,10 @@ const buildHandler = (
   const handler = (event: Event) => {
     if (!visible.isConnected || !mirror.isConnected) return
 
+    // An IME is still composing: rewriting `.value` now would cancel the candidate text.
+    // The same handler runs again on `compositionend`, once, with the committed value.
+    if (event.type === 'input' && (event as InputEvent).isComposing) return
+
     const isVisible = event.target === visible
     const isMirror = event.target === mirror
     if (!isVisible && !isMirror) return
@@ -225,6 +229,7 @@ const applyFormat = async (
       formatOptions
     )
     addListener(state, state.element, 'input', handler, true)
+    addListener(state, state.element, 'compositionend', handler, true)
     entry.handler = handler
 
     const initial = entry.visible.value
@@ -322,6 +327,7 @@ export const cleanupFormatRegistry = (state: FormControllerState): void => {
   for (const [fieldName, entry] of bucket) {
     if (entry.handler !== UNBOUND) {
       state.element.removeEventListener('input', entry.handler, true)
+      state.element.removeEventListener('compositionend', entry.handler, true)
     }
     if (entry.visible.isConnected) {
       restoreVisibleName(entry.visible, fieldName)

@@ -473,6 +473,10 @@ export const createFormController = (
   // ------- DOM event wiring ---------------------------------------------
 
   const handleDelegatedEvent = (event: Event) => {
+    // An IME is still composing: the formatted mirror has not caught up and the value is
+    // provisional. `compositionend` re-enters this handler once, after the format handler
+    // (capture phase) has written the committed value.
+    if (event.type === 'input' && (event as InputEvent).isComposing) return
     const target = event.target
     if (!(target instanceof Element) || !isFieldElement(target)) return
     const name = target.name
@@ -808,7 +812,9 @@ export const createFormController = (
 
   if (state.element) {
     addListener(state.element, 'input', handleDelegatedEvent)
+    addListener(state.element, 'compositionend', handleDelegatedEvent)
     addListener(document, 'input', handleExternalDelegatedEvent)
+    addListener(document, 'compositionend', handleExternalDelegatedEvent)
     addListener(state.element, 'submit', handleSubmitEvent)
     addListener(state.element, 'reset', handleResetEvent)
     snapshotAllSelects()

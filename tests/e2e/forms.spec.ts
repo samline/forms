@@ -93,6 +93,29 @@ test('the bundled formatter formats input in the classic script', async ({ load 
   await expect(page.locator('input[type="hidden"][name="amount"]')).toHaveValue('1234567')
 })
 
+test('formatting waits for the IME to finish composing', async ({ load }) => {
+  const page = await load(
+    '<form id="price"><input name="amount" aria-label="Amount"></form>',
+    'forms'
+  )
+  await page.evaluate(() =>
+    (window as any).Forms.form('price').format({ type: 'numeral', field: 'amount' })
+  )
+  const amount = page.getByLabel('Amount')
+  await amount.evaluate(input => {
+    const field = input as HTMLInputElement
+    field.dispatchEvent(new CompositionEvent('compositionstart', { bubbles: true }))
+    field.value = '1234567'
+    field.dispatchEvent(new InputEvent('input', { bubbles: true, isComposing: true }))
+  })
+  await expect(amount).toHaveValue('1234567')
+  await amount.evaluate(input =>
+    input.dispatchEvent(new CompositionEvent('compositionend', { bubbles: true, data: '7' }))
+  )
+  await expect(amount).toHaveValue('1,234,567')
+  await expect(page.locator('input[type="hidden"][name="amount"]')).toHaveValue('1234567')
+})
+
 test('the bundled formatter 3.3.1 transliterates slugs with charMap', async ({ load }) => {
   const page = await load(`<form id="post"><label>Slug <input name="slug"></label></form>`, 'forms')
   await page.evaluate(() =>

@@ -329,6 +329,80 @@ describe('format() integration', () => {
     expect(visible.selectionStart).toBe(1)
   })
 
+  it('does not rewrite the value while an IME composes and formats once on compositionend', async () => {
+    const format = vi.fn(phoneFormatter.format)
+    __setFormatterModuleForTests({ format })
+    const api = form('checkout-form')
+    api.format({ type: 'phone', field: 'phone' })
+    await flush()
+    format.mockClear()
+
+    const visible = api.getField('phone_displayed') as HTMLInputElement
+    visible.value = '5512'
+    visible.dispatchEvent(new InputEvent('input', { bubbles: true, isComposing: true }))
+
+    expect(format).not.toHaveBeenCalled()
+    expect(visible.value).toBe('5512')
+    expect(api.getValue('phone') as string).toBe('')
+
+    visible.value = '5512345678'
+    visible.dispatchEvent(new CompositionEvent('compositionend', { bubbles: true, data: '5678' }))
+
+    expect(format).toHaveBeenCalledOnce()
+    expect(visible.value).toBe('55 1234 5678')
+    expect(api.getValue('phone') as string).toBe('5512345678')
+  })
+
+  it('re-syncs controller state once after compositionend', async () => {
+    __setFormatterModuleForTests(phoneFormatter)
+    document.body.innerHTML = `
+      <form id="checkout-form">
+        <input name="phone" required />
+      </form>
+    `
+    const api = form('checkout-form', { autoValidate: true })
+    api.format({ type: 'phone', field: 'phone' })
+    await flush()
+    const visible = api.getField('phone_displayed') as HTMLInputElement
+    const listener = vi.fn()
+    api.subscribe(listener)
+    listener.mockClear()
+
+    visible.value = '5512'
+    visible.dispatchEvent(new InputEvent('input', { bubbles: true, isComposing: true }))
+
+    // Mid-composition: nothing is validated or announced against the stale mirror.
+    expect(listener).not.toHaveBeenCalled()
+    expect(visible.getAttribute('aria-invalid')).not.toBe('true')
+
+    visible.value = '5512345678'
+    visible.dispatchEvent(new CompositionEvent('compositionend', { bubbles: true, data: '5678' }))
+
+    expect(listener).toHaveBeenCalledOnce()
+    expect(visible.value).toBe('55 1234 5678')
+    expect(visible.hasAttribute('css-filled')).toBe(true)
+    expect(api.getState().errors.phone).toBeUndefined()
+    expect(api.getValue('phone') as string).toBe('5512345678')
+  })
+
+  it('removes the compositionend listener on destroy()', async () => {
+    const format = vi.fn(phoneFormatter.format)
+    __setFormatterModuleForTests({ format })
+    const api = form('checkout-form')
+    api.format({ type: 'phone', field: 'phone' })
+    await flush()
+    const formElement = document.getElementById('checkout-form') as HTMLFormElement
+    const visible = api.getField('phone_displayed') as HTMLInputElement
+    api.destroy()
+    format.mockClear()
+
+    visible.value = '5512345678'
+    formElement.dispatchEvent(new CompositionEvent('compositionend'))
+    visible.dispatchEvent(new CompositionEvent('compositionend', { bubbles: true }))
+
+    expect(format).not.toHaveBeenCalled()
+  })
+
   it('cleans up owned mirrors, restores the visible name, and detaches listeners on destroy()', async () => {
     __setFormatterModuleForTests(phoneFormatter)
     const api = form('checkout-form')

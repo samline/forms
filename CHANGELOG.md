@@ -2,6 +2,17 @@
 
 All notable changes to `@samline/forms` are documented in this file. The format follows [Keep a Changelog](https://keepachangelog.com/en/1.1.0/) and the project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [Unreleased]
+
+### Fixed
+
+- `format()` no longer rewrites the field value while an IME is composing (Japanese, Chinese, Korean), which cancelled the candidate text. The visible value and its raw mirror are formatted once on `compositionend`, through the same delegated listener, which `destroy()` removes. The controller also ignores composing `input` events and re-syncs once on `compositionend`, so validation errors, `css-filled`, `subscribe`, `watch` and `autoSubmit` reflect the committed text instead of waiting for the next keystroke.
+
+### Changed
+
+- Docs: error styling recipes (Styling with CSS guide, README, skill) now use `[aria-invalid='true']` and `.field:has([aria-invalid='true'])`, which wait until the error has reached the user. `[css-error]` stays documented as "every current error, including untouched fields" so required fields are not painted red on load.
+- Docs: the validation guide's summary container uses `role="alert"` alone; `role="alert"` with `aria-live="polite"` contradicted itself.
+
 ## [4.0.2] - 2026-11-26
 
 No API changes.

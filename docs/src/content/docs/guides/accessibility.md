@@ -42,7 +42,7 @@ controller.subscribe(state => {
 
 ## Styling states without hiding meaning
 
-Use the attributes for color and borders, but never rely on color alone: keep the text message. When rules run on load (`autoValidate: true`), empty fields are already invalid; highlight them only once filled with `[css-error][css-filled]`, or start with `autoValidate: false`. See [Styling with CSS](../css-styling/).
+Use the attributes for color and borders, but never rely on color alone: keep the text message. When rules run on load (`autoValidate: true`), empty fields already have `css-error`. Style errors with `[aria-invalid='true']`, which appears only once the error has reached the user, or highlight `css-error` only once filled with `[css-error][css-filled]`, or start with `autoValidate: false`. See [Styling with CSS](../css-styling/).
 
 ## Related
 

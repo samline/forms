@@ -40,13 +40,20 @@ Initial filled-state synchronization is a visual concern, not validation. A serv
   /* ... */
 }
 
-/* any field with at least one error */
+/* a field whose error has reached the user */
+[aria-invalid='true'] {
+  /* ... */
+}
+
+/* every current error, including untouched fields */
 [css-error] {
   /* ... */
 }
 ```
 
-These attributes are boolean: present or absent. They never have a value. The selector `[css-filled]` matches both `[css-filled]` and `[css-filled=""]`.
+Style errors with `[aria-invalid='true']`. The controller sets it only once the error has reached the user (see [Accessibility](#accessibility)), so a required field the user has not touched is not painted red when the page loads. `[css-error]` is set on **every** field that currently has an error, including untouched fields: with the default `autoValidate: true`, rules run on load and an empty required field already has `css-error`. Use it when you want that early signal, ideally combined with `[css-filled]` (`[css-error][css-filled]`).
+
+The `css-` attributes are boolean: present or absent. They never have a value. The selector `[css-filled]` matches both `[css-filled]` and `[css-filled=""]`.
 
 ## Recipes
 
@@ -57,12 +64,12 @@ input[css-filled] {
   border-color: var(--color-border-emphasis);
 }
 
-input[css-error] {
+input[aria-invalid='true'] {
   border-color: var(--color-danger);
   background-color: var(--color-danger-soft);
 }
 
-input[css-error]:focus-visible {
+input[aria-invalid='true']:focus-visible {
   outline-color: var(--color-danger);
 }
 ```
@@ -74,7 +81,7 @@ textarea[css-filled] {
   background-color: var(--color-surface-soft);
 }
 
-textarea[css-error] {
+textarea[aria-invalid='true'] {
   border-color: var(--color-danger);
 }
 ```
@@ -86,7 +93,7 @@ select[css-filled] {
   background-color: var(--color-surface-soft);
 }
 
-select[css-error] {
+select[aria-invalid='true'] {
   border-color: var(--color-danger);
 }
 ```
@@ -102,8 +109,8 @@ input[type='radio'][css-filled] {
   outline-offset: 2px;
 }
 
-input[type='checkbox'][css-error],
-input[type='radio'][css-error] {
+input[type='checkbox'][aria-invalid='true'],
+input[type='radio'][aria-invalid='true'] {
   outline: 2px solid var(--color-danger);
   outline-offset: 2px;
 }
@@ -116,7 +123,7 @@ input[type='file'][css-filled] {
   border-color: var(--color-success);
 }
 
-input[type='file'][css-error] {
+input[type='file'][aria-invalid='true'] {
   border-color: var(--color-danger);
 }
 ```
@@ -142,7 +149,7 @@ A common pattern is to style a parent label that contains the input:
   color: var(--color-text-emphasis);
 }
 
-.field:has([css-error]) > span {
+.field:has([aria-invalid='true']) > span {
   color: var(--color-danger);
 }
 ```
@@ -197,6 +204,6 @@ For repeated controls validated with `each`, `css-error` and `aria-invalid` are 
 ## Common pitfalls
 
 - **The attributes have no value.** A selector like `[css-filled="true"]` will not match. Use `[css-filled]` instead.
-- **`css-error` is set whenever there is any error**, including manual errors from [`setErrors`](../../reference/api/#seterrorsfields). Combine your selector with the actual message you render.
+- **`css-error` is set whenever there is any error**, including errors on fields the user has not touched yet and manual errors from [`setErrors`](../../reference/api/#seterrorsfields). Styling it alone paints untouched required fields as errors on load; prefer `[aria-invalid='true']`, or combine `[css-error][css-filled]`, and match the message you render.
 - **Field labels do not automatically receive the attributes.** Apply styles to the input itself, or use `:has()` / a wrapper class.
 - **CSS is not the only place the attributes appear.** Treat them as a styling hook, not as state. Read [`getState()`](../../reference/api/#getstate) if you need the authoritative state.

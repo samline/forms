@@ -44,7 +44,7 @@ const Frame = framed ? DemoStudio : 'div'
             <DemoForm item={item} prefix={`${id}-`} labelledby={`${id}-label`} />
           </div>
           <div class:list={['result-column']}>
-            <dl class:list={['readout']} aria-live="polite">
+            <dl class:list={['readout']}>
               {item.readouts.map(readout => (
                 <div>
                   <dt>{readout.label}</dt>

@@ -147,13 +147,13 @@
   "sources": [
     {
       "source": "CHANGELOG.md",
-      "sha256": "ccc7f94d7ce3b83c823be5d701a818ae7e8d067c8991ce5b0d59e3dccb6135ee",
+      "sha256": "600d765c3dabf68ecaa004544b54d78bd6859367135c5db2531974f2480960c0",
       "destination": "CHANGELOG.md",
       "reviewed": true
     },
     {
       "source": "README.md",
-      "sha256": "17dabdd0aa354e1be56b834c9c6921309fabb24836974f4e0d80cfc29e6e061f",
+      "sha256": "872097aecec8c85449ee1fdf95adbf5b91b963439ab200ede4ef619d4411a4a6",
       "destination": "README.md",
       "reviewed": true
     },
@@ -613,7 +613,7 @@
     },
     {
       "source": "src/api/format.ts",
-      "sha256": "0c84e28feef05d3325afb3168695565fb1f29816542b2462bfdcd16d9e1e4647",
+      "sha256": "05181c2bf8aa49c02e91ae1a832e54d5c9420b9a356488bbd99b7918dd3172e3",
       "destination": "docs/src/content/docs/api/format.md",
       "reviewed": true
     },

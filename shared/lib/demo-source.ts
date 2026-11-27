@@ -130,7 +130,7 @@ ${fields}
     <button type="submit">${escape(item.submit)}</button>
   </div>
 </form>
-<dl class="readouts" aria-live="polite">
+<dl class="readouts">
 ${item.readouts.map(readout => `  <dt>${escape(readout.label)}</dt>\n  <dd><output data-readout="${readout.id}">${demo.empty}</output></dd>`).join('\n')}
 </dl>`
 }
@@ -225,7 +225,11 @@ export const stylesFor = (_preset?: DemoPreset) => `main {
   font-weight: 400;
   color: #5b6672;
   pointer-events: none;
-  transition: transform 0.15s, font-size 0.15s;
+}
+@media (prefers-reduced-motion: no-preference) {
+  [data-variant='floating'] .field label {
+    transition: transform 0.15s, font-size 0.15s;
+  }
 }
 [data-variant='floating'] .field input {
   padding-top: 1.35rem;
